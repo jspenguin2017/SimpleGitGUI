@@ -1,1 +1,1 @@
-# Git GUI
+# Simple Git GUI
