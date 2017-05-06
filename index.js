@@ -34,11 +34,15 @@ $(window).trigger("resize");
 //=====Left Menu Buttons=====
 //Push button
 $("#push").click(() => {
-    if ($("#changes-table").children().length) {
-        $("#git-push-modal").modal("show");
-    } else {
-        $("#git-push-no-file-modal").modal("show");
-    }
+    UI.onceProcessingEnd(() => {
+        if ($("#changes-table").children().length) {
+            $("#git-push-modal").modal("show");
+        } else {
+            $("#git-push-no-file-modal").modal("show");
+        }
+    });
+    //Make sure no files are changed
+    $("#refresh").click();
 });
 //Push confirm button
 $("#git-push, #git-push-anyway").click(() => {
@@ -134,6 +138,7 @@ ipc.on("draw buttons", (e, data) => {
 //Draw repos list
 ipc.on("draw repos", (e, data) => {
     UI.repos(data.names, data.active, (index) => {
+        UI.processing(true);
         //Repo click, switch to it
         ipc.send("switch repo", {
             index: index

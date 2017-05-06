@@ -6,6 +6,18 @@ var UI = {};
 //Open or hide the load screen
 UI.processing = function (isProcessing) {
     $("#loading-modal").modal(isProcessing ? "show" : "hide");
+    if (!isProcessing) {
+        let func;
+        while (func = processingEndCallback.shift()) {
+            func();
+        }
+    }
+};
+
+//These functions will be called once each next time processing ends
+let processingEndCallback = [];
+UI.onceProcessingEnd = function (func) {
+    processingEndCallback.push(func);
 };
 
 //Check if is busy
