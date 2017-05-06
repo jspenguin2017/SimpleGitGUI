@@ -59,7 +59,7 @@ $("#refresh").click(() => {
 //Auto refresh when window focuses
 $(window).focus(() => {
     //Don't refresh if anything is open, or if we can't refresh
-    if (!($(".modal.in").length || $("#refresh").prop("disabled"))) {
+    if (!($(".modal").is(":visible") || $("#refresh").prop("disabled"))) {
         $("#refresh").click();
     }
 });

@@ -103,7 +103,7 @@ exports.push = function (directory, msgArray, callback) {
         let cmd = `git -C "${directory}" commit --verbose`;
         //Put in commit comments
         for (let i = 0; i < msgArray.length; i++) {
-            cmd += ` -message="${escape(msgArray[i])}"`;
+            cmd += ` --message="${escape(msgArray[i])}"`;
         }
         execute(cmd, (err) => {
             if (err) {

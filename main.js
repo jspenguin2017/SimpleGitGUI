@@ -558,6 +558,7 @@ ipc.on("update", (e, data) => {
     tq.push(() => {
         config.name = data.name;
         config.email = data.email;
+        config.savePW = data.savePW;
         configSave((err) => {
             if (err) {
                 e.sender.send("Fatal Error", {
