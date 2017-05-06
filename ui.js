@@ -42,6 +42,8 @@ UI.dialog = function (title, message, isError, isFatal) {
             $("#message-modal").modal("hide");
         }
     });
+    //Make code block scroll
+    $(window).trigger("resize");
     $("#message-modal").modal("show");
 };
 
@@ -101,20 +103,35 @@ UI.branches = function (names, active) {
     });
 };
 
-//Redraw changed file list
-UI.changes = function (data) {
-    $("#changes-table").empty();
+//Redraw diff table
+UI.diffTable = function (data, rollbackCallback, diffCallback) {
+    $("#diff-table").empty();
     for (let i = 0; i < data.length; i++) {
         const row = data[i];
-        $("#changes-table").append($("<tr>").append(
+        //Get a file name that Git accepts
+        let fullFileName;
+        if (row.directory === "/") {
+            fullFileName = row.name;
+        } else {
+            fullFileName = row.directory.substring(1) + fullFileName
+        }
+        $("#diff-table").append($("<tr>").append(
             $("<td>").html(row.name),
             $("<td>").html(row.directory),
             $("<td>").html(row.state[0]),
             $("<td>").html(row.state[1]),
             $("<td>").append(
-                `<button type="button" class="btn btn-danger git-group1-btn"><span class="glyphicon glyphicon-repeat"></span> Rollback</button>`,
-                `<button type="button" class="btn btn-primary git-group1-btn"><span class="glyphicon glyphicon-list-alt"></span> View Changes</button>`
+                `<button type="button" class="btn btn-danger git-group1-btn file-rollback-btn" data-file="${fullFileName}"><span class="glyphicon glyphicon-repeat"></span> Rollback</button>`,
+                `<button type="button" class="btn btn-primary git-group1-btn file-diff-btn" data-file="${fullFileName}"><span class="glyphicon glyphicon-list-alt"></span> View Difference</button>`
             )
         ));
     }
+    //Bind event handlers
+    $(".file-rollback-btn").click(function () {
+        //TODO!
+        //console.log($(this).data("file"));
+    });
+    $(".file-diff-btn").click(function () {
+        diffCallback($(this).data("file"));
+    });
 };

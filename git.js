@@ -58,30 +58,6 @@ exports.init = function (name, email, savePW, callback) {
     tq.tick();
 };
 
-//Get all branches
-exports.getBranches = function (directory, callback) {
-    directory = escape(directory);
-    execute(`git -C "${directory}" branch --list --all`, (err, stdout) => {
-        callback(err, stdout);
-    });
-};
-
-//Get changed files
-exports.getChanges = function (directory, callback) {
-    directory = escape(directory);
-    execute(`git -C "${directory}" status --porcelain --untracked-files=all`, (err, stdout) => {
-        callback(err, stdout);
-    });
-};
-
-//Get the raw status
-exports.getStatus = function (directory, callback) {
-    directory = escape(directory);
-    execute(`git -C "${directory}" status --untracked-files=all`, (err, stdout) => {
-        callback(err, stdout);
-    });
-};
-
 //Push a change
 exports.push = function (directory, msgArray, callback) {
     directory = escape(directory);
@@ -117,18 +93,27 @@ exports.push = function (directory, msgArray, callback) {
     //Push
     tq.push(() => {
         execute(`git -C "${directory}" push --verbose`, (err) => {
+            //Can't use --quiet because it will block more than just progress
             callback(err);
         });
     });
     //Start the queue
     tq.tick();
 };
-
 //Only push, no staging and committing
 exports.pushOnly = function (directory, placeholder, callback) {
     directory = escape(directory);
     execute(`git -C "${directory}" push --verbose`, (err) => {
+        //Can't use --quiet because it will block more than just progress
         callback(err);
+    });
+};
+
+//Get the raw status
+exports.getStatus = function (directory, callback) {
+    directory = escape(directory);
+    execute(`git -C "${directory}" status --untracked-files=all`, (err, stdout) => {
+        callback(err, stdout);
     });
 };
 
@@ -137,7 +122,7 @@ exports.clone = function (directory, address, callback) {
     directory = escape(directory);
     address = escape(address);
     execute(`git -C "${directory}" clone --quiet --verbose --depth 5 --no-single-branch --recurse-submodules --shallow-submodules "${address}" "${directory}"`, (err) => {
-        //Note: --quiet and --verbose don't conflict
+        //--quiet will only block progress, since output is shown at the end at once, progress doesn't help
         callback(err);
     });
 };
@@ -183,4 +168,29 @@ exports.config = function (name, email, savePW, callback) {
     });
     //Start the queue
     tq.tick();
+};
+
+//Get all branches
+exports.getBranches = function (directory, callback) {
+    directory = escape(directory);
+    execute(`git -C "${directory}" branch --list --all`, (err, stdout) => {
+        callback(err, stdout);
+    });
+};
+
+//Get changed files
+exports.getChanged = function (directory, callback) {
+    directory = escape(directory);
+    execute(`git -C "${directory}" status --porcelain --untracked-files=all`, (err, stdout) => {
+        callback(err, stdout);
+    });
+};
+
+//Get diff for one file
+exports.getDiff = function (directory, file, callback) {
+    directory = escape(directory);
+    file = escape(file);
+    execute(`git -C "${directory}" diff "${file}"`, (err, stdout) => {
+        callback(err, stdout);
+    });
 };

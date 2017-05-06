@@ -28,8 +28,8 @@ console.log("%cPlease be careful of what you execute in the console, this consol
 $(window).resize(() => {
     //Resize main container
     $("#main-container").height($(document.body).height() - 90);
-    //Update maximum message box height
-    $("#message-body").css("max-height", $(document.body).height() - 200);
+    //Make code box scroll
+    $("pre").css("max-height", $(document.body).height() - 250);
 });
 //Set height for the first time
 $(window).trigger("resize");
@@ -38,7 +38,7 @@ $(window).trigger("resize");
 //Push button
 $("#push").click(() => {
     UI.onceProcessingEnd(() => {
-        if ($("#changes-table").children().length) {
+        if ($("#diff-table").children().length) {
             $("#git-push-modal").modal("show");
         } else {
             $("#git-push-no-file-modal").modal("show");
@@ -139,6 +139,26 @@ $("#config-save").click(() => {
     })
 });
 
+//=====Main Panel Functionalities=====
+//Switching repo, UI.repos will bind this
+const switchRepo = function (index) {
+    UI.processing(true);
+    ipc.send("switch repo", {
+        index: index
+    });
+};
+//Rollback a file
+const rollback = function (file) {
+    //TODO!
+};
+//View file diff, UI.diffTable will bind this
+const viewDiff = function (file) {
+    UI.processing(true);
+    ipc.send("show diff", {
+        file: file
+    });
+};
+
 //=====Event Handlers=====
 //Draw buttons
 ipc.on("draw buttons", (e, data) => {
@@ -146,21 +166,15 @@ ipc.on("draw buttons", (e, data) => {
 });
 //Draw repos list
 ipc.on("draw repos", (e, data) => {
-    UI.repos(data.names, data.active, (index) => {
-        UI.processing(true);
-        //Repo click, switch to it
-        ipc.send("switch repo", {
-            index: index
-        });
-    });
+    UI.repos(data.names, data.active, switchRepo);
 });
 //Draw branches list
 ipc.on("draw branches", (e, data) => {
     UI.branches(data.names, data.active);
 });
-//Draw changed file list
-ipc.on("draw changes", (e, data) => {
-    UI.changes(data.data);
+//Draw diff table
+ipc.on("draw diff", (e, data) => {
+    UI.diffTable(data.data, rollback, viewDiff);
 });
 //Dialog handler
 ipc.on("dialog", (e, data) => {

@@ -59,7 +59,7 @@ const configSave = function (callback) {
 };
 //Load changed files, draw commands will be sent to renderer
 const gitRefresh = function (sender, callback) {
-    git.getChanges((config.repos[config.active]).directory, (err, stdout) => {
+    git.getChanged((config.repos[config.active]).directory, (err, stdout) => {
         if (err) {
             //Lock action buttons and show error
             sender.send("draw buttons", {
@@ -112,7 +112,7 @@ const gitRefresh = function (sender, callback) {
                         default:
                             sender.send("fatal error", {
                                 title: "Git Error",
-                                msg: "Could not parse file changes. ",
+                                msg: "Could not parse changed file list. ",
                                 log: files[i]
                             })
                             callback({
@@ -125,7 +125,7 @@ const gitRefresh = function (sender, callback) {
                 changedFiles.push(File);
             }
             //Tell renderer to draw the table
-            sender.send("draw changes", {
+            sender.send("draw diff", {
                 data: changedFiles
             });
             //Unlock action buttons
@@ -319,7 +319,7 @@ ipc.on("push", (e, data) => {
     let tq = new TQ();
     //Check if we need to stage
     tq.push(() => {
-        git.getChanges((config.repos[config.active]).directory, (err, stdout) => {
+        git.getChanged((config.repos[config.active]).directory, (err, stdout) => {
             if (err) {
                 sender.send("error", {
                     title: "Git Error",
@@ -383,9 +383,10 @@ ipc.on("status", (e) => {
                 log: err.message
             });
         } else {
+            const code = stdout.replace(/\&/g, "&amp;").replace(/\</g, "&lt;"); //These are the only ones we need, <pre> will take care of the rest
             e.sender.send("dialog", {
                 title: "Repository Status",
-                msg: `<pre>${stdout}</pre>`
+                msg: `<pre>${code}</pre>`
             });
         }
     });
@@ -541,7 +542,7 @@ ipc.on("delete", (e) => {
             e.sender.send("draw branches", {
                 names: []
             });
-            e.sender.send("draw changes", {
+            e.sender.send("draw diff", {
                 data: []
             });
             //Send ready
@@ -653,4 +654,22 @@ ipc.on("switch repo", (e, data) => {
     });
     //Start the queue
     tq.tick();
+});
+//Show file diff
+ipc.on("show diff", (e, data) => {
+    git.getDiff((config.repos[config.active]).directory, data.file, (err, stdout) => {
+        if (err) {
+            e.sender.send("error", {
+                title: "Git Error",
+                msg: "Failed to get file differences. ",
+                log: err.message
+            });
+        } else {
+            const code = stdout.replace(/\&/g, "&amp;").replace(/\</g, "&lt;"); //These are the only ones we need, <pre> will take care of the rest
+            e.sender.send("dialog", {
+                title: "File Differences",
+                msg: `<pre>${code}</pre>`
+            });
+        }
+    });
 });
