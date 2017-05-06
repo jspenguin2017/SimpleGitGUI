@@ -51,12 +51,12 @@ UI.buttons = function (group1, group2) {
 };
 
 //Redraw repos list, a "No Repository" place holder will be set if names is empty
-UI.repos = function (names, active) {
+UI.repos = function (names, active, clickCallback) {
     if (names.length) {
         //Redraw repos list
         $("#repos-list").empty();
         for (let i = 0; i < names.length; i++) {
-            let elem = $(`<button type="button" class="list-group-item repos-list-btn" data-index=${i}>${names[i]}</button>`);
+            let elem = $(`<button type="button" class="list-group-item repos-list-btn" data-index="${i}">${names[i]}</button>`);
             if (i === active) {
                 elem.addClass("active");
             }
@@ -64,8 +64,7 @@ UI.repos = function (names, active) {
         }
         //Bind event handler
         $(".repos-list-btn").click(function () {
-            //TODO!
-            //console.log($(this).data("index"));
+            clickCallback($(this).data("index"));
         });
     } else {
         //Put in place holder
@@ -77,7 +76,7 @@ UI.repos = function (names, active) {
 UI.branches = function (names, active) {
     $("#branches-list").empty();
     for (let i = 0; i < names.length; i++) {
-        let elem = $(`<button type="button" class="list-group-item branches-list-btn" data-index=${i}>${names[i]}</button>`);
+        let elem = $(`<button type="button" class="list-group-item branches-list-btn" data-index="${i}">${names[i]}</button>`);
         if (i === active) {
             elem.addClass("active");
         }

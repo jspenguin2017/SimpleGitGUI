@@ -14,7 +14,7 @@ const TQ = require("./task-queue.js");
 //Configuration
 let config; //The config object, will be set when initializing
 const configFile = path.join(app.getPath("userData"), "config.json");
-const configBlank = { //The default config if the config file doesn't exist
+const configBlank = { //This default config is used if the config file doesn't exist
     lastPath: app.getPath("home"),
     name: "Alpha",
     email: "alpha@example.com",
@@ -57,127 +57,119 @@ const configSave = function (callback) {
         callback(err);
     });
 };
-//Refresh current repository, draw commands will be sent to renderer
+//Load changed files, draw commands will be sent to renderer
 const gitRefresh = function (sender, callback) {
-    let tq = new TQ();
-    const activeDir = (config.repos[config.active]).directory;
-    //Get branches
-    tq.push(() => {
-        git.getBranches(activeDir, (err, stdout) => {
-            if (err) {
-                //Can't get branches
-                sender.send("error", {
-                    title: "Git Error",
-                    msg: "Could not read branches list. ",
-                    log: err.message
-                });
-                tq.abort();
-            } else {
-                //Parse branches
-                let branches = stdout.split("\n");
-                let names = [];
-                let active;
-                for (let i = 0; i < branches.length; i++) {
-                    if (branches[i].startsWith("*")) {
-                        active = i;
-                        branches[i] = (branches[i]).substring(1);
-                    }
-                    let temp = (branches[i]).trim();
-                    temp && names.push(temp);
+    git.getChanges((config.repos[config.active]).directory, (err, stdout) => {
+        if (err) {
+            //Lock action buttons and show error
+            sender.send("draw buttons", {
+                group1: false
+            });
+            sender.send("error", {
+                title: "Git Error",
+                msg: "Could not read changed files list. ",
+                log: err.message
+            });
+        } else {
+            //Parse output
+            const files = stdout.split("\n");
+            let changedFiles = [];
+            for (let i = 0; i < files.length; i++) {
+                if (!files[i]) {
+                    //Skip empty lines
+                    continue;
                 }
-                //Tell renderer to draw branches and buttons
-                sender.send("draw branches", {
-                    names: names,
-                    active: active
-                });
-                sender.send("draw buttons", {
-                    group1: true,
-                    group2: true
-                });
-                tq.tick();
-            }
-            callback(err);
-        });
-    });
-    //Get changed files
-    tq.push(() => {
-        git.getChanges(activeDir, (err, stdout) => {
-            if (err) {
-                sender.send("error", {
-                    title: "Git Error",
-                    msg: "Could not read changed files list. ",
-                    log: err.message
-                });
-            } else {
-                //Parse output
-                const files = stdout.split("\n");
-                let changedFiles = [];
-                for (let i = 0; i < files.length; i++) {
-                    if (!files[i]) {
-                        //Skip empty lines
-                        continue;
+                //Get changed file name
+                let file = (files[i]).substring(2).trim().split("/");
+                let File = {
+                    name: file.pop(),
+                    directory: "/" + file.join("/"),
+                    state: []
+                };
+                for (let j = 0; j < 2; j++) {
+                    switch ((files[i]).charAt(j)) {
+                        case " ":
+                            File.state.push("Unchanged");
+                            break;
+                        case "M":
+                            File.state.push("Changed");
+                            break;
+                        case "D":
+                            File.state.push("Deleted");
+                            break;
+                        case "R":
+                            File.state.push("Renamed");
+                            break;
+                        case "C":
+                            File.state.push("Copied");
+                            break;
+                        case "U":
+                            File.state.push("CHANGED BUT UNMERGED");
+                            break;
+                        case "?":
+                            File.state.push("Untracked");
+                            break;
+                        default:
+                            sender.send("fatal error", {
+                                title: "Git Error",
+                                msg: "Could not parse file changes. ",
+                                log: files[i]
+                            })
+                            callback({
+                                message: files[i]
+                            });
+                            return;
                     }
-                    //Get changed file name
-                    let file = (files[i]).substring(2).trim().split("/");
-                    let File = {
-                        name: file.pop(),
-                        directory: "/" + file.join("/"),
-                        state: []
-                    };
-                    for (let j = 0; j < 2; j++) {
-                        switch ((files[i]).charAt(j)) {
-                            case " ":
-                                File.state.push("Unchanged");
-                                break;
-                            case "M":
-                                File.state.push("Changed");
-                                break;
-                            case "D":
-                                File.state.push("Deleted");
-                                break;
-                            case "R":
-                                File.state.push("Renamed");
-                                break;
-                            case "C":
-                                File.state.push("Copied");
-                                break;
-                            case "U":
-                                File.state.push("CHANGED BUT UNMERGED");
-                                break;
-                            case "?":
-                                File.state.push("Untracked");
-                                break;
-                            default:
-                                sender.send("error", {
-                                    title: "Git Error",
-                                    msg: "Could not parse file changes. ",
-                                    log: files[i]
-                                })
-                                callback({
-                                    message: files[i]
-                                });
-                                return;
-                        }
-                    }
-                    //Add file to the list
-                    changedFiles.push(File);
                 }
-                //Tell renderer to draw the table
-                sender.send("draw changes", {
-                    data: changedFiles
-                });
-                //Unlock action buttons
-                sender.send("draw buttons", {
-                    group1: true
-                });
+                //Add file to the list
+                changedFiles.push(File);
             }
-            callback(err);
-        });
+            //Tell renderer to draw the table
+            sender.send("draw changes", {
+                data: changedFiles
+            });
+            //Unlock action buttons
+            sender.send("draw buttons", {
+                group1: true
+            });
+        }
+        callback(err);
     });
-    //TODO: show normal status to user
-
-    //Start the queue
-    tq.tick();
+};
+//Get branches, draw commands will be sent to renderer
+const gitGetBranches = function (sender, callback) {
+    git.getBranches((config.repos[config.active]).directory, (err, stdout) => {
+        if (err) {
+            //Can't get branches
+            sender.send("error", {
+                title: "Git Error",
+                msg: "Could not read branches list. ",
+                log: err.message
+            });
+        } else {
+            //Parse branches
+            let branches = stdout.split("\n");
+            let names = [];
+            let active;
+            for (let i = 0; i < branches.length; i++) {
+                if (branches[i].startsWith("*")) {
+                    active = i;
+                    branches[i] = (branches[i]).substring(1);
+                }
+                let temp = (branches[i]).trim();
+                temp && names.push(temp);
+            }
+            //Tell renderer to draw branches and buttons
+            sender.send("draw branches", {
+                names: names,
+                active: active
+            });
+            sender.send("draw buttons", {
+                group1: true
+            });
+        }
+        callback(err);
+    });
 };
 //Send repos list redraw request
 const drawRepos = function (sender) {
@@ -208,8 +200,6 @@ ipc.on("dev-tools", (e) => {
     //Toggle DevTools
     e.sender.toggleDevTools();
 });
-
-//=====Main Events=====
 //Do initialization
 ipc.on("ready", (e) => {
     let tq = new TQ();
@@ -289,14 +279,14 @@ ipc.on("ready", (e) => {
             drawRepos(e.sender);
             //Check if there are any repository
             if (config.repos.length) {
-                //Refresh the active repository
-                gitRefresh(e.sender, (err) => {
-                    if (err) {
-                        e.sender.send("draw buttons", {
-                            group1: false
+                //Get branches and refresh
+                gitGetBranches(e.sender, (err) => {
+                    if (!err) {
+                        gitRefresh(e.sender, (err) => {
+                            if (!err) {
+                                sendReady(e.sender);
+                            }
                         });
-                    } else {
-                        sendReady(e.sender);
                     }
                 });
             } else {
@@ -321,18 +311,8 @@ ipc.on("ready", (e) => {
     //Start the queue
     tq.tick();
 });
-//Refresh
-ipc.on("refresh", (e) => {
-    gitRefresh(e.sender, (err) => {
-        if (err) {
-            e.sender.send("draw buttons", {
-                group1: false
-            });
-        } else {
-            sendReady(e.sender);
-        }
-    });
-});
+
+//=====Left Menu Buttons=====
 //Push changes
 ipc.on("push", (e, data) => {
     let func; //We'll check if we need to stage and commit, and decide which function to use
@@ -364,7 +344,7 @@ ipc.on("push", (e, data) => {
             if (err) {
                 e.sender.send("error", {
                     title: "Git Error",
-                    msg: "Failed to push. ",
+                    msg: "Failed to push, some references were rejected. ",
                     log: err.message
                 });
                 //We will refresh the repository even if push fails
@@ -377,11 +357,7 @@ ipc.on("push", (e, data) => {
     //Refresh
     tq.push(() => {
         gitRefresh(e.sender, (err) => {
-            if (err) {
-                e.sender.send("draw buttons", {
-                    group1: false
-                });
-            } else {
+            if (!err) {
                 sendReady(e.sender);
             }
         });
@@ -389,6 +365,33 @@ ipc.on("push", (e, data) => {
     //Start the queue
     tq.tick();
 });
+//Refresh
+ipc.on("refresh", (e) => {
+    gitRefresh(e.sender, (err) => {
+        if (!err) {
+            sendReady(e.sender);
+        }
+    });
+});
+//Status
+ipc.on("status", (e) => {
+    git.getStatus((config.repos[config.active]).directory, (err, stdout) => {
+        if (err) {
+            e.sender.send("error", {
+                title: "Git Error",
+                msg: "Failed to get status. ",
+                log: err.message
+            });
+        } else {
+            e.sender.send("dialog", {
+                title: "Repository Status",
+                msg: `<pre>${stdout}</pre>`
+            });
+        }
+    });
+});
+
+//=====Right Menu Buttons=====
 //Clone a repository
 ipc.on("clone", (e, data) => {
     let tq = new TQ();
@@ -473,7 +476,7 @@ ipc.on("clone", (e, data) => {
         config.lastPath = path.resolve(data.directory, "..");
         configSave((err) => {
             if (err) {
-                e.sender.send("Fatal Error", {
+                e.sender.send("fatal error", {
                     title: "Config Error",
                     msg: "Could not save config. ",
                     log: err.message
@@ -481,11 +484,7 @@ ipc.on("clone", (e, data) => {
                 tq.abort();
             } else {
                 gitRefresh(e.sender, (err) => {
-                    if (err) {
-                        e.sender.send("draw buttons", {
-                            group1: false
-                        });
-                    } else {
+                    if (!err) {
                         sendReady(e.sender);
                     }
                 });
@@ -502,11 +501,11 @@ ipc.on("delete", (e) => {
     tq.push(() => {
         config.repos.splice(config.active, 1);
         if (config.active > config.repos.length - 1) {
-            config.active--;
+            config.active = config.repos.length - 1;
         }
         configSave((err) => {
             if (err) {
-                e.sender.send("Fatal Error", {
+                e.sender.send("fatal error", {
                     title: "Config Error",
                     msg: "Could not save config. ",
                     log: err.message
@@ -528,6 +527,7 @@ ipc.on("delete", (e) => {
                     e.sender.send("draw buttons", {
                         group1: false
                     });
+                    tq.abort();
                 } else {
                     sendReady(e.sender);
                 }
@@ -551,19 +551,16 @@ ipc.on("delete", (e) => {
     //Start the queue
     tq.tick();
 });
-//Update name and email
-ipc.on("update", (e, data) => {
+//Update Git configuration
+ipc.on("config", (e, data) => {
     let tq = new TQ();
-    //Save config
+    //Update Git config
     tq.push(() => {
-        config.name = data.name;
-        config.email = data.email;
-        config.savePW = data.savePW;
-        configSave((err) => {
+        git.config(data.name, data.email, data.savePW, (err) => {
             if (err) {
-                e.sender.send("Fatal Error", {
-                    title: "Config Error",
-                    msg: "Could not save config. ",
+                e.sender.send("fatal error", {
+                    title: "Git Error",
+                    msg: "Could not update Git config. ",
                     log: err.message
                 });
                 tq.abort();
@@ -572,13 +569,16 @@ ipc.on("update", (e, data) => {
             }
         });
     });
-    //Update Git config
+    //Save config
     tq.push(() => {
-        git.update(data.name, data.email, data.savePW, (err) => {
+        config.name = data.name;
+        config.email = data.email;
+        config.savePW = data.savePW;
+        configSave((err) => {
             if (err) {
                 e.sender.send("fatal error", {
-                    title: "Git Error",
-                    msg: "Could not update Git config. ",
+                    title: "Config Error",
+                    msg: "Could not save config. ",
                     log: err.message
                 });
                 tq.abort();
@@ -589,4 +589,31 @@ ipc.on("update", (e, data) => {
     });
     //Start the queue
     tq.tick();
+});
+
+//=====Main Panel Functionalities=====
+//Switch repo
+ipc.on("switch repo", (e, data) => {
+    //Get a valid index
+    const index = parseInt(data.index);
+    if (index < 0 || index >= config.repos.length) {
+        e.sender.send("fatal error", {
+            title: "Client Error",
+            msg: "The renderer process sent an invalid request to the main process. ",
+            log: err.message
+        });
+    } else {
+        config.active = index;
+        drawRepos(e.sender);
+        //Load the repository
+        gitGetBranches(e.sender, (err) => {
+            if (!err) {
+                gitRefresh(e.sender, (err) => {
+                    if (!err) {
+                        sendReady(e.sender);
+                    }
+                });
+            }
+        });
+    }
 });

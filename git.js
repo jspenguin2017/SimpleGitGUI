@@ -45,7 +45,7 @@ exports.init = function (name, email, savePW, callback) {
     });
     //Set name and email
     tq.push(() => {
-        exports.update(name, email, savePW, (err) => {
+        exports.config(name, email, savePW, (err) => {
             if (err) {
                 callback(err);
                 tq.abort();
@@ -74,7 +74,7 @@ exports.getChanges = function (directory, callback) {
     });
 };
 
-//Get the raw status, this helps checking if some refs were not pushed to remote
+//Get the raw status
 exports.getStatus = function (directory, callback) {
     directory = escape(directory);
     execute(`git -C "${directory}" status --untracked-files=all`, (err, stdout) => {
@@ -136,14 +136,14 @@ exports.pushOnly = function (directory, placeholder, callback) {
 exports.clone = function (directory, address, callback) {
     directory = escape(directory);
     address = escape(address);
-    execute(`git -C "${directory}" clone --quiet --verbose --depth 5 --recurse-submodules --shallow-submodules "${address}" "${directory}"`, (err) => {
+    execute(`git -C "${directory}" clone --quiet --verbose --depth 5 --no-single-branch --recurse-submodules --shallow-submodules "${address}" "${directory}"`, (err) => {
         //Note: --quiet and --verbose don't conflict
         callback(err);
     });
 };
 
-//Update name and email
-exports.update = function (name, email, savePW, callback) {
+//Update name, email, and password config
+exports.config = function (name, email, savePW, callback) {
     name = escape(name);
     email = escape(email);
     let tq = new TQ();

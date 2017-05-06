@@ -31,7 +31,7 @@ $(window).resize(() => {
 //Set height for the first time
 $(window).trigger("resize");
 
-//=====UI Event Handlers=====
+//=====Left Menu Buttons=====
 //Push button
 $("#push").click(() => {
     if ($("#changes-table").children().length) {
@@ -63,6 +63,12 @@ $(window).focus(() => {
         $("#refresh").click();
     }
 });
+//Status button
+$("#status").click(() => {
+    ipc.send("status");
+});
+
+//=====Right Menu Buttons=====
 //Clone button
 $("#clone").click(() => {
     //Check clipboard
@@ -113,7 +119,7 @@ $("#config").click(() => {
 //Config save button
 $("#config-save").click(() => {
     UI.processing(true);
-    ipc.send("update", {
+    ipc.send("config", {
         name: $("#config-name").val(),
         email: $("#config-email").val(),
         savePW: $("#config-savePW").is(":checked")
@@ -127,7 +133,12 @@ ipc.on("draw buttons", (e, data) => {
 });
 //Draw repos list
 ipc.on("draw repos", (e, data) => {
-    UI.repos(data.names, data.active);
+    UI.repos(data.names, data.active, (index) => {
+        //Repo click, switch to it
+        ipc.send("switch repo", {
+            index: index
+        });
+    });
 });
 //Draw branches list
 ipc.on("draw branches", (e, data) => {
@@ -136,6 +147,11 @@ ipc.on("draw branches", (e, data) => {
 //Draw changed file list
 ipc.on("draw changes", (e, data) => {
     UI.changes(data.data);
+});
+//Dialog handler
+ipc.on("dialog", (e, data) => {
+    UI.processing(false);
+    UI.dialog(data.title, data.msg);
 });
 //Error handler
 ipc.on("error", (e, data) => {
