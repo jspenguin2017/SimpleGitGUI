@@ -111,7 +111,10 @@ UI.changes = function (data) {
             $("<td>").html(row.directory),
             $("<td>").html(row.state[0]),
             $("<td>").html(row.state[1]),
-            $("<td>").html(`<button type="button" class="btn btn-danger git-group1-btn"><span class="glyphicon glyphicon-repeat"></span> Rollback</button>`)
+            $("<td>").append(
+                `<button type="button" class="btn btn-danger git-group1-btn"><span class="glyphicon glyphicon-repeat"></span> Rollback</button>`,
+                `<button type="button" class="btn btn-primary git-group1-btn"><span class="glyphicon glyphicon-list-alt"></span> View Changes</button>`
+            )
         ));
     }
 };

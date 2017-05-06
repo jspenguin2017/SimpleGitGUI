@@ -51,7 +51,7 @@
                 <ul class="nav navbar-nav navbar-right">
                     <li><button type="button" class="btn btn-success navbar-btn" id="clone"><span class="glyphicon glyphicon-plus-sign"></span> Clone</button></li>
                     <li><button type="button" class="btn btn-danger navbar-btn git-group2-btn" id="delete"><span class="glyphicon glyphicon-remove-sign"></span> Delete</button></li>
-                    <li><button type="button" class="btn btn-info navbar-btn" id="config" style="margin-right:12px;"><span class="glyphicon glyphicon-cog"></span> Config</button></li>
+                    <li><button type="button" class="btn btn-info navbar-btn" style="margin-right:12px;" id="config"><span class="glyphicon glyphicon-cog"></span> Config</button></li>
                 </ul>
             </div>
         </div>
@@ -60,10 +60,10 @@
     <div class="container" id="main-container">
         <!-- Right side repo list -->
         <div class="column" style="width:25%;">
-            <div class="list-group" id="repos-list" style="height:65%; margin-bottom:0px; overflow-y:scroll;">
+            <div class="list-group" style="height:65%; margin-bottom:0px; overflow-y:scroll;" id="repos-list">
                 <button type="button" class="list-group-item disabled">Loading...</button>
             </div>
-            <div class="list-group" id="branches-list" style="height:35%; margin-bottom:0px; border-top:1px solid grey; overflow-y:scroll;"></div>
+            <div class="list-group" style="height:35%; margin-bottom:0px; border-top:1px solid grey; overflow-y:scroll;" id="branches-list"></div>
         </div>
         <!-- Left side file list -->
         <div class="column" style="width:75%; border-left:0px;">
@@ -88,7 +88,7 @@
                 <div class="modal-header">
                     <h4 class="modal-title" id="message-title"></h4>
                 </div>
-                <div class="modal-body" id="message-body"></div>
+                <div class="modal-body" style="overflow-y:auto;" id="message-body"></div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary btn-lg" id="message-btn-ok">OK</button>
                 </div>
@@ -104,7 +104,7 @@
                 </div>
                 <div class="modal-body" style="text-align:center;">
                     <p>This won't take long. </p>
-                    <img alt="Loading GIF" src="assets/loading.svg" />
+                    <img alt="Loading SVG" src="assets/loading.svg" />
                 </div>
             </div>
         </div>
@@ -156,7 +156,7 @@
                 <div class="modal-header">
                     <h4 class="modal-title">Clone</h4>
                 </div>
-                <div class="modal-body" style="text-align:center;">
+                <div class="modal-body">
                     <div class="input-group">
                         <span class="input-group-addon">Address: </span>
                         <input type="text" class="form-control" placeholder="git://" id="git-clone-address" />
@@ -180,7 +180,7 @@
                 <div class="modal-header">
                     <h4 class="modal-title">Delete</h4>
                 </div>
-                <div class="modal-body" style="text-align:center;">
+                <div class="modal-body">
                     <p>This will not delete local file, continue? </p>
                 </div>
                 <div class="modal-footer">

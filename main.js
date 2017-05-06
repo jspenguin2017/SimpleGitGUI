@@ -3,7 +3,7 @@
 
 //=====Load Modules=====
 //Load Electron
-const {app, BrowserWindow: win, ipcMain: ipc, dialog} = require("electron");
+const {app, BrowserWindow: win, ipcMain: ipc, dialog, shell} = require("electron");
 //Load common utilities
 const path = require("path");
 const url = require("url");
@@ -33,7 +33,7 @@ app.on("ready", () => {
     main = new win({
         width: 1400,
         height: 700,
-        minHeight: 350,
+        minHeight: 525,
         minWidth: 1050
     });
     //Remove menu
@@ -594,26 +594,63 @@ ipc.on("config", (e, data) => {
 //=====Main Panel Functionalities=====
 //Switch repo
 ipc.on("switch repo", (e, data) => {
+    let tq = new TQ();
     //Get a valid index
-    const index = parseInt(data.index);
-    if (index < 0 || index >= config.repos.length) {
-        e.sender.send("fatal error", {
-            title: "Client Error",
-            msg: "The renderer process sent an invalid request to the main process. ",
-            log: err.message
-        });
-    } else {
-        config.active = index;
-        drawRepos(e.sender);
-        //Load the repository
-        gitGetBranches(e.sender, (err) => {
-            if (!err) {
+    tq.push(() => {
+        const index = parseInt(data.index);
+        if (index < 0 || index >= config.repos.length) {
+            e.sender.send("fatal error", {
+                title: "Client Error",
+                msg: "The renderer process sent an invalid request to the main process. ",
+                log: err.message
+            });
+        } else {
+            //We want to opn the project folder if the repo is already active
+            if (config.active === index) {
+                shell.openExternal((config.repos[config.active]).directory);
                 gitRefresh(e.sender, (err) => {
                     if (!err) {
                         sendReady(e.sender);
                     }
                 });
+                tq.skip();
+            } else {
+                config.active = index;
+                drawRepos(e.sender);
+                //Load the repository
+                gitGetBranches(e.sender, (err) => {
+                    if (err) {
+                        tq.abort();
+                    } else {
+                        gitRefresh(e.sender, (err) => {
+                            if (err) {
+                                tq.abort();
+                            } else {
+                                sendReady(e.sender);
+                                tq.tick();
+                            }
+                        });
+                    }
+                });
+            }
+        }
+    });
+    //Update config
+    tq.push(() => {
+        //Active index is already set
+        configSave((err) => {
+            if (err) {
+                e.sender.send("fatal error", {
+                    title: "Config Error",
+                    msg: "Could not save config. ",
+                    log: err.message
+                });
+                tq.abort();
+            } else {
+                sendReady(e.sender);
             }
         });
-    }
+    });
+    //Start the queue
+    tq.tick();
 });

@@ -26,7 +26,10 @@ $(document).on("keyup", (e) => {
 console.log("%cPlease be careful of what you execute in the console, this console has access to your local file system. ", "color: red; font-size: large;");
 //Change the height of main container to be an offset of body height on resize
 $(window).resize(() => {
+    //Resize main container
     $("#main-container").height($(document.body).height() - 90);
+    //Update maximum message box height
+    $("#message-body").css("max-height", $(document.body).height() - 200);
 });
 //Set height for the first time
 $(window).trigger("resize");
@@ -44,10 +47,16 @@ $("#push").click(() => {
     //Make sure no files are changed
     $("#refresh").click();
 });
+//Auto focus comment box
+$("#git-push-modal").on("shown.bs.modal", () => {
+    $("#push-comment").focus();
+});
 //Push confirm button
 $("#git-push, #git-push-anyway").click(() => {
     UI.processing(true);
     let msg = $("#push-comment").val().split("\n");
+    //Clear the text box for next push
+    $("#push-comment").val("");
     if (!msg.length) {
         msg = ["No commit comment. "];
     }
