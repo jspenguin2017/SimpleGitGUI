@@ -5,6 +5,8 @@
 let lastPath, name, email, savePW;
 
 //=====Initialization=====
+//Show load screen
+$("#loading-modal").modal("show");
 //Load Electron
 const {ipcRenderer: ipc, clipboard} = require("electron");
 //Load utilities
@@ -30,6 +32,8 @@ $(window).resize(() => {
     $("#main-container").height($(document.body).height() - 90);
     //Make code box scroll
     $("pre").css("max-height", $(document.body).height() - 250);
+    //Make push help section scroll
+    $("#git-push-help").css("max-height", $(document.body).height() - 200);
 });
 //Set height for the first time
 $(window).trigger("resize");
@@ -39,6 +43,24 @@ window.openProjectPage = function () {
 };
 
 //=====Left Menu Buttons=====
+//Pull button
+$("#pull").click(() => {
+    $("#git-pull-modal").modal("show");
+});
+//Pull merge button
+$("#git-pull-merge").click(() => {
+    UI.processing(true);
+    ipc.send("pull", {
+        mode: "merge"
+    });
+});
+//Pull rebase button
+$("#git-pull-rebase").click(() => {
+    UI.processing(true);
+    ipc.send("pull", {
+        mode: "rebase"
+    });
+});
 //Push button
 $("#push").click(() => {
     UI.onceProcessingEnd(() => {
@@ -61,9 +83,18 @@ $("#git-push, #git-push-anyway").click(() => {
     let msg = $("#push-comment").val().split("\n");
     //Clear the text box for next push
     $("#push-comment").val("");
-    if (!msg.length) {
+    //Check if message is not empty
+    let msgGood = false;
+    for (let i = 0; i > msg.length; i++) {
+        if ((msg[i]).length) {
+            msgGood = true;
+            break;
+        }
+    }
+    if (!msgGood) {
         msg = ["No commit comment. "];
     }
+    //Push
     ipc.send("push", {
         msg: msg
     });
@@ -154,6 +185,7 @@ const switchRepo = function (index) {
 //Rollback a file
 const rollback = function (file) {
     //TODO!
+    console.log(`Rollback for ${file} clicked. `);
 };
 //View file diff, UI.diffTable will bind this
 const viewDiff = function (file) {

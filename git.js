@@ -14,6 +14,7 @@ const execute = function (code, callback) {
     exec(code, (err, stdout, stderr) => {
         //Log the output
         err && console.log(err.message);
+        err && console.log(`Exit code: ${err.code}`);
         stderr && console.log(stderr);
         stdout && console.log(stdout);
         //Call callback
@@ -56,6 +57,20 @@ exports.init = function (name, email, savePW, callback) {
     });
     //Start the queue
     tq.tick();
+};
+
+//Pull, set mode to true for rebase
+exports.pull = function (directory, mode, callback) {
+    directory = escape(directory);
+    if (mode) {
+        mode = " --rebase=true";
+    } else {
+        mode = "";
+    }
+    //Execute
+    execute(`git -C "${directory}" pull${mode}`, (err) => {
+        callback(err);
+    });
 };
 
 //Push a change

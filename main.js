@@ -31,7 +31,7 @@ let main;
 app.on("ready", () => {
     //Init window
     main = new win({
-        width: 1400,
+        width: 1300,
         height: 700,
         minHeight: 525,
         minWidth: 1050
@@ -115,6 +115,9 @@ const gitRefresh = function (sender, callback) {
                         case " ":
                             File.state.push("Unchanged");
                             break;
+                        case "A":
+                            File.state.push("Created");
+                            break;
                         case "M":
                             File.state.push("Changed");
                             break;
@@ -128,7 +131,7 @@ const gitRefresh = function (sender, callback) {
                             File.state.push("Copied");
                             break;
                         case "U":
-                            File.state.push("CHANGED BUT UNMERGED");
+                            File.state.push("Unmerged");
                             break;
                         case "?":
                             File.state.push("Untracked");
@@ -341,6 +344,63 @@ ipc.on("ready", (e) => {
 });
 
 //=====Left Menu Buttons=====
+//Pull
+ipc.on("pull", (e, data) => {
+    let tq = new TQ();
+    //Pull
+    tq.push(() => {
+        const activeDir = (config.repos[config.active]).directory;
+        if (data.mode === "merge") {
+            git.pull(activeDir, false, (err) => {
+                if (err) {
+                    e.sender.send("error", {
+                        title: "Git Error",
+                        msg: "Could not complete merge or merge was not clean, if conflicting files show up, clean them up then push. ",
+                        log: err.message
+                    });
+                    tq.tick(); //We'll refresh even if it fails
+                } else {
+                    tq.tick();
+                }
+            });
+        } else if (data.mode === "rebase") {
+            git.pull(activeDir, true, (err) => {
+                if (err) {
+                    e.sender.send("error", {
+                        title: "Git Error",
+                        msg: "Could not complete rebase. If conflicting files show up, clean them up and click Pull-&gt;Rebase Cont. Do not push until conflicting files are cleaned up. ",
+                        log: err.message
+                    });
+                    tq.tick(); //We'll refresh even if it fails
+                } else {
+                    tq.tick();
+                }
+            });
+        } else {
+            e.sender.send("fatal error", {
+                title: "Client Error",
+                msg: "The renderer process sent an invalid request to the main process. ",
+                log: "Unknown pull mode. "
+            });
+            tq.abort();
+        }
+
+    });
+    //Refresh, this needs to include branches
+    tq.push(() => {
+        gitGetBranches(e.sender, (err) => {
+            if (!err) {
+                gitRefresh(e.sender, (err) => {
+                    if (!err) {
+                        sendReady(e.sender);
+                    }
+                });
+            }
+        });
+    });
+    //Start the queue
+    tq.tick();
+});
 //Push changes
 ipc.on("push", (e, data) => {
     let func; //We'll check if we need to stage and commit, and decide which function to use
@@ -627,7 +687,7 @@ ipc.on("switch repo", (e, data) => {
             e.sender.send("fatal error", {
                 title: "Client Error",
                 msg: "The renderer process sent an invalid request to the main process. ",
-                log: err.message
+                log: "Invalid active repository index. "
             });
         } else {
             //We want to opn the project folder if the repo is already active
@@ -693,3 +753,5 @@ ipc.on("show diff", (e, data) => {
         }
     });
 });
+
+//TODO: Show log instead of telling user to see console

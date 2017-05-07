@@ -72,7 +72,7 @@ UI.buttons = function (group1, group2) {
         }
     }
     if (typeof group2 === "boolean") {
-        $(".git-group2-btn").prop("disabled", !group1);
+        $(".git-group2-btn").prop("disabled", !group2);
     }
 };
 
@@ -111,7 +111,7 @@ UI.branches = function (names, active) {
     //Bind event handler
     $(".branches-list-btn").click(function () {
         //TODO!
-        //console.log($(this).data("index"));
+        console.log("Branch", $(this).data("index"), "Clicked");
     });
 };
 
@@ -140,8 +140,7 @@ UI.diffTable = function (data, rollbackCallback, diffCallback) {
     }
     //Bind event handlers
     $(".file-rollback-btn").click(function () {
-        //TODO!
-        //console.log($(this).data("file"));
+        rollbackCallback($(this).data("file"));
     });
     $(".file-diff-btn").click(function () {
         diffCallback($(this).data("file"));

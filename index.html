@@ -126,7 +126,47 @@
             </div>
         </div>
     </div>
-    <script>$("#loading-modal").modal("show");</script>
+    <!-- Git pull -->
+    <div id="git-pull-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
+        <div class="modal-dialog" role="document" style="width:800px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Pull</h4>
+                </div>
+                <div class="modal-body" style="overflow-y:scroll;" id="git-push-help">
+                    <p>Which mode to use? </p>
+                    <p><strong>Merge: </strong>Merge your commits to remote branch, this can create a branching history, but is easy to understand and I recommend this mode. </p>
+                    <p><strong>Rebase: </strong>Rebasing your commits to the tip of remote branch, this will create liner history, but can be a headache since you are rewriting Git history. </p>
+                    <p>Which mode is better is a big debate, some people say never Merge, some people say never ever Rebase, I personally prefer Merge. </p>
+                    <p>Either way, you'll need to manually clean up conflicts, files with these status (remote/local) are conflicting: </p>
+                    <ul>
+                        <li>Deleted/Deleted</li>
+                        <li>Created/Unmerged</li>
+                        <li>Unmerged/Deleted</li>
+                        <li>Unmerged/Created</li>
+                        <li>Deleted/Updated</li>
+                        <li>Created/Created</li>
+                        <li>Unmerged/Unmerged</li>
+                    </ul>
+                    <p>Conflicts will be highlighted in conflicting files, they will look something like this: </p>
+                    <pre><<<<<<< HEAD
+Someone else's code
+=======
+Your code
+>>>>>>> d9927045d536195f41f6050e69c88d692e8f3da5</pre>
+                    <p>If you are collaborating with other people, talk to them and discuss it, or ask the maintainer if a decision is already made. If you are working alone it usually doesn't matter. </p>
+                    <p>If there are conflicts while merging, clean them up and push. </p>
+                    <p>If there are conflicts while rebasing, you will need to click Rebase Continue button once you cleaned up conflicting files, <strong>do not</strong> push until conflicts are properly cleaned up, or you will need to use command line tool to fix detached branch. </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success btn-lg" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-warning btn-lg" data-dismiss="modal" id="git-pull-merge">Merge (Recommended)</button>
+                    <button type="button" class="btn btn-danger btn-lg" data-dismiss="modal" id="git-pull-rebase">Rebase</button>
+                    <button type="button" class="btn btn-danger btn-lg" data-dismiss="modal" id="git-pull-rebase-continue">Rebase Continue</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Git push modal -->
     <div id="git-push-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
         <div class="modal-dialog" role="document">
