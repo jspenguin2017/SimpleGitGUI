@@ -105,6 +105,13 @@ const gitRefresh = function (sender, callback) {
                 }
                 //Get changed file name
                 let file = (files[i]).substring(2).trim().split("/");
+                //Remove redundant double quote
+                if ((file[0]).startsWith("\"")) {
+                    file[0] = (file[0]).substring(1);
+                }
+                if ((file[file.length - 1]).endsWith("\"")) {
+                    file[file.length - 1] = (file[file.length - 1]).substring(0, (file[file.length - 1]).length - 1);
+                }
                 let File = {
                     name: file.pop(),
                     directory: "/" + file.join("/"),
