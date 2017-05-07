@@ -4,9 +4,21 @@
 var UI = {};
 
 //Open or hide the load screen
+let processingImageFlag = true;
 UI.processing = function (isProcessing) {
     $("#loading-modal").modal(isProcessing ? "show" : "hide");
-    if (!isProcessing) {
+    if (isProcessing) {
+        //Toggle loading image
+        if (processingImageFlag) {
+            $("#processing-1").hide();
+            $("#processing-2").show();
+        } else {
+            $("#processing-1").show();
+            $("#processing-2").hide();
+        }
+        processingImageFlag = !processingImageFlag;
+    } else {
+        //Call callbacks
         let func;
         while (func = processingEndCallback.shift()) {
             func();
@@ -113,7 +125,7 @@ UI.diffTable = function (data, rollbackCallback, diffCallback) {
         if (row.directory === "/") {
             fullFileName = row.name;
         } else {
-            fullFileName = row.directory.substring(1) + fullFileName
+            fullFileName = row.directory.substring(1) + "/" + row.name;
         }
         $("#diff-table").append($("<tr>").append(
             $("<td>").html(row.name),
