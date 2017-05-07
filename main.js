@@ -51,6 +51,30 @@ app.on("ready", () => {
 });
 
 //=====Helper Functions=====
+//Show beautiful code
+const codify = function (sender, code, title, noColor) {
+    //Escape HTML, & and < are the only ones we need to worry about since it will be wrapped in <pre>
+    code = code.replace(/\&/g, "&amp;").replace(/\</g, "&lt;");
+    //Color each line
+    if (!noColor) {
+        let lines = code.split("\n");
+        for (let i = 0; i < lines.length; i++) {
+            if ((lines[i]).startsWith("+")) {
+                lines[i] = `<span class="code-add">${lines[i]}</span>`;
+            } else if ((lines[i]).startsWith("-")) {
+                lines[i] = `<span class="code-remove">${lines[i]}</span>`;
+            } else if ((lines[i]).startsWith("@")) {
+                lines[i] = `<span class="code-area">${lines[i]}</span>`;
+            }
+        }
+        code = lines.join("\n");
+    }
+    //Display the code
+    sender.send("dialog", {
+        title: title,
+        msg: `<pre>${code}</pre>`
+    });
+};
 //Save the configuration
 const configSave = function (callback) {
     fs.writeFile(configFile, JSON.stringify(config), (err) => {
@@ -387,11 +411,7 @@ ipc.on("status", (e) => {
                 log: err.message
             });
         } else {
-            const code = stdout.replace(/\&/g, "&amp;").replace(/\</g, "&lt;"); //These are the only ones we need, <pre> will take care of the rest
-            e.sender.send("dialog", {
-                title: "Repository Status",
-                msg: `<pre>${code}</pre>`
-            });
+            codify(e.sender, stdout, "Repository Status", true);
         }
     });
 });
@@ -669,11 +689,7 @@ ipc.on("show diff", (e, data) => {
                 log: err.message
             });
         } else {
-            const code = stdout.replace(/\&/g, "&amp;").replace(/\</g, "&lt;"); //These are the only ones we need, <pre> will take care of the rest
-            e.sender.send("dialog", {
-                title: "File Differences",
-                msg: `<pre>${code}</pre>`
-            });
+            codify(e.sender, stdout, "File Differences");
         }
     });
 });

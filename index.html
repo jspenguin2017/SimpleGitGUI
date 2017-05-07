@@ -13,6 +13,7 @@
     <!-- Other libraries -->
     <script src="ui.js" charset="utf-8"></script>
     <style>
+        /* Basic styles */
         html, body {
             height: 100%;
         }
@@ -25,6 +26,21 @@
 
         .input-group-addon {
             min-width: 100px;
+        }
+
+        /* Code coloring */
+        span.code-add {
+            color: green;
+            font-weight: bold;
+        }
+
+        span.code-remove {
+            color: red;
+            font-weight: bold;
+        }
+
+        span.code-area {
+            color: blue;
         }
     </style>
 </head>
@@ -103,7 +119,7 @@
                     <h4 class="modal-title">Processing...</h4>
                 </div>
                 <div class="modal-body" style="text-align:center;">
-                    <p>This won't take long. </p>
+                    <p>This won't be long... </p>
                     <img alt="Processing SVG" src="assets/processing1.svg" id="processing-1" />
                     <img alt="Processing SVG" src="assets/processing2.svg" style="display:none;" id="processing-2" />
                 </div>
