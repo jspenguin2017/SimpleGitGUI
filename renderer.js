@@ -99,14 +99,14 @@ $("#modal-push-btn-push").click(() => {
     $("#modal-push-input-commit-message").val("");
     //Check if message is not empty
     let hasMsg = false;
-    for (let i = 0; i > msg.length; i++) {
+    for (let i = 0; i < msg.length; i++) {
         if ((msg[i]).length) {
             hasMsg = true;
             break;
         }
     }
     if (!hasMsg) {
-        msg = ["No commit comment. "];
+        msg = ["No commit message. "];
     }
     //Push
     ipc.send("push", {
