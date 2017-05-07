@@ -200,6 +200,10 @@ ipc.on("dev-tools", (e) => {
     //Toggle DevTools
     e.sender.toggleDevTools();
 });
+//Open projct page
+ipc.on("open project page", () => {
+    shell.openExternal("https://github.com/jspenguin2017/SimpleGitGUI");
+});
 //Do initialization
 ipc.on("ready", (e) => {
     let tq = new TQ();

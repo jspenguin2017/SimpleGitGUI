@@ -33,6 +33,10 @@ $(window).resize(() => {
 });
 //Set height for the first time
 $(window).trigger("resize");
+//Project page
+window.openProjectPage = function () {
+    ipc.send("open project page");
+};
 
 //=====Left Menu Buttons=====
 //Push button
