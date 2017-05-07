@@ -150,13 +150,14 @@
                     </ul>
                     <p>Conflicts will be highlighted in conflicting files, they will look something like this: </p>
                     <pre><<<<<<< HEAD
-Someone else's code
+Your code (not pushed)
 =======
-Your code
+Someone else's code (already pushed)
 >>>>>>> d9927045d536195f41f6050e69c88d692e8f3da5</pre>
                     <p>If you are collaborating with other people, talk to them and discuss it, or ask the maintainer if a decision is already made. If you are working alone it usually doesn't matter. </p>
                     <p>If there are conflicts while merging, clean them up and push. </p>
                     <p>If there are conflicts while rebasing, you will need to click Rebase Continue button once you cleaned up conflicting files, <strong>do not</strong> push until conflicts are properly cleaned up, or you will need to use command line tool to fix detached branch. </p>
+                    <p>Also, you cannot pull until you have committed all your changes. You can check if there are commits that were not pushed by clicking Status button, if it says your branch is ahead, then it means not all references are pushed. </p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-success btn-lg" data-dismiss="modal">Cancel</button>
@@ -184,7 +185,8 @@ Your code
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-success btn-lg" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-warning btn-lg" data-dismiss="modal" id="git-push">Push</button>
+                    <button type="button" class="btn btn-warning btn-lg" data-dismiss="modal" id="git-commit">Commit only</button>
+                    <button type="button" class="btn btn-warning btn-lg" data-dismiss="modal" id="git-push">Commit and Push</button>
                 </div>
             </div>
         </div>

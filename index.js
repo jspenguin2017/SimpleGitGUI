@@ -242,3 +242,5 @@ ipc.on("ready", (e, data) => {
 //=====Finalization=====
 //Tell main process that we are ready
 ipc.send("ready");
+
+//TODO: push with no file changed should directly trigger push only
