@@ -6,12 +6,12 @@
     <meta name="author" content="jspenguin2017" />
     <title>Simple Git GUI</title>
     <!-- Common libraries -->
-    <link rel="stylesheet" href="libs/bootstrap-3.3.7.min.css" />
-    <script src="libs/jquery.factory-3.2.1.min.js" charset="utf-8"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous" />
+    <script src="renderer-lib/jquery.factory-3.2.1.min.js" charset="utf-8"></script>
     <script>jQueryFactory(window);</script>
-    <script src="libs/bootstrap-3.3.7.min.js" charset="utf-8"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" charset="utf-8" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <!-- Other libraries -->
-    <script src="ui.js" charset="utf-8"></script>
+    <script src="renderer-lib/ui.js" charset="utf-8"></script>
     <style>
         /* Basic styles */
         html, body {
@@ -120,8 +120,8 @@
                 </div>
                 <div class="modal-body" style="text-align:center;">
                     <p>This won't be long... </p>
-                    <img alt="Processing SVG" src="assets/processing1.svg" id="processing-1" />
-                    <img alt="Processing SVG" src="assets/processing2.svg" style="display:none;" id="processing-2" />
+                    <img alt="Processing SVG" src="images/processing1.svg" id="processing-1" />
+                    <img alt="Processing SVG" src="images/processing2.svg" style="display:none;" id="processing-2" />
                 </div>
             </div>
         </div>
@@ -282,7 +282,7 @@ Someone else's code (already pushed)
     </div>
     <!-- Load main script -->
     <script>
-        require("./index.js");
+        require("./renderer.js");
     </script>
 </body>
 </html>

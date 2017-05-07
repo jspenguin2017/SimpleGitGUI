@@ -9,8 +9,8 @@ const path = require("path");
 const url = require("url");
 const fs = require("fs");
 //Load other utilities
-const git = require("./git.js");
-const TQ = require("./task-queue.js");
+const git = require("./main-lib/git.js");
+const TQ = require("./main-lib/task-queue.js");
 //Configuration
 let config; //The config object, will be set when initializing
 const configFile = path.join(app.getPath("userData"), "config.json");
