@@ -2,14 +2,14 @@
 "use strict";
 
 //=====Variables=====
+//These are used to render the UI, other configurations are handled by the main script
 let lastPath, name, email, savePW;
 
 //=====Initialization=====
-//Show load screen
-$("#loading-modal").modal("show");
-//Load Electron
+//Show processing screen
+$("#modal-processing-screen").modal("show");
+//Load Electron and utilities
 const {ipcRenderer: ipc, clipboard} = require("electron");
-//Load utilities
 const path = require("path");
 //Shortcut keys
 $(document).on("keyup", (e) => {
@@ -29,11 +29,9 @@ console.log("%cPlease be careful of what you execute in the console, this consol
 //Change the height of main container to be an offset of body height on resize
 $(window).resize(() => {
     //Resize main container
-    $("#main-container").height($(document.body).height() - 90);
-    //Make code box scroll
-    $("pre").css("max-height", $(document.body).height() - 250);
-    //Make push help section scroll
-    $("#git-push-help").css("max-height", $(document.body).height() - 200);
+    $("#div-main-container").height($(document.body).height() - 90);
+    //Make file table scroll
+    $("#tbody-diff-table").css("max-height", $(document.body).height() - 150);
 });
 //Set height for the first time
 $(window).trigger("resize");
@@ -43,55 +41,71 @@ window.openProjectPage = function () {
 };
 
 //=====Left Menu Buttons=====
-//Pull button
-$("#pull").click(() => {
-    $("#git-pull-modal").modal("show");
+//===Force Pull===
+$("#btn-menu-hard-reset").click(() => {
+    $("#modal-hard-reset-input-confirm").val("");
+    $("#modal-hard-reset").modal("show");
 });
-//Pull merge button
-$("#git-pull-merge").click(() => {
-    UI.processing(true);
-    ipc.send("pull", {
-        mode: "merge"
-    });
-});
-//Pull rebase button
-$("#git-pull-rebase").click(() => {
-    UI.processing(true);
-    ipc.send("pull", {
-        mode: "rebase"
-    });
-});
-//Push button
-$("#push").click(() => {
-    UI.onceProcessingEnd(() => {
-        if ($("#diff-table").children().length) {
-            $("#git-push-modal").modal("show");
+//===Pull===
+$("#btn-menu-pull").click(() => {
+    //Refresh and see if there are any changed files, they need to be committed before pulling
+    UI.onceProcessingEnds(() => {
+        if ($("#tbody-diff-table").children().length) {
+            $("#modal-pull-need-commit").modal("show");
         } else {
-            $("#git-push-no-file-modal").modal("show");
+            $("#modal-pull").modal("show");
+        }
+    });
+    $("#btn-menu-refresh").click();
+});
+//===Sync===
+$("#btn-menu-sync").click(() => {
+    //We need to check whether we need to show commit message box
+    UI.onceProcessingEnds(() => {
+        if ($("#tbody-diff-table").children().length) {
+            $("#modal-sync-div-need-commit, #modal-sync-commit-sync").show();
+            $("#modal-sync-btn-sync").hide();
+        } else {
+            $("#modal-sync-div-need-commit, #modal-sync-commit-sync").hide();
+            $("#modal-sync-btn-sync").show();
+        }
+        //Show modal
+        $("#modal-sync").modal("show");
+    });
+    //Make sure no files are changed
+    $("#btn-menu-refresh").click();
+});
+//===Push===
+$("#btn-menu-push").click(() => {
+    UI.onceProcessingEnds(() => {
+        if ($("#tbody-diff-table").children().length) {
+            $("#modal-push").modal("show");
+        } else {
+            ipc.send("push only");
         }
     });
     //Make sure no files are changed
-    $("#refresh").click();
+    $("#btn-menu-refresh").click();
 });
 //Auto focus comment box
-$("#git-push-modal").on("shown.bs.modal", () => {
-    $("#push-comment").focus();
+$("#modal-push").on("shown.bs.modal", () => {
+    $("#modal-push-input-commit-message").focus();
 });
 //Push confirm button
-$("#git-push, #git-push-anyway").click(() => {
+$("#modal-push-btn-push").click(() => {
     UI.processing(true);
-    let msg = $("#push-comment").val().split("\n");
+    let msg = $("#modal-push-input-commit-message").val().split("\n");
     //Clear the text box for next push
-    $("#push-comment").val("");
+    $("#modal-push-input-commit-message").val("");
     //Check if message is not empty
-    let msgGood = false;
+    let hasMsg = false;
     for (let i = 0; i > msg.length; i++) {
         if ((msg[i]).length) {
-            msgGood = true;
+            hasMsg = true;
             break;
         }
     }
-    if (!msgGood) {
+    if (!hasMsg) {
         msg = ["No commit comment. "];
     }
     //Push
@@ -99,119 +113,127 @@ $("#git-push, #git-push-anyway").click(() => {
         msg: msg
     });
 });
-//Refresh button
-$("#refresh").click(() => {
+//===Force Push===
+$("#btn-menu-force-push").click(() => {
+    //Refresh and see if there are any changed files, they need to be committed before force pushing
+    UI.onceProcessingEnds(() => {
+        if ($("#tbody-diff-table").children().length) {
+            $("#modal-force-push-need-commit").modal("show");
+        } else {
+            $("#modal-force-push").modal("show");
+        }
+    });
+    $("#btn-menu-refresh").click();
+});
+//===Refresh===
+$("#btn-menu-refresh").click(() => {
     UI.processing(true);
     ipc.send("refresh");
 });
 //Auto refresh when window focuses
 $(window).focus(() => {
     //Don't refresh if anything is open, or if we can't refresh
-    if (!($(".modal").is(":visible") || $("#refresh").prop("disabled"))) {
-        $("#refresh").click();
+    if (!($(".modal").is(":visible") || $("#btn-menu-refresh").prop("disabled"))) {
+        $("#btn-menu-refresh").click();
     }
 });
-//Status button
-$("#status").click(() => {
+//===Status===
+$("#btn-menu-status").click(() => {
     ipc.send("status");
 });
 
 //=====Right Menu Buttons=====
-//Clone button
-$("#clone").click(() => {
+//===Clone===
+$("#btn-menu-clone").click(() => {
     //Check clipboard
     const data = clipboard.readText("plain/text");
     if ((/\.git$/).test(data)) {
-        $("#git-clone-address").val(data).trigger("keyup");
+        $("#modal-clone-input-address").val(data).trigger("keyup");
     }
     //Show modal
-    $("#git-clone-modal").modal("show");
+    $("#modal-clone").modal("show");
 });
 //Auto-fill directory
-$("#git-clone-address").on("keyup", () => {
-    const parts = $("#git-clone-address").val().split("/");
+$("#modal-clone-input-address").on("keyup", () => {
+    const parts = $("#modal-clone-input-address").val().split("/");
     const match = (parts[parts.length - 1]).split(".");
     if (match.length > 1) {
         try {
-            $("#git-clone-directory").val(path.join(lastPath, match[match.length - 2]));
+            $("#modal-clone-input-directory").val(path.join(lastPath, match[match.length - 2]));
         } catch (err) {
             console.warn("Failed to auto fill directory, error message: ");
             console.log(err.toString());
         }
     }
 });
-//The other clone button
-$("#git-clone").click(() => {
+//Clone confirm button
+$("#modal-clone-btn-clone").click(() => {
     UI.processing(true);
     ipc.send("clone", {
-        address: $("#git-clone-address").val(),
-        directory: $("#git-clone-directory").val()
+        address: $("#modal-clone-input-address").val(),
+        directory: $("#modal-clone-input-directory").val()
     });
 });
-//Delete button
-$("#delete").click(() => {
-    $("#delete-modal").modal("show");
+//===Delete===
+$("#btn-menu-delete-repo").click(() => {
+    $("#modal-delete-repo").modal("show");
 });
 //Delete confirm
-$("#delete-yes").click(() => {
+$("#modal-delete-repo-btn-confirm").click(() => {
     UI.processing(true);
     ipc.send("delete");
 });
-//Config button
-$("#config").click(() => {
-    $("#config-name").val(name);
-    $("#config-email").val(email);
-    $("#config-savePW").prop("checked", savePW);
-    $("#config-modal").modal("show");
+//===Config===
+$("#btn-menu-config").click(() => {
+    $("#modal-config-input-name").val(name);
+    $("#modal-config-input-email").val(email);
+    $("#modal-config-input-savePW").prop("checked", savePW);
+    $("#modal-config").modal("show");
 });
 //Config save button
-$("#config-save").click(() => {
+$("#modal-config-btn-save").click(() => {
     UI.processing(true);
     ipc.send("config", {
-        name: $("#config-name").val(),
-        email: $("#config-email").val(),
-        savePW: $("#config-savePW").is(":checked")
+        name: $("#modal-config-input-name").val(),
+        email: $("#modal-config-input-email").val(),
+        savePW: $("#modal-config-input-savePW").is(":checked")
     })
 });
 
-//=====Main Panel Functionalities=====
-//Switching repo, UI.repos will bind this
+//=====Other=====
+//===Switching Repo===
+//UI.repos will bind this
 const switchRepo = function (index) {
     UI.processing(true);
     ipc.send("switch repo", {
         index: index
     });
 };
-//Rollback a file
+//===Switch Branch===
+const switchBranch = function () {
+    //TODO!
+    alert("Branch switching is not yet implemented. ");
+};
+//===Rollback A File===
 const rollback = function (file) {
     //TODO!
-    console.log(`Rollback for ${file} clicked. `);
+    alert("File rollback is not yet implemented. ");
 };
-//View file diff, UI.diffTable will bind this
+//===View File Diff===
+//UI.diffTable will bind this
 const viewDiff = function (file) {
     UI.processing(true);
     ipc.send("show diff", {
         file: file
     });
 };
+//===Show Conflict Help===
+$("#modal-pull-btn-conflict-help, #modal-sync-btn-conflict-help").click(() => {
+    $("#modal-conflict-help").modal("show");
+});
 
 //=====Event Handlers=====
-//Draw buttons
-ipc.on("draw buttons", (e, data) => {
-    UI.buttons(data.group1, data.group2);
-});
-//Draw repos list
-ipc.on("draw repos", (e, data) => {
-    UI.repos(data.names, data.active, switchRepo);
-});
-//Draw branches list
-ipc.on("draw branches", (e, data) => {
-    UI.branches(data.names, data.active);
-});
-//Draw diff table
-ipc.on("draw diff", (e, data) => {
-    UI.diffTable(data.data, rollback, viewDiff);
-});
+//===Message Box===
 //Dialog handler
 ipc.on("dialog", (e, data) => {
     UI.processing(false);
@@ -230,7 +252,7 @@ ipc.on("fatal error", (e, data) => {
     console.log(data.log);
     UI.dialog(data.title, data.msg, true, true);
 });
-//Hide load screen
+//Ready, hide load screen
 ipc.on("ready", (e, data) => {
     lastPath = data.lastPath;
     name = data.name;
@@ -238,9 +260,24 @@ ipc.on("ready", (e, data) => {
     savePW = data.savePW;
     UI.processing(false);
 });
+//===Drawing===
+//Draw buttons
+ipc.on("draw buttons", (e, data) => {
+    UI.buttons(data.group1, data.group2);
+});
+//Draw repos list
+ipc.on("draw repos", (e, data) => {
+    UI.repos(data.names, data.active, switchRepo);
+});
+//Draw branches list
+ipc.on("draw branches", (e, data) => {
+    UI.branches(data.names, data.active, switchBranch);
+});
+//Draw diff table
+ipc.on("draw diff", (e, data) => {
+    UI.diffTable(data.data, rollback, viewDiff);
+});
 
 //=====Finalization=====
 //Tell main process that we are ready
 ipc.send("ready");
-
-//TODO: push with no file changed should directly trigger push only

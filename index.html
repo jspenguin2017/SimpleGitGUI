@@ -6,10 +6,10 @@
     <meta name="author" content="jspenguin2017" />
     <title>Simple Git GUI</title>
     <!-- Common libraries -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous" />
+    <link rel="stylesheet" href="renderer-lib/bootstrap/css/bootstrap-3.3.7.min.css" />
     <script src="renderer-lib/jquery.factory-3.2.1.min.js" charset="utf-8"></script>
     <script>jQueryFactory(window);</script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" charset="utf-8" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script src="renderer-lib/bootstrap/js/bootstrap-3.3.7.min.js"></script>
     <!-- Other libraries -->
     <script src="renderer-lib/ui.js" charset="utf-8"></script>
     <style>
@@ -21,7 +21,6 @@
         .column {
             height: 100%;
             float: left;
-            border: 1px solid gray;
         }
 
         .input-group-addon {
@@ -56,90 +55,88 @@
             </button>
             <div id="navbar" class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li><button type="button" class="btn btn-danger navbar-btn git-group1-btn" id="force-pull"><span class="glyphicon glyphicon-arrow-down"></span> Force Pull</button></li>
-                    <li><button type="button" class="btn btn-warning navbar-btn git-group1-btn" id="pull"><span class="glyphicon glyphicon-arrow-down"></span> Pull</button></li>
-                    <li><button type="button" class="btn btn-success navbar-btn git-group1-btn" id="sync"><span class="glyphicon glyphicon-sort"></span> Sync</button></li>
-                    <li><button type="button" class="btn btn-warning navbar-btn git-group1-btn" id="push"><span class="glyphicon glyphicon-arrow-up"></span> Push</button></li>
-                    <li><button type="button" class="btn btn-danger navbar-btn git-group1-btn" id="force-push"><span class="glyphicon glyphicon-arrow-up"></span> Force Push</button></li>
-                    <li><button type="button" class="btn btn-info navbar-btn git-group2-btn" id="refresh"><span class="glyphicon glyphicon-refresh"></span> Refresh</button></li>
-                    <li><button type="button" class="btn btn-primary navbar-btn git-group1-btn" id="status"><span class="glyphicon glyphicon-list-alt"></span> Status</button></li>
+                    <li><button type="button" class="btn btn-danger navbar-btn btn-action" id="btn-menu-hard-reset"><span class="glyphicon glyphicon-arrow-down"></span> Force Pull</button></li>
+                    <li><button type="button" class="btn btn-warning navbar-btn btn-action" id="btn-menu-pull"><span class="glyphicon glyphicon-arrow-down"></span> Pull</button></li>
+                    <li><button type="button" class="btn btn-success navbar-btn btn-action" id="btn-menu-sync"><span class="glyphicon glyphicon-sort"></span> Sync</button></li>
+                    <li><button type="button" class="btn btn-warning navbar-btn btn-action" id="btn-menu-push"><span class="glyphicon glyphicon-arrow-up"></span> Push</button></li>
+                    <li><button type="button" class="btn btn-danger navbar-btn btn-action" id="btn-menu-force-push"><span class="glyphicon glyphicon-arrow-up"></span> Force Push</button></li>
+                    <li><button type="button" class="btn btn-info navbar-btn btn-action" id="btn-menu-refresh"><span class="glyphicon glyphicon-refresh"></span> Refresh</button></li>
+                    <li><button type="button" class="btn btn-primary navbar-btn btn-action" id="btn-menu-repo-status"><span class="glyphicon glyphicon-list-alt"></span> Status</button></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
-                    <li><button type="button" class="btn btn-success navbar-btn" id="clone"><span class="glyphicon glyphicon-plus-sign"></span> Clone</button></li>
-                    <li><button type="button" class="btn btn-danger navbar-btn git-group2-btn" id="delete"><span class="glyphicon glyphicon-remove-sign"></span> Delete</button></li>
-                    <li><button type="button" class="btn btn-info navbar-btn" style="margin-right:12px;" id="config"><span class="glyphicon glyphicon-cog"></span> Config</button></li>
+                    <li><button type="button" class="btn btn-success navbar-btn" id="btn-menu-clone"><span class="glyphicon glyphicon-plus-sign"></span> Clone</button></li>
+                    <li><button type="button" class="btn btn-danger navbar-btn btn-action" id="btn-menu-delete-repo"><span class="glyphicon glyphicon-remove-sign"></span> Delete</button></li>
+                    <li><button type="button" class="btn btn-info navbar-btn" style="margin-right:12px;" id="btn-menu-config"><span class="glyphicon glyphicon-cog"></span> Config</button></li>
                 </ul>
             </div>
         </div>
     </nav>
     <!-- Main content area -->
-    <div class="container" id="main-container">
+    <div class="container" id="div-main-container">
         <!-- Right side repo list -->
         <div class="column" style="width:25%;">
-            <div class="list-group" style="height:65%; margin-bottom:0px; overflow-y:scroll;" id="repos-list">
+            <div class="list-group" style="height:65%; margin-bottom:0px; overflow-y:scroll;" id="div-repos-list">
                 <button type="button" class="list-group-item disabled">Loading...</button>
             </div>
-            <div class="list-group" style="height:35%; margin-bottom:0px; border-top:1px solid grey; overflow-y:scroll;" id="branches-list"></div>
+            <div class="list-group" style="height:35%; margin-bottom:0px; border-top:2px solid grey; overflow-y:scroll;" id="div-branches-list"></div>
         </div>
         <!-- Left side file list -->
-        <div class="column" style="width:75%; border-left:0px;">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>File Name</th>
-                        <th>Directory</th>
-                        <th>Remote</th>
-                        <th>Local</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="diff-table" style="overflow-y:scroll;"></tbody>
-            </table>
+        <div class="column" style="width:75%; border-left:2px solid grey;">
+            <div style="height:100%; overflow-y:scroll;">
+                <table class="table table-hover table-fixed">
+                    <thead>
+                        <tr>
+                            <th>File Name</th>
+                            <th>Directory</th>
+                            <th>Remote</th>
+                            <th>Local</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-diff-table"></tbody>
+                </table>
+            </div>
         </div>
     </div>
-    <!-- Message modal -->
-    <div id="message-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:900000;">
+    <!-- Common purpose dialog modal -->
+    <div id="modal-dialog" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:900000;">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title" id="message-title"></h4>
+                    <h4 class="modal-title" id="modal-dialog-title"></h4>
                 </div>
-                <div class="modal-body" id="message-body"></div>
+                <div class="modal-body" id="modal-dialog-body"></div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary btn-lg" id="message-btn-ok">OK</button>
+                    <button type="button" class="btn btn-primary btn-lg" id="modal-dialog-close">Close</button>
                 </div>
             </div>
         </div>
     </div>
-    <!-- Loading modal -->
-    <div id="loading-modal" class="modal fade in" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:800000;">
+    <!-- Processing screen modal -->
+    <div id="modal-processing-screen" class="modal fade in" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:800000;">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h4 class="modal-title">Processing...</h4>
                 </div>
                 <div class="modal-body" style="text-align:center;">
-                    <p>This won't be long... </p>
-                    <img alt="Processing SVG" src="images/processing1.svg" id="processing-1" />
-                    <img alt="Processing SVG" src="images/processing2.svg" style="display:none;" id="processing-2" />
+                    <p>This won't be long...</p>
+                    <img alt="Processing SVG" src="images/processing1.svg" id="modal-processing-screen-img-1" />
+                    <img alt="Processing SVG" src="images/processing2.svg" style="display:none;" id="modal-processing-screen-img-2" />
                 </div>
             </div>
         </div>
     </div>
-    <!-- Git pull -->
-    <div id="git-pull-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
-        <div class="modal-dialog" role="document" style="width:800px;">
+    <!-- Conflict help modal -->
+    <div id="modal-conflict-help" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
+        <div class="modal-dialog" role="document" style="width:850px;">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title">Pull</h4>
+                    <h4 class="modal-title">How to resolve conflicts?</h4>
                 </div>
-                <div class="modal-body" style="overflow-y:scroll;" id="git-push-help">
-                    <p>Which mode to use? </p>
-                    <p><strong>Merge: </strong>Merge your commits to remote branch, this can create a branching history, but is easy to understand and I recommend this mode. </p>
-                    <p><strong>Rebase: </strong>Rebasing your commits to the tip of remote branch, this will create liner history, but can be a headache since you are rewriting Git history. </p>
-                    <p>Which mode is better is a big debate, some people say never Merge, some people say never ever Rebase, I personally prefer Merge. </p>
-                    <p>Either way, you'll need to manually clean up conflicts, files with these status (remote/local) are conflicting: </p>
-                    <ul>
+                <div class="modal-body">
+                    <p>Files with these status (remote/local) are conflicting: </p>
+                    <ul style="columns:4; list-style-type:none;">
                         <li>Deleted/Deleted</li>
                         <li>Created/Unmerged</li>
                         <li>Unmerged/Deleted</li>
@@ -154,22 +151,98 @@ Your code (not pushed)
 =======
 Someone else's code (already pushed)
 >>>>>>> d9927045d536195f41f6050e69c88d692e8f3da5</pre>
-                    <p>If you are collaborating with other people, talk to them and discuss it, or ask the maintainer if a decision is already made. If you are working alone it usually doesn't matter. </p>
-                    <p>If there are conflicts while merging, clean them up and push. </p>
-                    <p>If there are conflicts while rebasing, you will need to click Rebase Continue button once you cleaned up conflicting files, <strong>do not</strong> push until conflicts are properly cleaned up, or you will need to use command line tool to fix detached branch. </p>
-                    <p>Also, you cannot pull until you have committed all your changes. You can check if there are commits that were not pushed by clicking Status button, if it says your branch is ahead, then it means not all references are pushed. </p>
+                    <p>Go through each conflicting file and fix those conflicts. </p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-success btn-lg" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-warning btn-lg" data-dismiss="modal" id="git-pull-merge">Merge (Recommended)</button>
-                    <button type="button" class="btn btn-danger btn-lg" data-dismiss="modal" id="git-pull-rebase">Rebase</button>
-                    <button type="button" class="btn btn-danger btn-lg" data-dismiss="modal" id="git-pull-rebase-continue">Rebase Continue</button>
+                    <button type="button" class="btn btn-success btn-lg" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
     </div>
-    <!-- Git push modal -->
-    <div id="git-push-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
+    <!-- Hard reset (force pull) confirm modal -->
+    <div id="modal-hard-reset" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Force Pull</h4>
+                </div>
+                <div class="modal-body">
+                    <p>This will delete your local repository and clone the repository again.</p>
+                    <p>You will lose all your work that are not pushed, ignored files will be removed.</p>
+                    <p>This allows you to start clean, if this is what you want, type &quot;confirm&quot; below: </p>
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="" id="modal-hard-reset-input-confirm" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success btn-lg" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Pull modal -->
+    <div id="modal-pull" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Pull</h4>
+                </div>
+                <div class="modal-body">
+                    <p>Ready to pull?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success btn-lg" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-info btn-lg" data-dismiss="modal" id="modal-pull-btn-conflict-help">More About Conflicts</button>
+                    <button type="button" class="btn btn-warning btn-lg" data-dismiss="modal" id="modal-pull-btn-pull">Pull</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Pull has changed file warning modal -->
+    <div id="modal-pull-need-commit" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Pull</h4>
+                </div>
+                <div class="modal-body">
+                    <p>You need to commit your current changes before pulling.</p>
+                    <p>You can commit from Push-&gt;Commit Only.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success btn-lg" data-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Sync modal -->
+    <div id="modal-sync" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Synchronize</h4>
+                </div>
+                <div class="modal-body">
+                    <p>This will perform commit, pull, then push in sequence. Conflicts can still happen. </p>
+                    <div id="modal-sync-div-need-commit">
+                        <p>Looks like you have files that needs to be committed.</p>
+                        <div class="form-group">
+                            <label>Commit message: </label>
+                            <textarea class="form-control" rows="5" style="resize:vertical;" id="modal-sync-input-commit-message"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success btn-lg" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-info btn-lg" data-dismiss="modal" id="modal-sync-btn-conflict-help">More About Conflicts</button>
+                    <button type="button" class="btn btn-warning btn-lg" data-dismiss="modal" id="modal-sync-btn-sync">Sync</button>
+                    <button type="button" class="btn btn-warning btn-lg" data-dismiss="modal" id="modal-sync-btn-commit-sync">Commit and Sync</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Commit and push modal -->
+    <div id="modal-push" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -178,38 +251,59 @@ Someone else's code (already pushed)
                 <div class="modal-body">
                     <div class="input-group" style="width:100%;">
                         <div class="form-group">
-                            <label for="comment">Commit comments: </label>
-                            <textarea class="form-control" rows="5" style="resize:vertical;" id="push-comment"></textarea>
+                            <label>Commit message: </label>
+                            <textarea class="form-control" rows="5" style="resize:vertical;" id="modal-push-input-commit-message"></textarea>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-success btn-lg" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-warning btn-lg" data-dismiss="modal" id="git-commit">Commit only</button>
-                    <button type="button" class="btn btn-warning btn-lg" data-dismiss="modal" id="git-push">Commit and Push</button>
+                    <button type="button" class="btn btn-warning btn-lg" data-dismiss="modal" id="modal-push-btn-commit-only">Commit Only</button>
+                    <button type="button" class="btn btn-warning btn-lg" data-dismiss="modal" id="modal-push-btn-push">Push</button>
                 </div>
             </div>
         </div>
     </div>
-    <!-- Git push no file warning modal -->
-    <div id="git-push-no-file-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
+    <!-- Force push modal -->
+    <div id="modal-force-push" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title">No file changed</h4>
+                    <h4 class="modal-title">Force Push</h4>
                 </div>
                 <div class="modal-body">
-                    <p>No file seems to be changed, do you wish to push anyway? This can help clean up references that were rejected by remote server. </p>
+                    <p>Force push will override remote branch with your local one, this will erase other people's work. </p>
+                    <p style="color:red;">Please be careful when doing this. </p>
+                    <p>If you are sure and certain that this is what you want, type &quot;confirm&quot; below: </p>
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="" id="modal-hard-reset-input-confirm" />
+                    </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-success btn-lg" data-dismiss="modal">No</button>
-                    <button type="button" class="btn btn-warning btn-lg" data-dismiss="modal" id="git-push-anyway">Yes</button>
+                    <button type="button" class="btn btn-success btn-lg" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Force push has changed file warning modal -->
+    <div id="modal-force-push-need-commit" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Force Push</h4>
+                </div>
+                <div class="modal-body">
+                    <p>You need to commit your current changes before force pushing</p>
+                    <p>You can commit from Push-&gt;Commit Only.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success btn-lg" data-dismiss="modal">OK</button>
                 </div>
             </div>
         </div>
     </div>
     <!-- Clone modal -->
-    <div id="git-clone-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
+    <div id="modal-clone" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -218,39 +312,39 @@ Someone else's code (already pushed)
                 <div class="modal-body">
                     <div class="input-group">
                         <span class="input-group-addon">Address: </span>
-                        <input type="text" class="form-control" placeholder="git://" id="git-clone-address" />
+                        <input type="text" class="form-control" placeholder="git://" id="modal-clone-input-address" />
                     </div>
                     <div class="input-group">
                         <span class="input-group-addon">Directory: </span>
-                        <input type="text" class="form-control" placeholder="" id="git-clone-directory" />
+                        <input type="text" class="form-control" placeholder="" id="modal-clone-input-directory" />
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger btn-lg" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-success btn-lg" data-dismiss="modal" id="git-clone">Clone</button>
+                    <button type="button" class="btn btn-success btn-lg" data-dismiss="modal" id="modal-clone-btn-clone">Clone</button>
                 </div>
             </div>
         </div>
     </div>
-    <!-- Delete modal -->
-    <div id="delete-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
+    <!-- Delete repo modal -->
+    <div id="modal-delete-repo" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h4 class="modal-title">Delete</h4>
                 </div>
                 <div class="modal-body">
-                    <p>This will not delete local file, continue? </p>
+                    <p>This will not delete local file, only remove the repository from the list, continue?</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-success btn-lg" data-dismiss="modal">No</button>
-                    <button type="button" class="btn btn-danger btn-lg" data-dismiss="modal" id="delete-yes">Yes</button>
+                    <button type="button" class="btn btn-danger btn-lg" data-dismiss="modal" id="modal-delete-repo-btn-confirm">Yes</button>
                 </div>
             </div>
         </div>
     </div>
     <!-- Config modal -->
-    <div id="config-modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
+    <div id="modal-config" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -259,15 +353,15 @@ Someone else's code (already pushed)
                 <div class="modal-body" style="text-align:center;">
                     <div class="input-group">
                         <span class="input-group-addon">Name: </span>
-                        <input type="text" class="form-control" placeholder="Alpha" id="config-name" />
+                        <input type="text" class="form-control" placeholder="Alpha" id="modal-config-input-name" />
                     </div>
                     <div class="input-group">
                         <span class="input-group-addon">Email: </span>
-                        <input type="text" class="form-control" placeholder="alpha@example.com" id="config-email" />
+                        <input type="text" class="form-control" placeholder="alpha@example.com" id="modal-config-input-email" />
                     </div>
                     <br />
                     <div class="checkbox">
-                        <label><input type="checkbox" value="" id="config-savePW">Keep me signed in</label>
+                        <label><input type="checkbox" value="" id="modal-config-input-savePW">Keep me signed in</label>
                     </div>
                     <br />
                     <p><strong>By jspenguin2017</strong></p>
@@ -275,7 +369,7 @@ Someone else's code (already pushed)
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger btn-lg" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-success btn-lg" data-dismiss="modal" id="config-save">Save</button>
+                    <button type="button" class="btn btn-success btn-lg" data-dismiss="modal" id="modal-config-btn-save">Save</button>
                 </div>
             </div>
         </div>

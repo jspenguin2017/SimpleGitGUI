@@ -1,3 +1,2 @@
 @echo off
 electron .
-pause
