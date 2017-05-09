@@ -117,7 +117,7 @@ const diffCallback = function (file) {
         if (hasError) {
             UI.dialog("Something went wrong when loading difference...", codify(output, true), true);
         } else {
-            UI.dialog("Difference", codify(data.join("\n")));
+            UI.dialog("File Difference", codify(data.join("\n")));
         }
     });
 };
@@ -315,7 +315,7 @@ $("#btn-menu-repo-status").click(() => {
         if (hasError) {
             UI.dialog("Something went wrong when loading status...", codify(output, true), true);
         } else {
-            UI.dialog("Status", codify(data.join("\n"), true));
+            UI.dialog("Repository Status", codify(data.join("\n"), true));
         }
     });
 });

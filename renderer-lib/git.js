@@ -63,14 +63,23 @@ const porcelain = function (code, callback) {
 //Force pull, prepare local repo remove command
 let rmCode = "";
 exports.forcePullCmd = function (directory) {
+    //We'll check if directory is obviously bad
     if (process.platform === "win32") {
         //Windows
-        rmCode = `RMDIR /S /Q "${escape(directory)}"`;
+        if (directory.length > 3) {
+            rmCode = `RMDIR /S /Q "${escape(directory)}"`;
+        } else {
+            rmCode = "";
+        }
     } else {
         //Linux
-        rmCode = `rm -rf "${escape(directory)}"`;
+        if (directory.length > 1) {
+            rmCode = `rm -rf "${escape(directory)}"`;
+        } else {
+            rmCode = "";
+        }
     }
-    return rmCode
+    return rmCode;
 };
 //Force pull
 exports.forcePull = function (directory, address, callback) {
@@ -159,6 +168,11 @@ exports.branches = function (directory, callback) {
 //Refresh changed files list
 exports.diff = function (directory, callback) {
     porcelain(`git -C "${escape(directory)}" status --porcelain --untracked-files=all`, callback);
+};
+
+//
+exports.rollback = function () {
+
 };
 
 //Get diff of one file
