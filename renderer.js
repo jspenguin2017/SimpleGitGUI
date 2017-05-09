@@ -528,7 +528,7 @@ git.config(config.name, config.email, config.savePW, (output, hasError) => {
         UI.processing(false);
     }
 });
-//There some slight issue with modals that we need to duct tape
+//There some slight issues with modals that we need to duct tape
 //This may be a bug in Bootstrap, or just Bootstrap isn't tested for multiple modal
 //We need to remove a backdrop that is sometimes not removed
 setInterval(() => {
