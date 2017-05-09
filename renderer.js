@@ -137,6 +137,7 @@ const viewCallback = function (file) {
 //Force pull (hard reset)
 $("#btn-menu-hard-reset").click(() => {
     $("#modal-hard-reset-input-confirm").val("");
+    $("#modal-hard-reset-rm-code").text(git.forcePullCmd(activeRepo.directory));
     $("#modal-hard-reset").modal("show");
 });
 //Pull
@@ -188,9 +189,14 @@ $("#modal-hard-reset-input-confirm").on("keyup", () => {
         UI.processing(true);
         $("#modal-hard-reset-input-confirm").val("");
         $("#modal-hard-reset").modal("hide");
-        //TODO
-        console.log("Force pull triggered");
-        UI.processing(false);
+        //Start
+        git.forcePull(activeRepo.directory, activeRepo.address, (output, hasError) => {
+            if (hasError) {
+                UI.dialog("Something went wrong when force pulling...", codify(output, true), true);
+            } else {
+                switchRepo(config.active, true);
+            }
+        });
     }
 });
 //Pull, pull and merge changes

@@ -55,7 +55,7 @@
             </button>
             <div id="navbar" class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li><button type="button" class="btn btn-danger navbar-btn btn-action" id="btn-menu-hard-reset"><span class="glyphicon glyphicon-arrow-down"></span> F.Pull</button></li>
+                    <li><button type="button" class="btn btn-danger navbar-btn btn-management" id="btn-menu-hard-reset"><span class="glyphicon glyphicon-arrow-down"></span> F.Pull</button></li>
                     <li><button type="button" class="btn btn-warning navbar-btn btn-action" id="btn-menu-pull"><span class="glyphicon glyphicon-arrow-down"></span> Pull</button></li>
                     <li><button type="button" class="btn btn-success navbar-btn btn-action" id="btn-menu-sync"><span class="glyphicon glyphicon-sort"></span> Sync</button></li>
                     <li><button type="button" class="btn btn-success navbar-btn btn-action" id="btn-menu-commit"><span class="glyphicon glyphicon-ok"></span> Commit</button></li>
@@ -134,9 +134,10 @@
                     <h4 class="modal-title">Force Pull</h4>
                 </div>
                 <div class="modal-body">
-                    <p>This will delete your local repository and clone the repository again.</p>
-                    <p>Please close any other softwares that may be locking those files.</p>
+                    <p>This will delete your local repository and clone the repository again, please close any other softwares that may be locking those files.</p>
                     <p style="color:red;"><strong>You will lose all your work that are not pushed, ignored files will be removed.</strong></p>
+                    <p><code>RMDIR /S /Q</code> or <code>rm -rf</code> will be used depending on your operating system. The exact line below will be ran to delete your local repository, please review it: </p>
+                    <pre id="modal-hard-reset-rm-code"></pre>
                     <p>If you are sure and certain that this is what you want, type &quot;confirm&quot; below: </p>
                     <div class="input-group">
                         <input type="text" class="form-control" placeholder="" id="modal-hard-reset-input-confirm" />

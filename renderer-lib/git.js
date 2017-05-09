@@ -13,7 +13,12 @@ const format = function (code, err, stdout, stderr) {
     if (err) {
         out += `Error code: ${err.code}\n${stderr}`;
     } else if (stdout.length) {
-        out += `${stdout}\n`;
+        //Git sometimes send output to standard error stream
+        let temp = "";
+        if (stderr.length) {
+            temp = `${stderr}\n`;
+        }
+        out += `${temp}${stdout}\n`;
     }
     return out;
 }
@@ -43,7 +48,7 @@ const run = function (lines, callback) {
     runner();
 };
 
-//Run code and return lines of standard output
+//Run code and return lines of standard output stream as an array
 const porcelain = function (code, callback) {
     exec(code, (err, stdout, stderr) => {
         if (err) {
@@ -52,6 +57,34 @@ const porcelain = function (code, callback) {
             callback(format(code, err, stdout, stderr), false, stdout.split("\n"));
         }
     });
+};
+
+//Force pull, prepare local repo remove command
+let rmCode = "";
+exports.forcePullCmd = function (directory) {
+    if (process.platform === "win32") {
+        //Windows
+        rmCode = `RMDIR /S /Q "${escape(directory)}"`;
+    } else {
+        //Linux
+        rmCode = `rm -rf "${escape(directory)}"`;
+    }
+    return rmCode
+};
+//Force pull
+exports.forcePull = function (directory, address, callback) {
+    if (rmCode) {
+        exec(rmCode, (err, stdout, stderr) => {
+            const output1 = format(code, err, stdout, stderr);
+            //We'll try to clone even if the command above fails
+            run([`git -C "${escape(directory)}" clone --quiet --verbose --depth 5 --no-single-branch --recurse-submodules --shallow-submodules "${escape(address)}" "${escape(directory)}"`], (output2, hasError) => {
+                rmCode = "";
+                callback(output1 + output2, hasError);
+            });
+        });
+    } else {
+        callback("Local repository removal command is not initialized. ", true);
+    }
 };
 
 //Pull
