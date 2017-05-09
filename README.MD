@@ -1,6 +1,10 @@
 # Simple Git GUI
 
-Warning: This project is not yet ready for use. 
+![Main Control Panel](http://i.imgur.com/Vh3s4N7.png)
+
+Hard reset, force push, single file rollback, and switch branch are work in progress. 
+
+Please open an issue if there is something you want me to know. 
 
 ## License
 
