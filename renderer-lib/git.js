@@ -75,6 +75,11 @@ exports.push = function (directory, callback) {
     run([`git -C "${escape(directory)}" push --verbose`], callback);
 };
 
+//Force push
+exports.forcePush = function (directory, branch, callback) {
+    run([`git -C "${escape(directory)}" push origin "${escape(branch)}" --force --verbose`], callback);
+};
+
 //Status
 exports.status = function (directory, callback) {
     porcelain(`git -C "${escape(directory)}" status --untracked-files=all`, callback);

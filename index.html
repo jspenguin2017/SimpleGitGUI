@@ -119,7 +119,7 @@
                     <h4 class="modal-title">Processing...</h4>
                 </div>
                 <div class="modal-body" style="text-align:center;">
-                    <p>This won't be long...</p>
+                    <p>This won't take long...</p>
                     <img alt="Processing SVG" src="images/processing1.svg" id="modal-processing-screen-img-1" />
                     <img alt="Processing SVG" src="images/processing2.svg" style="display:none;" id="modal-processing-screen-img-2" />
                 </div>
@@ -156,7 +156,8 @@
                     <h4 class="modal-title">Pull</h4>
                 </div>
                 <div class="modal-body">
-                    <p>Be aware that if you have uncommitted changes, pull will fail. Also be ready to handle comflict.</p>
+                    <p>Be aware that if you have uncommitted changes, pull may fail. Also be ready to handle comflict.</p>
+                    <p>Pull is done in merge mode.</p>
                     <p>Ready to pull?</p>
                 </div>
                 <div class="modal-footer">
@@ -193,7 +194,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="input-group" style="width:100%;">
-                        <p>Be aware that changes you made between last refresh and now will also be committed. Refresh <i>should</i> be done automatically each time this software gain focus.</p>
+                        <p>Be aware that changes you made between last refresh and now will also be committed. Refresh is done automatically each time this software gain focus while not being busy.</p>
                         <p>Also be aware that commit will fail if there is no changed file.</p>
                         <div class="form-group">
                             <label>Commit message: </label>
@@ -217,8 +218,9 @@
                     <h4 class="modal-title">Force Push</h4>
                 </div>
                 <div class="modal-body">
-                    <p>Force push will override remote branch with your local one, this will erase other people's work.</p>
-                    <p>This will only push changes that you have already committed.</p>
+                    <p>Force push will override remote branch with your local one, rewrite history, and set it exactly like what you have locally since last commit.</p>
+                    <p>This may erase other people's work and may break other people's local repository when they pull.</p>
+                    <p>This will only push changes that you have already committed, ignored files are still ignored.</p>
                     <p style="color:red;"><strong>Please think twice before doing this.</strong></p>
                     <p>If you are sure and certain that this is what you want, type &quot;confirm&quot; below: </p>
                     <div class="input-group">
@@ -263,7 +265,7 @@
                     <h4 class="modal-title">Delete</h4>
                 </div>
                 <div class="modal-body">
-                    <p>This will not delete local file, only remove the repository from the list, continue?</p>
+                    <p>This will not delete local files, only remove the repository from the list, continue?</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-success btn-lg" data-dismiss="modal">No</button>

@@ -234,7 +234,7 @@ $("#modal-commit-btn-commit").click(() => {
             UI.dialog("Something went wrong when committing...", codify(output, true), true);
         } else {
             switchRepo(config.active, true);
-        }        
+        }
     });
 });
 //Commit, commit then push
@@ -279,9 +279,15 @@ $("#modal-force-push-input-confirm").on("keyup", () => {
         UI.processing(true);
         $("#modal-force-push-input-confirm").val("");
         $("#modal-force-push").modal("hide");
-        //TODO
-        console.log("Force push triggered");
-        UI.processing(false);
+        //We need the name of current branch
+        git.forcePush(activeRepo.directory, $("#div-branches-list").find(".active").text(), (output, hasError) => {
+            ipc.send("console log", { log: output });
+            if (hasError) {
+                UI.dialog("Something went wrong when force pushing...", codify(output, true), true);
+            } else {
+                UI.processing(false);
+            }
+        });
     }
 });
 //Refresh, do refresh
