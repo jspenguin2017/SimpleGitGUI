@@ -2,6 +2,7 @@
 "use strict";
 
 const {exec} = require("child_process");
+const fs = require("fs");
 
 //Escape argument
 const escape = function (text) {
@@ -75,11 +76,14 @@ exports.forcePullCmd = function (directory) {
 exports.forcePull = function (directory, address, callback) {
     if (rmCode) {
         exec(rmCode, (err, stdout, stderr) => {
-            const output1 = format(code, err, stdout, stderr);
-            //We'll try to clone even if the command above fails
-            run([`git -C "${escape(directory)}" clone --quiet --verbose --depth 5 --no-single-branch --recurse-submodules --shallow-submodules "${escape(address)}" "${escape(directory)}"`], (output2, hasError) => {
-                rmCode = "";
-                callback(output1 + output2, hasError);
+            const output1 = format(rmCode, err, stdout, stderr);
+            //We'll try to clone even if the command above failed
+            fs.mkdir(directory, (err) => {
+                //We'll still try to clone even if creating directory failed
+                run([`git -C "${escape(directory)}" clone --quiet --verbose --depth 1 --no-single-branch --recurse-submodules --shallow-submodules "${escape(address)}" "${escape(directory)}"`], (output2, hasError) => {
+                    rmCode = "";
+                    callback(output1 + output2, hasError);
+                });
             });
         });
     } else {
@@ -119,8 +123,11 @@ exports.status = function (directory, callback) {
 };
 
 //Clone
-exports.clone = function (address, directory, callback) {
-    run([`git -C "${escape(directory)}" clone --quiet --verbose --depth 5 --no-single-branch --recurse-submodules --shallow-submodules "${escape(address)}" "${escape(directory)}"`], callback);
+exports.clone = function (directory,address, callback) {
+    fs.mkdir(directory, (err) => {
+        //We'll ignore error and try to clone anyway, Git won't proceed unless the directory is empty
+        run([`git -C "${escape(directory)}" clone --quiet --verbose --depth 5 --no-single-branch --recurse-submodules --shallow-submodules "${escape(address)}" "${escape(directory)}"`], callback);
+    });
 };
 
 //Set config

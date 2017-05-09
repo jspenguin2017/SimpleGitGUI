@@ -7,7 +7,6 @@ UI.processing(true);
 //Load Electron and utilities
 const {ipcRenderer: ipc, clipboard} = require("electron");
 const path = require("path");
-const fs = require("fs");
 const git = require("./renderer-lib/git.js");
 
 //=====Helper function=====
@@ -191,6 +190,7 @@ $("#modal-hard-reset-input-confirm").on("keyup", () => {
         $("#modal-hard-reset").modal("hide");
         //Start
         git.forcePull(activeRepo.directory, activeRepo.address, (output, hasError) => {
+            ipc.send("console log", { log: output });
             if (hasError) {
                 UI.dialog("Something went wrong when force pulling...", codify(output, true), true);
             } else {
@@ -342,26 +342,23 @@ $("#modal-clone-btn-clone").click(() => {
         address: address,
         directory: directory
     };
-    //We'll make the directory, and ignore error, Git will take care of the rest, it won't proceed unless the directory is empty
-    fs.mkdir(directory, () => {
-        git.clone(address, directory, (output, hasError) => {
-            ipc.send("console log", { log: output });
-            if (hasError) {
-                UI.dialog("Something went wrong when cloning...", codify(output, true), true);
-            } else {
-                //Update config
-                config.repos.push(tempRepo.name);
-                config.lastPath = path.resolve(directory, "..");
-                config.active = tempRepo.name;
-                //Save config
-                localStorage.setItem(tempRepo.name, JSON.stringify(tempRepo));
-                localStorage.setItem("config", JSON.stringify(config));
-                //Switch to it
-                UI.buttons(null, true); //Actions buttons will be handled by switchRepo
-                UI.repos(config.repos, config.active, switchRepo);
-                switchRepo(tempRepo.name, true);
-            }
-        });
+    git.clone(directory, address, (output, hasError) => {
+        ipc.send("console log", { log: output });
+        if (hasError) {
+            UI.dialog("Something went wrong when cloning...", codify(output, true), true);
+        } else {
+            //Update config
+            config.repos.push(tempRepo.name);
+            config.lastPath = path.resolve(directory, "..");
+            config.active = tempRepo.name;
+            //Save config
+            localStorage.setItem(tempRepo.name, JSON.stringify(tempRepo));
+            localStorage.setItem("config", JSON.stringify(config));
+            //Switch to it
+            UI.buttons(null, true); //Actions buttons will be handled by switchRepo
+            UI.repos(config.repos, config.active, switchRepo);
+            switchRepo(tempRepo.name, true);
+        }
     });
 });
 //Delete, delete repo
