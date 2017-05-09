@@ -528,3 +528,20 @@ git.config(config.name, config.email, config.savePW, (output, hasError) => {
         UI.processing(false);
     }
 });
+//There some slight issue with modals that we need to duct tape
+//This may be a bug in Bootstrap, or just Bootstrap isn't tested for multiple modal
+//We need to remove a backdrop that is sometimes not removed
+setInterval(() => {
+    if (!$(".modal").is(":visible") && $(".modal-backdrop.fade").length) {
+        //We are going to check twice
+        setTimeout(() => {
+            if (!$(".modal").is(":visible") && $(".modal-backdrop.fade").length) {
+                $(".modal-backdrop.fade").each(function () {
+                    if ($(this).text() === "") {
+                        $(this).remove();
+                    }
+                });
+            }
+        }, 250);
+    }
+}, 750);
