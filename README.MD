@@ -10,4 +10,4 @@ Please open an issue if there is something you want me to know.
 
 Files under `images` are created from [https://loading.io/](https://loading.io/) and inherit their license. 
 
-Other files falls under GNU GPL v3 unless otherwise specified. 
+Other files fall under GNU GPL v3 unless otherwise specified. 
