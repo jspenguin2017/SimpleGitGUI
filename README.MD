@@ -1,6 +1,6 @@
 # Simple Git GUI
 
-![Main Control Panel](http://i.imgur.com/Vh3s4N7.png)
+![Main Control Panel](http://i.imgur.com/rp4Pzfy.png)
 
 Hard reset, force push, single file rollback, and switch branch are work in progress. 
 
