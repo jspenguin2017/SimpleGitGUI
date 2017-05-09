@@ -55,17 +55,18 @@
             </button>
             <div id="navbar" class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li><button type="button" class="btn btn-danger navbar-btn btn-action" id="btn-menu-hard-reset"><span class="glyphicon glyphicon-arrow-down"></span> Force Pull</button></li>
+                    <li><button type="button" class="btn btn-danger navbar-btn btn-action" id="btn-menu-hard-reset"><span class="glyphicon glyphicon-arrow-down"></span> F.Pull</button></li>
                     <li><button type="button" class="btn btn-warning navbar-btn btn-action" id="btn-menu-pull"><span class="glyphicon glyphicon-arrow-down"></span> Pull</button></li>
                     <li><button type="button" class="btn btn-success navbar-btn btn-action" id="btn-menu-sync"><span class="glyphicon glyphicon-sort"></span> Sync</button></li>
+                    <li><button type="button" class="btn btn-success navbar-btn btn-action" id="btn-menu-commit"><span class="glyphicon glyphicon-ok"></span> Commit</button></li>
                     <li><button type="button" class="btn btn-warning navbar-btn btn-action" id="btn-menu-push"><span class="glyphicon glyphicon-arrow-up"></span> Push</button></li>
-                    <li><button type="button" class="btn btn-danger navbar-btn btn-action" id="btn-menu-force-push"><span class="glyphicon glyphicon-arrow-up"></span> Force Push</button></li>
-                    <li><button type="button" class="btn btn-info navbar-btn btn-action" id="btn-menu-refresh"><span class="glyphicon glyphicon-refresh"></span> Refresh</button></li>
+                    <li><button type="button" class="btn btn-danger navbar-btn btn-action" id="btn-menu-force-push"><span class="glyphicon glyphicon-arrow-up"></span> F.Push</button></li>
+                    <li><button type="button" class="btn btn-info navbar-btn btn-management" id="btn-menu-refresh"><span class="glyphicon glyphicon-refresh"></span> Refresh</button></li>
                     <li><button type="button" class="btn btn-primary navbar-btn btn-action" id="btn-menu-repo-status"><span class="glyphicon glyphicon-list-alt"></span> Status</button></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     <li><button type="button" class="btn btn-success navbar-btn" id="btn-menu-clone"><span class="glyphicon glyphicon-plus-sign"></span> Clone</button></li>
-                    <li><button type="button" class="btn btn-danger navbar-btn btn-action" id="btn-menu-delete-repo"><span class="glyphicon glyphicon-remove-sign"></span> Delete</button></li>
+                    <li><button type="button" class="btn btn-danger navbar-btn btn-management" id="btn-menu-delete-repo"><span class="glyphicon glyphicon-remove-sign"></span> Delete</button></li>
                     <li><button type="button" class="btn btn-info navbar-btn" style="margin-right:12px;" id="btn-menu-config"><span class="glyphicon glyphicon-cog"></span> Config</button></li>
                 </ul>
             </div>
@@ -75,9 +76,7 @@
     <div class="container" id="div-main-container">
         <!-- Right side repo list -->
         <div class="column" style="width:25%;">
-            <div class="list-group" style="height:65%; margin-bottom:0px; overflow-y:scroll;" id="div-repos-list">
-                <button type="button" class="list-group-item disabled">Loading...</button>
-            </div>
+            <div class="list-group" style="height:65%; margin-bottom:0px; overflow-y:scroll;" id="div-repos-list"></div>
             <div class="list-group" style="height:35%; margin-bottom:0px; border-top:2px solid grey; overflow-y:scroll;" id="div-branches-list"></div>
         </div>
         <!-- Left side file list -->
@@ -107,7 +106,7 @@
                 </div>
                 <div class="modal-body" id="modal-dialog-body"></div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary btn-lg" id="modal-dialog-close">Close</button>
+                    <button type="button" class="btn btn-primary btn-lg" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -127,39 +126,7 @@
             </div>
         </div>
     </div>
-    <!-- Conflict help modal -->
-    <div id="modal-conflict-help" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
-        <div class="modal-dialog" role="document" style="width:850px;">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title">How to resolve conflicts?</h4>
-                </div>
-                <div class="modal-body">
-                    <p>Files with these status (remote/local) are conflicting: </p>
-                    <ul style="columns:4; list-style-type:none;">
-                        <li>Deleted/Deleted</li>
-                        <li>Created/Unmerged</li>
-                        <li>Unmerged/Deleted</li>
-                        <li>Unmerged/Created</li>
-                        <li>Deleted/Updated</li>
-                        <li>Created/Created</li>
-                        <li>Unmerged/Unmerged</li>
-                    </ul>
-                    <p>Conflicts will be highlighted in conflicting files, they will look something like this: </p>
-                    <pre><<<<<<< HEAD
-Your code (not pushed)
-=======
-Someone else's code (already pushed)
->>>>>>> d9927045d536195f41f6050e69c88d692e8f3da5</pre>
-                    <p>Go through each conflicting file and fix those conflicts. </p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-success btn-lg" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Hard reset (force pull) confirm modal -->
+    <!-- Force pull (hard reset) confirm modal -->
     <div id="modal-hard-reset" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -168,14 +135,15 @@ Someone else's code (already pushed)
                 </div>
                 <div class="modal-body">
                     <p>This will delete your local repository and clone the repository again.</p>
-                    <p>You will lose all your work that are not pushed, ignored files will be removed.</p>
-                    <p>This allows you to start clean, if this is what you want, type &quot;confirm&quot; below: </p>
+                    <p>Please close any other softwares that may be locking those files.</p>
+                    <p style="color:red;"><strong>You will lose all your work that are not pushed, ignored files will be removed.</strong></p>
+                    <p>If you are sure and certain that this is what you want, type &quot;confirm&quot; below: </p>
                     <div class="input-group">
                         <input type="text" class="form-control" placeholder="" id="modal-hard-reset-input-confirm" />
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-success btn-lg" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success btn-lg" data-dismiss="modal" onclick="$('#modal-hard-reset-input-confirm').val('');">Cancel</button>
                 </div>
             </div>
         </div>
@@ -188,29 +156,12 @@ Someone else's code (already pushed)
                     <h4 class="modal-title">Pull</h4>
                 </div>
                 <div class="modal-body">
+                    <p>Be aware that if you have uncommitted changes, pull will fail. Also be ready to handle comflict.</p>
                     <p>Ready to pull?</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-success btn-lg" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-info btn-lg" data-dismiss="modal" id="modal-pull-btn-conflict-help">More About Conflicts</button>
                     <button type="button" class="btn btn-warning btn-lg" data-dismiss="modal" id="modal-pull-btn-pull">Pull</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Pull has changed file warning modal -->
-    <div id="modal-pull-need-commit" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title">Pull</h4>
-                </div>
-                <div class="modal-body">
-                    <p>You need to commit your current changes before pulling.</p>
-                    <p>You can commit from Push-&gt;Commit Only.</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-success btn-lg" data-dismiss="modal">OK</button>
                 </div>
             </div>
         </div>
@@ -223,43 +174,37 @@ Someone else's code (already pushed)
                     <h4 class="modal-title">Synchronize</h4>
                 </div>
                 <div class="modal-body">
-                    <p>This will perform commit, pull, then push in sequence. Conflicts can still happen. </p>
-                    <div id="modal-sync-div-need-commit">
-                        <p>Looks like you have files that needs to be committed.</p>
-                        <div class="form-group">
-                            <label>Commit message: </label>
-                            <textarea class="form-control" rows="5" style="resize:vertical;" id="modal-sync-input-commit-message"></textarea>
-                        </div>
-                    </div>
+                    <p>Synchronize will do pull then push for you, things that can go wrong with pull and push both apply.</p>
+                    <p>Ready to synchronize?</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-success btn-lg" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-info btn-lg" data-dismiss="modal" id="modal-sync-btn-conflict-help">More About Conflicts</button>
                     <button type="button" class="btn btn-warning btn-lg" data-dismiss="modal" id="modal-sync-btn-sync">Sync</button>
-                    <button type="button" class="btn btn-warning btn-lg" data-dismiss="modal" id="modal-sync-btn-commit-sync">Commit and Sync</button>
                 </div>
             </div>
         </div>
     </div>
-    <!-- Commit and push modal -->
-    <div id="modal-push" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
+    <!-- Commit modal -->
+    <div id="modal-commit" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title">Push</h4>
+                    <h4 class="modal-title">Commit</h4>
                 </div>
                 <div class="modal-body">
                     <div class="input-group" style="width:100%;">
+                        <p>Be aware that changes you made between last refresh and now will also be committed. Refresh <i>should</i> be done automatically each time this software gain focus.</p>
+                        <p>Also be aware that commit will fail if there is no changed file.</p>
                         <div class="form-group">
                             <label>Commit message: </label>
-                            <textarea class="form-control" rows="5" style="resize:vertical;" id="modal-push-input-commit-message"></textarea>
+                            <textarea class="form-control" rows="4" style="resize:vertical;" id="modal-commit-input-commit-message"></textarea>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-success btn-lg" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-warning btn-lg" data-dismiss="modal" id="modal-push-btn-commit-only">Commit Only</button>
-                    <button type="button" class="btn btn-warning btn-lg" data-dismiss="modal" id="modal-push-btn-push">Push</button>
+                    <button type="button" class="btn btn-warning btn-lg" data-dismiss="modal" id="modal-commit-btn-commit">Commit</button>
+                    <button type="button" class="btn btn-warning btn-lg" data-dismiss="modal" id="modal-commit-btn-commit-push">Commit then Push</button>
                 </div>
             </div>
         </div>
@@ -272,32 +217,16 @@ Someone else's code (already pushed)
                     <h4 class="modal-title">Force Push</h4>
                 </div>
                 <div class="modal-body">
-                    <p>Force push will override remote branch with your local one, this will erase other people's work. </p>
-                    <p style="color:red;">Please be careful when doing this. </p>
+                    <p>Force push will override remote branch with your local one, this will erase other people's work.</p>
+                    <p>This will only push changes that you have already committed.</p>
+                    <p style="color:red;"><strong>Please think twice before doing this.</strong></p>
                     <p>If you are sure and certain that this is what you want, type &quot;confirm&quot; below: </p>
                     <div class="input-group">
-                        <input type="text" class="form-control" placeholder="" id="modal-hard-reset-input-confirm" />
+                        <input type="text" class="form-control" placeholder="" id="modal-force-push-input-confirm" />
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-success btn-lg" data-dismiss="modal">Cancel</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Force push has changed file warning modal -->
-    <div id="modal-force-push-need-commit" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title">Force Push</h4>
-                </div>
-                <div class="modal-body">
-                    <p>You need to commit your current changes before force pushing</p>
-                    <p>You can commit from Push-&gt;Commit Only.</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-success btn-lg" data-dismiss="modal">OK</button>
+                    <button type="button" class="btn btn-success btn-lg" data-dismiss="modal" onclick="$('#modal-force-push-input-confirm').val('');">Cancel</button>
                 </div>
             </div>
         </div>
@@ -365,6 +294,7 @@ Someone else's code (already pushed)
                     </div>
                     <br />
                     <p><strong>By jspenguin2017</strong></p>
+                    <!-- We won't bind event handler later because putting JavaScript in href is a handy way to make the link show the clickable mouse icon -->
                     <p>Project page: <a href="javascript:openProjectPage();">https://github.com/jspenguin2017/SimpleGitGUI</a></p>
                 </div>
                 <div class="modal-footer">
