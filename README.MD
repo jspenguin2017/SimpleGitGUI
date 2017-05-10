@@ -2,7 +2,7 @@
 
 ![Main Control Panel](http://i.imgur.com/rp4Pzfy.png)
 
-Hard reset, force push, single file rollback, and switch branch are work in progress. 
+This software aims at do exactly what you want, even though the user interface looks simple, you need some understanding of Git to use it. 
 
 Please open an issue if there is something you want me to know. 
 

@@ -86,7 +86,7 @@ UI.branches = function (data, switchCallback) {
     $("#div-branches-list").empty();
     for (let i = 0; i < names.length; i++) {
         let elem = $(`<button type="button" class="list-group-item btn-action branches-list-btn-switch-branch"></button>`).text(names[i]).data("name", names[i]);
-        if (elem.text().includes("HEAD -> ") || names[i] === active) {
+        if ((/\/HEAD\ \-\>\ .*\//).test(elem.text()) || names[i] === active) {
             elem.removeClass("btn-action branches-list-btn-switch-branch").addClass("disabled");
         }
         if (names[i] === active) {
