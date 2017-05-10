@@ -2,47 +2,48 @@
 "use strict";
 
 //=====Load Modules=====
-//Load Electron
+//Electron
 const {app, BrowserWindow: win, ipcMain: ipc, dialog, shell} = require("electron");
-//Load utilities
+//Utilities
 const path = require("path");
 const url = require("url");
 
-//=====Some events that needs main process=====
-//Dump executed code onto the terminal
+//=====Special Events=====
+//These events needs to be handled by the main process
+//Dump executed code and output onto the terminal
 ipc.on("console log", (e, data) => {
     console.log(data.log);
 });
-//DevTools shortcut keys
+//F12 toggle DevTools
 ipc.on("dev-tools", (e) => {
-    //Toggle DevTools
     e.sender.toggleDevTools();
 });
-//Get home address
+//Returns the home directory, this is needed when creating default configuration object
 ipc.on("get home", (e) => {
     e.returnValue = app.getPath("home");
 });
-//Open projct page
+//These next 3 event handlers will send back a done message so the renderer closes processing screen
+//Project page link in Config modal
 ipc.on("open project page", (e) => {
     shell.openExternal("https://github.com/jspenguin2017/SimpleGitGUI");
     e.sender.send("open project page done");
 });
-//Open folder
+//Clicking the repository that is already active will open its directory
 ipc.on("open folder", (e, data) => {
     shell.openExternal(data.folder);
     e.sender.send("open folder done");
 });
-//Show file in folder
+//Clicking View button of a changed files will show it in file explorer
+//Electron will attempt to select the file in question, but that seem to not work on Windows
 ipc.on("show file in folder", (e, data) => {
     shell.showItemInFolder(data.file);
     e.sender.send("show file in folder done");
 });
 
 //=====Main=====
-//Create window
-let main;
+let main; //The main window
 app.on("ready", () => {
-    //Init window
+    //Create window
     main = new win({
         width: 1300,
         height: 700,
@@ -51,7 +52,7 @@ app.on("ready", () => {
     });
     //Remove menu
     main.setMenu(null);
-    //Set URL
+    //Load main window
     main.loadURL(url.format({
         pathname: path.join(__dirname, "index.html"),
         protocol: "file",
@@ -61,6 +62,6 @@ app.on("ready", () => {
     main.on("closed", () => {
         app.quit();
     });
-    //Debug only
+    //Debug only, this will open DevTools which helps in debugging the renderer when it doesn't work at all, uncomment as needed
     //main.webContents.openDevTools();
 });

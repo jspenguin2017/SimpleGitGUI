@@ -7,13 +7,13 @@
     <title>Simple Git GUI</title>
     <!-- Common libraries -->
     <link rel="stylesheet" href="renderer-lib/bootstrap/css/bootstrap-3.3.7.min.css" />
-    <script src="renderer-lib/jquery.factory-3.2.1.min.js" charset="utf-8"></script>
-    <script>jQueryFactory(window);</script>
+    <script src="renderer-lib/jquery.factory-3.2.1.min.js" charset="utf-8"></script><!-- This is a patched version of jQuery that will not self-execute -->
+    <script>jQueryFactory(window);</script><!-- Electron window has module and exports, and jQuery will try to use that, which is not what we want -->
     <script src="renderer-lib/bootstrap/js/bootstrap-3.3.7.min.js"></script>
     <!-- Other libraries -->
     <script src="renderer-lib/ui.js" charset="utf-8"></script>
     <style>
-        /* Basic styles */
+        /* Main panel */
         html, body {
             height: 100%;
         }
@@ -72,14 +72,14 @@
             </div>
         </div>
     </nav>
-    <!-- Main content area -->
+    <!-- Main panel -->
     <div class="container" id="div-main-container">
-        <!-- Right side repo list -->
+        <!-- Repositories and branches list (right side) -->
         <div class="column" style="width:25%;">
             <div class="list-group" style="height:65%; margin-bottom:0px; overflow-y:scroll;" id="div-repos-list"></div>
             <div class="list-group" style="height:35%; margin-bottom:0px; border-top:2px solid grey; overflow-y:scroll;" id="div-branches-list"></div>
         </div>
-        <!-- Left side file list -->
+        <!-- Changed files list (left side) -->
         <div class="column" style="width:75%; border-left:2px solid grey;">
             <div style="height:100%; overflow-y:scroll;">
                 <table class="table table-hover table-fixed">
@@ -168,7 +168,7 @@
             </div>
         </div>
     </div>
-    <!-- Sync modal -->
+    <!-- Synchronize modal -->
     <div id="modal-sync" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -258,7 +258,7 @@
             </div>
         </div>
     </div>
-    <!-- Delete repo modal -->
+    <!-- Delete repository modal -->
     <div id="modal-delete-repo" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -275,7 +275,7 @@
             </div>
         </div>
     </div>
-    <!-- Config modal -->
+    <!-- Configuration modal -->
     <div id="modal-config" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -326,7 +326,7 @@
             </div>
         </div>
     </div>
-    <!-- Rollback modal -->
+    <!-- File rollback modal -->
     <div id="modal-rollback" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
         <div class="modal-dialog" role="document">
             <div class="modal-content">

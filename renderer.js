@@ -1,16 +1,24 @@
 //The renderer process
 "use strict";
 
-//=====Load Modules=====
 //Show processing screen
 UI.processing(true);
-//Load Electron and utilities
+
+//=====Load Modules=====
+//Electron
 const {ipcRenderer: ipc, clipboard} = require("electron");
+//Utilities and libraries
 const path = require("path");
 const git = require("./renderer-lib/git.js");
 
-//=====Helper function=====
-//Escape and format to code
+//=====Helper Functions=====
+/**
+ * Escape and color code.
+ * @function
+ * @param {string} code - The code to show.
+ * @param {bool} [noColor=false] - Set this to true to not color code.
+ * @returns {string} The HTML string that is ready to be inserted.
+ */
 const codify = function (code, noColor) {
     //Escape HTML, & and < are the only ones we need to worry about since it will be wrapped in <pre>
     code = code.replace(/\&/g, "&amp;").replace(/\</g, "&lt;");
@@ -19,10 +27,13 @@ const codify = function (code, noColor) {
         let lines = code.split("\n");
         for (let i = 0; i < lines.length; i++) {
             if ((lines[i]).startsWith("+")) {
+                //Addition
                 lines[i] = `<span class="code-add">${lines[i]}</span>`;
             } else if ((lines[i]).startsWith("-")) {
+                //Removal
                 lines[i] = `<span class="code-remove">${lines[i]}</span>`;
             } else if ((lines[i]).startsWith("@")) {
+                //Header
                 lines[i] = `<span class="code-area">${lines[i]}</span>`;
             }
         }
@@ -31,11 +42,15 @@ const codify = function (code, noColor) {
     //Return the code
     return `<pre>${code}</pre>`;
 };
-//Get commit message
+/**
+ * Get commit message.
+ * @function
+ * @returns {Array.<string>} Lines of commit message
+ */
 const getCommitMsg = function () {
     //Get commit message
     let msg = $("#modal-commit-input-commit-message").val().split("\n");
-    //Clear the text box for next commit sync
+    //Clear the text box for next commit
     $("#modal-commit-input-commit-message").val("");
     //Check if message is not empty
     let hasMsg = false;
@@ -45,49 +60,77 @@ const getCommitMsg = function () {
             break;
         }
     }
+    //Set in default commit message if the user did not write one
     if (!hasMsg) {
         msg = ["No commit message. "];
     }
+    //Return the message
     return msg;
 };
-//Repo switch callback
-const switchRepo = function (name, doRefresh) {
+/**
+ * Switch to or refresh a repository.
+ * Will open the directory of the repository if the repository is already active.
+ * This function can be an event handler or can be called directly.
+ * @function
+ * @param {string} directory - The directory of the repository, there must be a valid JSON string stored in LocalStorage with this directory being the key.
+ * @param {bool} [doRefresh=false] - Set this to true to do a refresh, this will prevent opening the directory if the repository is already active.
+ * @listens $(".repos-list-btn-switch-repo").click
+ */
+const switchRepo = function (directory, doRefresh) {
+    //Show processing screen 
     UI.processing(true);
-    if (name === config.active && !doRefresh) {
-        //Launch the project directory
+    //Check if the repository is already active, or if we should do a refresh
+    if (directory === config.active && !doRefresh) {
+        //Open the directory of the repository
         ipc.once("open folder done", () => {
+            //Hide processing screen once the directory is opened
             UI.processing(false);
         })
+        //Ask main process to open the directory
         ipc.send("open folder", {
             folder: activeRepo.directory
         });
     } else {
-        //This is validated before, just copy it
-        let tempRepo = JSON.parse(localStorage.getItem(name));
+        //Load the repository JSON
+        let tempRepo = JSON.parse(localStorage.getItem(directory));
         activeRepo = {
             name: tempRepo.name.toString(),
             address: tempRepo.address.toString(),
             directory: tempRepo.directory.toString()
         };
-        config.active = activeRepo.name;
+        //Update active repository
+        config.active = activeRepo.directory;
+        //Save configuration
         localStorage.setItem("config", JSON.stringify(config));
+        //Load or refresh everything about this repository
+        //Load branches
         git.branches(activeRepo.directory, (output, hasError, data) => {
+            //Dump output to the terminal
             ipc.send("console log", { log: output });
+            //Check if we succeed
             if (hasError) {
+                //There is an error, disable action buttons and show error
                 UI.buttons(false, true);
                 UI.dialog("Something went wrong when loading branches...", codify(output, true), true);
             } else {
+                //Succeed, draw branches
                 UI.branches(data, switchBranch);
+                //Load changed files
                 git.diff(activeRepo.directory, (output, hasError, data) => {
+                    //Dump output to the terminal
                     ipc.send("console log", { log: output });
+                    //Check if we succeed
                     if (hasError) {
+                        //There is an error, disable action buttons and show error
                         UI.buttons(false, true);
                         UI.dialog("Something went wrong when loading file changes...", codify(output, true), true);
                     } else {
+                        //Succeed, enable all buttons and draw changed files list
                         UI.buttons(true, true);
                         UI.diffTable(data, rollbackCallback, diffCallback, viewCallback);
-                        //Redraw repos list
+                        //Redraw repos list to update the active selection
                         UI.repos(config.repos, config.active, switchRepo);
+                        //Hide processing screen
                         UI.processing(false);
                     }
                 });
@@ -95,30 +138,53 @@ const switchRepo = function (name, doRefresh) {
         });
     }
 };
-//Branch switch callback
+/**
+ * Show switch branch confirm modal.
+ * @function
+ * @listens $(".branches-list-btn-switch-branch").click
+ */
 const switchBranch = function (name) {
+    //Fill in the branch to switch to
     $("#modal-switch-branch-pre-branch").text(name.split("/").pop());
+    //Show modal
     $("#modal-switch-branch").modal("show");
 };
-//Diff table rollback callback
+/**
+ * Show file rollback confirm modal.
+ * @function
+ * @listens $(".diff-table-btn-file-rollback").click
+ */
 const rollbackCallback = function (file) {
+    //Fill in the file to rollback
     $("#modal-rollback-pre-file-name").text(file);
+    //Show modal
     $("#modal-rollback").modal("show");
 };
-//Diff table diff callback
+/**
+ * Show file difference.
+ * @function
+ * @listens $(".diff-table-btn-file-diff").click
+ */
 const diffCallback = function (file) {
+    //This function uses similar logic as switchRepo() refresh, detailed comments are available there
     UI.processing(true);
     git.fileDiff(activeRepo.directory, file, (output, hasError, data) => {
         ipc.send("console log", { log: output });
         if (hasError) {
             UI.dialog("Something went wrong when loading difference...", codify(output, true), true);
         } else {
+            //Show colored file difference modal, we'll just use the general purpose modal
             UI.dialog("File Difference", codify(data.join("\n")));
         }
     });
 };
-//Diff table view callback
+/**
+ * Show the file in file explorer.
+ * @function
+ * @listens $(".diff-table-btn-file-view").click
+ */
 const viewCallback = function (file) {
+    //This function uses similar logic as switchRepo() open directory part, detailed comments are available there
     UI.processing(true);
     ipc.once("show file in folder done", () => {
         UI.processing(false);
@@ -131,15 +197,18 @@ const viewCallback = function (file) {
 //=====Modals=====
 //Force pull (hard reset)
 $("#btn-menu-hard-reset").click(() => {
+    //To make sure this will not be triggered accidentally, the input box will be cleared
     $("#modal-hard-reset-input-confirm").val("");
+    //Generate and show directory removal command
     $("#modal-hard-reset-pre-rm-code").text(git.forcePullCmd(activeRepo.directory));
+    //Show the modal
     $("#modal-hard-reset").modal("show");
 });
 //Pull
 $("#btn-menu-pull").click(() => {
     $("#modal-pull").modal("show");
 });
-//Pull
+//Synchronize
 $("#btn-menu-sync").click(() => {
     $("#modal-sync").modal("show");
 });
@@ -150,6 +219,7 @@ $("#btn-menu-commit").click(() => {
 //Push will not have a modal
 //Force Push
 $("#btn-menu-force-push").click(() => {
+    //Similar to force pull, clear the text box
     $("#modal-force-push-input-confirm").val("");
     $("#modal-force-push").modal("show");
 });
@@ -160,6 +230,7 @@ $("#btn-menu-clone").click(() => {
     //Auto fill address
     const data = clipboard.readText("plain/text");
     if ((/\.git$/).test(data)) {
+        //We'll simply set the address in the address box, then trigger another event handler that will take care of it
         $("#modal-clone-input-address").val(data).trigger("keyup");
     }
     $("#modal-clone").modal("show");
@@ -168,9 +239,9 @@ $("#btn-menu-clone").click(() => {
 $("#btn-menu-delete-repo").click(() => {
     $("#modal-delete-repo").modal("show");
 });
-//Config
+//Configuration
 $("#btn-menu-config").click(() => {
-    //Fill in config
+    //Fill in current configuration, this will rollback changes the user made before clicking Cancel
     $("#modal-config-input-name").val(config.name);
     $("#modal-config-input-email").val(config.email);
     $("#modal-config-input-savePW").prop("checked", config.savePW);
