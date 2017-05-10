@@ -72,7 +72,7 @@ exports.forcePullCmd = function (directory) {
             rmCode = "";
         }
     } else {
-        //Linux
+        //Linux and Mac
         if (directory.length > 1) {
             rmCode = `rm -rf "${escape(directory)}"`;
         } else {
@@ -86,11 +86,11 @@ exports.forcePull = function (directory, address, callback) {
     if (rmCode) {
         exec(rmCode, (err, stdout, stderr) => {
             const output1 = format(rmCode, err, stdout, stderr);
+            rmCode = "";
             //We'll try to clone even if the command above failed
             fs.mkdir(directory, (err) => {
                 //We'll still try to clone even if creating directory failed
                 run([`git -C "${escape(directory)}" clone --quiet --verbose --depth 1 --no-single-branch --recurse-submodules --shallow-submodules "${escape(address)}" "${escape(directory)}"`], (output2, hasError) => {
-                    rmCode = "";
                     callback(output1 + output2, hasError);
                 });
             });
@@ -170,9 +170,9 @@ exports.diff = function (directory, callback) {
     porcelain(`git -C "${escape(directory)}" status --porcelain --untracked-files=all`, callback);
 };
 
-//
-exports.rollback = function () {
-
+//Rollback a file
+exports.rollback = function (directory, file, callback) {
+    run([`git -C "${escape(directory)}" checkout -- ${escape(file)}`], callback);
 };
 
 //Get diff of one file

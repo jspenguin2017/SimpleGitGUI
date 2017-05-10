@@ -137,7 +137,7 @@
                     <p>This will delete your local repository and clone the repository again, please close any other softwares that may be locking those files.</p>
                     <p style="color:red;"><strong>You will lose all your work that are not pushed, ignored files will be removed.</strong></p>
                     <p><code>RMDIR /S /Q</code> or <code>rm -rf</code> will be used depending on your operating system. The exact line below will be ran to delete your local repository, please review it: </p>
-                    <pre id="modal-hard-reset-rm-code"></pre>
+                    <pre id="modal-hard-reset-pre-rm-code"></pre>
                     <p>If you are sure and certain that this is what you want, type &quot;confirm&quot; below: </p>
                     <div class="input-group">
                         <input type="text" class="form-control" placeholder="" id="modal-hard-reset-input-confirm" />
@@ -303,6 +303,42 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger btn-lg" data-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-success btn-lg" data-dismiss="modal" id="modal-config-btn-save">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Rollback modal -->
+    <div id="modal-rollback" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Rollback</h4>
+                </div>
+                <div class="modal-body">
+                    <p>This will set this file back to the state when you last committed it: </p>
+                    <pre id="modal-rollback-pre-file-name"></pre>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success btn-lg" data-dismiss="modal" onclick="$('#modal-rollback-pre-file-name').text('');">Cancel</button>
+                    <button type="button" class="btn btn-danger btn-lg" data-dismiss="modal" id="modal-rollback-btn-rollback">Rollback</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Switch branch modal -->
+    <div id="modal-switch-branch" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Switch branch</h4>
+                </div>
+                <div class="modal-body">
+                    <p>This will switch your current working branch to this: </p>
+                    <pre id="modal-switch-branch-pre-branch"></pre>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success btn-lg" data-dismiss="modal" onclick="$('#modal-switch-branch-pre-branch').text('');">Cancel</button>
+                    <button type="button" class="btn btn-danger btn-lg" data-dismiss="modal" id="modal-switch-branch-btn-switch">Switch</button>
                 </div>
             </div>
         </div>

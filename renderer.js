@@ -97,17 +97,13 @@ const switchRepo = function (name, doRefresh) {
 };
 //Branch switch callback
 const switchBranch = function (name) {
-    UI.processing(true);
-    //TODO
-    console.log(`Branch ${name} clicked`);
-    UI.processing(false);
+    $("#modal-switch-branch-pre-branch").text(name);
+    $("#modal-switch-branch").modal("show");
 };
 //Diff table rollback callback
 const rollbackCallback = function (file) {
-    UI.processing(true);
-    //TODO
-    console.log(`Rollback of ${file} clicked`);
-    UI.processing(false);
+    $("#modal-rollback-pre-file-name").text(file);
+    $("#modal-rollback").modal("show");
 };
 //Diff table diff callback
 const diffCallback = function (file) {
@@ -136,7 +132,7 @@ const viewCallback = function (file) {
 //Force pull (hard reset)
 $("#btn-menu-hard-reset").click(() => {
     $("#modal-hard-reset-input-confirm").val("");
-    $("#modal-hard-reset-rm-code").text(git.forcePullCmd(activeRepo.directory));
+    $("#modal-hard-reset-pre-rm-code").text(git.forcePullCmd(activeRepo.directory));
     $("#modal-hard-reset").modal("show");
 });
 //Pull
@@ -408,6 +404,20 @@ $("#modal-config-btn-save").click(() => {
             UI.processing(false);
         }
     });
+});
+//Rollback, revert a file
+$("#modal-rollback-btn-rollback").click(() => {
+    if ($("#modal-rollback-pre-file-name").text()) {
+        UI.processing(true);
+        git.rollback(activeRepo.directory, $("#modal-rollback-pre-file-name").text(), (output, hasError) => {
+            if (hasError) {
+                UI.dialog("Something went wrong when rolling back...", codify(output, true), true);
+            } else {
+                switchRepo(activeRepo.name, true);
+            }
+        });
+        $("#modal-rollback-pre-file-name").text("");
+    }
 });
 
 //=====Initialization=====
