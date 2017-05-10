@@ -13,13 +13,13 @@ const format = function (code, err, stdout, stderr) {
     let out = `>>> ${code}\n`;
     if (err) {
         out += `Error code: ${err.code}\n${stderr}`;
-    } else if (stdout.length) {
-        //Git sometimes send output to standard error stream
-        let temp = "";
+    } else {
         if (stderr.length) {
-            temp = `${stderr}\n`;
+            out += `${stderr}\n`;
         }
-        out += `${temp}${stdout}\n`;
+        if (stdout.length) {
+            out += `${stdout}\n`;
+        }
     }
     return out;
 }
