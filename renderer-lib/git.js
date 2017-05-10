@@ -132,7 +132,7 @@ exports.status = function (directory, callback) {
 };
 
 //Clone
-exports.clone = function (directory,address, callback) {
+exports.clone = function (directory, address, callback) {
     fs.mkdir(directory, (err) => {
         //We'll ignore error and try to clone anyway, Git won't proceed unless the directory is empty
         run([`git -C "${escape(directory)}" clone --quiet --verbose --depth 5 --no-single-branch --recurse-submodules --shallow-submodules "${escape(address)}" "${escape(directory)}"`], callback);
@@ -168,6 +168,11 @@ exports.branches = function (directory, callback) {
 //Refresh changed files list
 exports.diff = function (directory, callback) {
     porcelain(`git -C "${escape(directory)}" status --porcelain --untracked-files=all`, callback);
+};
+
+//Switch branch
+exports.switchBranch = function (directory, branch, callback) {
+    run([`git -C "${escape(directory)}" checkout ${escape(branch)} --`], callback);
 };
 
 //Rollback a file

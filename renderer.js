@@ -419,6 +419,20 @@ $("#modal-rollback-btn-rollback").click(() => {
         $("#modal-rollback-pre-file-name").text("");
     }
 });
+//Switch branch, revert a file
+$("#modal-switch-branch-btn-switch").click(() => {
+    if ($("#modal-switch-branch-pre-branch").text()) {
+        UI.processing(true);
+        git.rollback(activeRepo.directory, $("#modal-switch-branch-pre-branch").text(), (output, hasError) => {
+            if (hasError) {
+                UI.dialog("Something went wrong when switching branch...", codify(output, true), true);
+            } else {
+                switchRepo(activeRepo.name, true);
+            }
+        });
+        $("#modal-switch-branch-pre-branch").text("");
+    }
+});
 
 //=====Initialization=====
 //Shortcut keys
