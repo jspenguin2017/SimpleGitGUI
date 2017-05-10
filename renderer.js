@@ -97,7 +97,7 @@ const switchRepo = function (name, doRefresh) {
 };
 //Branch switch callback
 const switchBranch = function (name) {
-    $("#modal-switch-branch-pre-branch").text(name);
+    $("#modal-switch-branch-pre-branch").text(name.split("/").pop());
     $("#modal-switch-branch").modal("show");
 };
 //Diff table rollback callback
@@ -423,7 +423,7 @@ $("#modal-rollback-btn-rollback").click(() => {
 $("#modal-switch-branch-btn-switch").click(() => {
     if ($("#modal-switch-branch-pre-branch").text()) {
         UI.processing(true);
-        git.rollback(activeRepo.directory, $("#modal-switch-branch-pre-branch").text(), (output, hasError) => {
+        git.switchBranch(activeRepo.directory, $("#modal-switch-branch-pre-branch").text(), (output, hasError) => {
             if (hasError) {
                 UI.dialog("Something went wrong when switching branch...", codify(output, true), true);
             } else {
