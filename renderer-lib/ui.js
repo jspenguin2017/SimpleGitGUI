@@ -53,12 +53,12 @@ UI.buttons = function (action, management) {
 };
 
 //Redraw repos list, a "No Repository" place holder will be set if names is empty
-UI.repos = function (names, active, switchCallback) {
+UI.repos = function (directories, active, switchCallback) {
     //Redraw repos list
     $("#div-repos-list").empty();
-    for (let i = 0; i < names.length; i++) {
-        let elem = $(`<button type="button" class="list-group-item repos-list-btn-switch-repo"></button>`).text(names[i]).data("name", names[i]);
-        if (names[i] === active) {
+    for (let i = 0; i < directories.length; i++) {
+        let elem = $(`<button type="button" class="list-group-item repos-list-btn-switch-repo"></button>`).text(directories[i].split(/\/|\\/).pop()).data("name", directories[i]);
+        if (directories[i] === active) {
             elem.addClass("active");
         }
         $("#div-repos-list").append(elem);
