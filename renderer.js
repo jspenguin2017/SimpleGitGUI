@@ -172,7 +172,7 @@ const diffCallback = function (file) {
         if (hasError) {
             UI.dialog("Something went wrong when loading difference...", codify(output, true), true);
         } else {
-            //Show colored file difference modal, just use the general purpose modal
+            //Show colored file difference using the general purpose modal
             UI.dialog("File Difference", codify(data.join("\n")));
         }
     });
@@ -582,8 +582,8 @@ window.openProjectPage = function () {
     ipc.send("open project page");
 };
 //Load configuration
-let config; //View default configuration object below for more information
-let activeRepo; //This will be a repository object which has properties address and directory, it will be the repository object of the active one
+let config; //Chech the default configuration object below for more information
+let activeRepo; //This will be a repository object which has properties address and directory, it will be the repository object of the active repository
 try {
     //Load the configuration and copy it, hopefully we will not run into craches after this validation
     let tempConfig = JSON.parse(localStorage.getItem("config"));
@@ -597,7 +597,7 @@ try {
     if (typeof tempConfig.repos !== "object") {
         throw "Configuration Not Valid";
     }
-    //Copy the configuration object
+    //Copy the configuration object, check the default configuration object below for more information
     config = {
         lastPath: tempConfig.lastPath.toString(),
         name: tempConfig.name.toString(),
@@ -606,7 +606,7 @@ try {
         active: tempConfig.active,
         repos: []
     };
-    //Copy repositories list
+    //Copy repositories directories array
     for (let i = 0; i < tempConfig.repos.length; i++) {
         config.repos.push(tempConfig.repos[i].toString());
     }
@@ -618,7 +618,7 @@ try {
         email: "alpha@example.com",
         savePW: true, //Whether or not credential helper should be used
         active: undefined, //This is the directory of the active repository
-        repos: [] //This is a list of directories of repositories
+        repos: [] //This is an array of directories of repositories
     }
 }
 //Draw repositories list
@@ -644,8 +644,8 @@ if (config.repos.length) {
                 activeRepo = tempRepo;
             }
         } catch (err) {
-            //Remove this repository from the list
-            //If it is active, it will be unset later, simply removing it from the list is enough
+            //Remove this repository from the array
+            //If it is active, config.active will be unset later, simply removing it from the array is enough
             localStorage.removeItem(config.repos[i]);
             config.repos.splice(i, 1);
             i--; //Go back by 1 because we spliced the repository out
