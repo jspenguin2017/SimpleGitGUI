@@ -62,7 +62,7 @@ const getCommitMsg = function () {
     }
     //Set in default commit message if the user did not write one
     if (!hasMsg) {
-        msg = ["No commit message. "];
+        msg = ["No commit message"];
     }
     //Return the message
     return msg;
