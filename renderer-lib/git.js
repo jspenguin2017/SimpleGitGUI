@@ -87,7 +87,7 @@ const run = function (lines, callback) {
     runner();
 };
 /**
- * Run a line of code and send standard output as an array of lines if there is no error to the callback function.
+ * Run a line of code and send standard output as an array of lines (if there is no error) to the callback function.
  * @function
  * @param {string} code - The line of code to run.
  * @param {Function} callback - This function will be called once the execution ends, it will be supplied the formatted output and an error flag, also the lines of standard output if there is no error.
@@ -301,6 +301,7 @@ exports.diff = function (directory, callback) {
  * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
 exports.switchBranch = function (directory, branch, callback) {
+    //Run the command
     run([`git -C "${escape(directory)}" checkout ${escape(branch)} --`], callback);
 };
 /**
@@ -311,6 +312,7 @@ exports.switchBranch = function (directory, branch, callback) {
  * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
 exports.rollback = function (directory, file, callback) {
+    //Run the command
     run([`git -C "${escape(directory)}" checkout -- ${escape(file)}`], callback);
 };
 /**
@@ -321,5 +323,6 @@ exports.rollback = function (directory, file, callback) {
  * @param {Function} callback - This function will be called once the execution ends, it will be supplied the formatted output and an error flag, also the lines of standard output if there is no error.
  */
 exports.fileDiff = function (directory, file, callback) {
+    //Run the command
     porcelain(`git -C "${escape(directory)}" diff "${escape(file)}"`, callback);
 };
