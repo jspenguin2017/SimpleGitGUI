@@ -399,16 +399,9 @@ $("#btn-menu-repo-status").click(() => {
 //Auto-fill clone directory
 $("#modal-clone-input-address").on("keyup", () => {
     //The name of the directory would be the text between the last / and .git
-    //TODO: Change to regular expression
-    const parts = $("#modal-clone-input-address").val().split("/");
-    const match = parts[parts.length - 1].split(".");
-    if (match.length > 1) {
-        try {
-            $("#modal-clone-input-directory").val(path.join(config.lastPath, match[match.length - 2]));
-        } catch (err) {
-            console.warn("Failed to auto fill directory, error message: ");
-            console.log(err.toString());
-        }
+    const match = $("#modal-clone-input-address").val().match(/([^/]*)\.git$/);
+    if (match) {
+        $("#modal-clone-input-directory").val(path.join(config.lastPath, match.pop()));
     }
 });
 //Clone confirmation button

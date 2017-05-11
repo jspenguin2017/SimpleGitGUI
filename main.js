@@ -47,7 +47,7 @@ app.on("ready", () => {
     main = new win({
         width: 1300,
         height: 700,
-        minHeight: 525,
+        minHeight: 550,
         minWidth: 1050
     });
     //Remove menu

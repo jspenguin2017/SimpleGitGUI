@@ -87,7 +87,7 @@ exports.forcePull = function (directory, address, callback) {
         exec(rmCode, (err, stdout, stderr) => {
             const output1 = format(rmCode, err, stdout, stderr);
             rmCode = "";
-            //We'll try to clone even if the command above failed
+            //We'll ignore the error here since force pull is already destructive, and we can't break something that is already broken
             fs.mkdir(directory, (err) => {
                 //We'll still try to clone even if creating directory failed
                 run([`git -C "${escape(directory)}" clone --quiet --verbose --depth 1 --no-single-branch --recurse-submodules --shallow-submodules "${escape(address)}" "${escape(directory)}"`], (output2, hasError) => {

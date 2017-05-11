@@ -30,6 +30,4 @@ Files under `images` are created from [https://loading.io/](https://loading.io/)
 
 ### TODO
 
-1. Change clone auto fill directory to RegExp
-2. Test new repo unique id logic
-3. finish commenting other files
+1. finish commenting other files

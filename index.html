@@ -7,7 +7,7 @@
     <title>Simple Git GUI</title>
     <!-- Common libraries -->
     <link rel="stylesheet" href="renderer-lib/bootstrap/css/bootstrap-3.3.7.min.css" />
-    <script src="renderer-lib/jquery.factory-3.2.1.min.js" charset="utf-8"></script><!-- This is a patched version of jQuery that will not self-execute -->
+    <script src="renderer-lib/jquery.factory-3.2.1.min.js" charset="utf-8"></script><!-- This is a patched version of jQuery that will not self-execute and leave a factory, jQueryFactory(), instead -->
     <script>jQueryFactory(window);</script><!-- Electron window has module and exports, and jQuery will try to use that, which is not what we want -->
     <script src="renderer-lib/bootstrap/js/bootstrap-3.3.7.min.js"></script>
     <!-- Other libraries -->
@@ -134,9 +134,10 @@
                     <h4 class="modal-title">Force Pull</h4>
                 </div>
                 <div class="modal-body">
-                    <p>This will delete your local repository and clone the repository again, please close any other softwares that may be locking those files.</p>
+                    <p>This will delete your local repository and clone the remote repository again, please close any software that may be locking those files.</p>
                     <p style="color:red;"><strong>You will lose all your work that are not pushed, ignored files will be removed.</strong></p>
-                    <p><code>RMDIR /S /Q</code> or <code>rm -rf</code> will be used depending on your operating system. The exact line below will be ran to delete your local repository, please review it: </p>
+                    <p>Be aware that this may silently fail if we could not delete your local repository, we recommend you to delete it manually.</p>
+                    <p>This exact line below will be used to delete your local repository, please review it: </p>
                     <pre id="modal-hard-reset-pre-rm-code"></pre>
                     <p>If you are sure and certain that this is what you want, type &quot;confirm&quot; below: </p>
                     <div class="input-group">
@@ -157,7 +158,7 @@
                     <h4 class="modal-title">Pull</h4>
                 </div>
                 <div class="modal-body">
-                    <p>Be aware that if you have uncommitted changes, pull may fail. Also be ready to handle comflict.</p>
+                    <p>Be aware that if you have uncommitted changes, pull may fail. Also, be ready to handle comflict.</p>
                     <p>Pull is done in merge mode.</p>
                     <p>Ready to pull?</p>
                 </div>
@@ -195,7 +196,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="input-group" style="width:100%;">
-                        <p>Be aware that changes you made between last refresh and now will also be committed. Refresh is done automatically each time this software gain focus while not being busy.</p>
+                        <p>Be aware that changes you made between last refresh and now will also be committed. Refresh is done automatically each time this software gains focus while not being busy.</p>
                         <p>Also be aware that commit will fail if there is no changed file.</p>
                         <div class="form-group">
                             <label>Commit message: </label>
@@ -220,7 +221,7 @@
                 </div>
                 <div class="modal-body">
                     <p>Force push will override remote branch with your local one, rewrite history, and set it exactly like what you have locally since last commit.</p>
-                    <p>This may erase other people's work and may break other people's local repository when they pull.</p>
+                    <p>This may erase other people's work and may cause them to run into problems when they pull.</p>
                     <p>This will only push changes that you have already committed, ignored files are still ignored.</p>
                     <p style="color:red;"><strong>Please think twice before doing this.</strong></p>
                     <p>If you are sure and certain that this is what you want, type &quot;confirm&quot; below: </p>
@@ -266,7 +267,7 @@
                     <h4 class="modal-title">Delete</h4>
                 </div>
                 <div class="modal-body">
-                    <p>This will not delete local files, only remove the repository from the list, continue?</p>
+                    <p>This will not delete your local repository, only remove the repository from the list, continue?</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-success btn-lg" data-dismiss="modal">No</button>
@@ -315,8 +316,9 @@
                     <h4 class="modal-title">Switch branch</h4>
                 </div>
                 <div class="modal-body">
-                    <p>Be aware that if you have uncommitted changes, branch switch may fail.</p>
-                    <p>This will switch your current working branch to this: </p>
+                    <p>Your uncommitted changes will be moved the branch you selected.</p>
+                    <p>Be aware that this will fail if uncommitted changes has conflicts.</p>
+                    <p>This will change your current working branch to this: </p>
                     <pre id="modal-switch-branch-pre-branch"></pre>
                 </div>
                 <div class="modal-footer">
