@@ -79,7 +79,7 @@ const getCommitMsg = function () {
 const switchRepo = function (directory, doRefresh) {
     //Show processing screen 
     UI.processing(true);
-    //Check if the repository is already active, or if we should do a refresh
+    //Check what should we do
     if (directory === config.active && !doRefresh) {
         //Open the directory of the repository
         ipc.once("open folder done", () => {
@@ -91,6 +91,7 @@ const switchRepo = function (directory, doRefresh) {
             folder: activeRepo.directory
         });
     } else {
+        //Load or refresh the repository
         //Load the repository JSON
         let tempRepo = JSON.parse(localStorage.getItem(directory));
         activeRepo = {
@@ -107,7 +108,7 @@ const switchRepo = function (directory, doRefresh) {
         //Clear branches list and changed files list
         UI.branches([], switchBranch);
         UI.diffTable([], rollbackCallback, diffCallback, viewCallback);
-        //Load or refresh everything about this repository
+        //Load or refresh branches and changed files list for this repository
         //Branches
         git.branches(activeRepo.directory, (output, hasError, data) => {
             //Dump output to the terminal
