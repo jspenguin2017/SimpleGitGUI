@@ -1,19 +1,30 @@
-//The UI library for the renderer process
+//The user interface library for the renderer process
 "use strict";
 
+/**
+ * The user interface library main namespace.
+ * @var {Object}
+ */
 var UI = {};
 
-//Open or hide the load screen
-let processingImageFlag = false;
-let currentProcessingState = null;
+/**
+ * Show or hide processing screen.
+ * @function
+ * @param {boolean} isProcessing - True to show the processing screen, false to hide.
+ */
+let processingImageFlag = false; //This is used to toggle between two processing image
+let currentProcessingState = null; //Sometimes this function can be called twice with the same processing state, we do not want to toggle processing image in this case
 UI.processing = function (isProcessing) {
-    //Prevent setting processing twice to switch loading image
+    //Check if the current state is the supplied state
     if (currentProcessingState !== isProcessing) {
+        //It is not, proceed
+        //Update current state flag
         currentProcessingState = isProcessing;
         //Show modal
         $("#modal-processing-screen").modal(isProcessing ? "show" : "hide");
-        //Toggle loading image
+        //Toggle processing image
         if (isProcessing) {
+            //Toggle visibility
             if (processingImageFlag) {
                 $("#modal-processing-screen-img-1").hide();
                 $("#modal-processing-screen-img-2").show();
@@ -21,24 +32,35 @@ UI.processing = function (isProcessing) {
                 $("#modal-processing-screen-img-1").show();
                 $("#modal-processing-screen-img-2").hide();
             }
+            //Flip flag
             processingImageFlag = !processingImageFlag;
         }
     }
 };
-//Check if processing is not done
+/**
+ * Get current processing state.
+ * @function
+ * @returns {boolean} The current processing state, true for processing, false for idle.
+ */
 UI.isBusy = function () {
     return currentProcessingState;
 };
-
-//Show a modal, can be information or error, message needs to be HTML string
+/**
+ * Show a generic dialog box.
+ * This will hide processing screen.
+ * @function
+ * @param {string} title - The title of the dialog box.
+ * @param {string} message - The body of the dialog box.
+ * @param {boolean} isError - Set this to true to make the title red.
+ */
 UI.dialog = function (title, message, isError) {
-    //Hide load screen
+    //Hide processing screen
     UI.processing(false);
     //Update DOM and show modal
     $("#modal-dialog-title").text(title).css("color", isError ? "red" : "#333333");
     $("#modal-dialog-body").html(message);
     $("#modal-dialog").modal("show");
-    //Trigger resize once to resize code section
+    //Trigger resize once in case this dialog is used to show code
     $(window).trigger("resize");
 };
 
