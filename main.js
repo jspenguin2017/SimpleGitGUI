@@ -22,7 +22,7 @@ ipc.on("dev-tools", (e) => {
 ipc.on("get home", (e) => {
     e.returnValue = app.getPath("home");
 });
-//These next 3 event handlers will send back a done message so the renderer closes the processing screen
+//These next 3 event handlers will send back a done message so the renderer hides processing screen
 //Project page link in Config modal, open the project page in default browser
 ipc.on("open project page", (e) => {
     shell.openExternal("https://github.com/jspenguin2017/SimpleGitGUI");
@@ -62,6 +62,6 @@ app.on("ready", () => {
     main.on("closed", () => {
         app.quit();
     });
-    //This will open DevTools when the main window loads, this helps in debugging the renderer when it doesn't work at all, uncomment as needed
+    //This will open DevTools when the main window loads, this helps in debugging the renderer when it does not work at all, uncomment as needed
     //main.webContents.openDevTools();
 });

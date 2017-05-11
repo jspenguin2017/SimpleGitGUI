@@ -13,11 +13,11 @@ const git = require("./renderer-lib/git.js");
 
 //=====Helper Functions=====
 /**
- * Escape and color code.
+ * Escape and colorize code.
  * @function
  * @param {string} code - The code to show.
- * @param {bool} [noColor=false] - Set this to true to not color code.
- * @returns {string} The HTML string that is ready to be inserted.
+ * @param {bool} [noColor=false] - Set this to true to not colorize code.
+ * @returns {string} The HTML string that is ready to be inserted to DOM.
  */
 const codify = function (code, noColor) {
     //Escape HTML, & and < are the only ones we need to worry about since it will be wrapped in <pre>
@@ -45,17 +45,17 @@ const codify = function (code, noColor) {
 /**
  * Get commit message.
  * @function
- * @returns {Array.<string>} Lines of commit message
+ * @returns {Array.<string>} Lines of commit message, a default message will be returned if the user has not enter any message.
  */
 const getCommitMsg = function () {
-    //Get commit message
+    //Read commit message
     let msg = $("#modal-commit-input-commit-message").val().split("\n");
     //Clear the text box for next commit
     $("#modal-commit-input-commit-message").val("");
-    //Check if message is not empty
+    //Check if message empty
     let hasMsg = false;
     for (let i = 0; i < msg.length; i++) {
-        if (msg[i].length) {
+        if (msg[i].trim().length) {
             hasMsg = true;
             break;
         }
@@ -73,7 +73,7 @@ const getCommitMsg = function () {
  * This function can be an event handler or can be called directly.
  * @function
  * @param {string} directory - The directory of the repository, there must be a valid JSON string stored in LocalStorage with this directory being the key.
- * @param {bool} [doRefresh=false] - Set this to true to do a refresh, this will prevent opening the directory if the repository is already active.
+ * @param {bool} [doRefresh=false] - Set this to true to do a refresh regardless whether or not the repository is already active, this will also prevent the directory from opening.
  * @listens $(".repos-list-btn-switch-repo").click
  */
 const switchRepo = function (directory, doRefresh) {
@@ -102,7 +102,7 @@ const switchRepo = function (directory, doRefresh) {
         //Save configuration
         localStorage.setItem("config", JSON.stringify(config));
         //Load or refresh everything about this repository
-        //Load branches
+        //Branches
         git.branches(activeRepo.directory, (output, hasError, data) => {
             //Dump output to the terminal
             ipc.send("console log", { log: output });
@@ -172,7 +172,7 @@ const diffCallback = function (file) {
         if (hasError) {
             UI.dialog("Something went wrong when loading difference...", codify(output, true), true);
         } else {
-            //Show colored file difference modal, we'll just use the general purpose modal
+            //Show colored file difference modal, just use the general purpose modal
             UI.dialog("File Difference", codify(data.join("\n")));
         }
     });
@@ -194,7 +194,7 @@ const viewCallback = function (file) {
 };
 
 //=====Menu Buttons=====
-//This section will only include initializing and showing modal
+//This section will only include initializing and showing modals
 //Force pull (hard reset)
 $("#btn-menu-hard-reset").click(() => {
     //To make sure this will not be triggered accidentally, the input box will be cleared
@@ -219,7 +219,7 @@ $("#btn-menu-commit").click(() => {
 //Push will not have a modal
 //Force Push
 $("#btn-menu-force-push").click(() => {
-    //Similar to force pull, clear the text box
+    //Similar to force pull (hard reset), clear the text box
     $("#modal-force-push-input-confirm").val("");
     $("#modal-force-push").modal("show");
 });
@@ -230,7 +230,7 @@ $("#btn-menu-clone").click(() => {
     //Auto fill address
     const data = clipboard.readText("plain/text");
     if ((/\.git$/).test(data)) {
-        //We'll simply set the address in the address box, then trigger another event handler that will take care of it
+        //Simply set the address in the address box, then trigger another event handler that will take care of it
         $("#modal-clone-input-address").val(data).trigger("keyup");
     }
     $("#modal-clone").modal("show");
@@ -249,11 +249,11 @@ $("#btn-menu-config").click(() => {
 });
 
 //=====Other Events=====
-//Force pull confirmation button
+//Force pull (hard reset) confirmation button
 $("#modal-hard-reset-input-confirm").on("keyup", () => {
     //Check if "confirm" is typed
     if ($("#modal-hard-reset-input-confirm").val() === "confirm") {
-        //Show processing screen and hide force pull confirmation modal
+        //Show processing screen and hide force pull (hard reset) confirmation modal
         UI.processing(true);
         $("#modal-hard-reset-input-confirm").val("");
         $("#modal-hard-reset").modal("hide");
@@ -302,7 +302,7 @@ $("#modal-sync-btn-sync").click(() => {
         }
     });
 });
-//Commit only confirmation button
+//Commit only (no push) confirmation button
 $("#modal-commit-btn-commit").click(() => {
     //This function uses similar logic as switchRepo() refresh part, detailed comments are available there
     UI.processing(true);
@@ -318,7 +318,7 @@ $("#modal-commit-btn-commit").click(() => {
 //Commit then push confirmation button
 $("#modal-commit-btn-commit-push").click(() => {
     //This function uses similar logic as switchRepo() refresh part, detailed comments are available there
-    //Same as synchronize, we had to copy the code due to not being able to chain button clicks
+    //Same as synchronize confirmation button click event handler, we had to copy the code due to not being able to chain button clicks
     UI.processing(true);
     git.commit(activeRepo.directory, getCommitMsg(), (output, hasError) => {
         ipc.send("console log", { log: output });
@@ -355,12 +355,13 @@ $("#btn-menu-push").click(() => {
 });
 //Force push confirmation textbox
 $("#modal-force-push-input-confirm").on("keyup", () => {
-    //This function uses similar logic as force pull confirmation handler, refer back to that for explanations
+    //This function uses similar logic as force pull (hard reset) confirmation handler, detailed comments are available there
     if ($("#modal-force-push-input-confirm").val() === "confirm") {
         UI.processing(true);
         $("#modal-force-push-input-confirm").val("");
         $("#modal-force-push").modal("hide");
-        //We need the name of the current branch
+        //We need the name of the current branch, just find it from branches list
+        //Force push button should be disabled if branches list did not load
         git.forcePush(activeRepo.directory, $("#div-branches-list").find(".active").text(), (output, hasError) => {
             ipc.send("console log", { log: output });
             if (hasError) {
@@ -373,12 +374,12 @@ $("#modal-force-push-input-confirm").on("keyup", () => {
 });
 //Refresh button
 $("#btn-menu-refresh").click(() => {
-    //Simply call switchRepo with doRefresh flag
+    //Simply call switchRepo() with doRefresh flag
     switchRepo(config.active, true);
 });
-//Auto-refresh when window gain focus while not being busy
+//Auto-refresh when window gain focus
 $(window).focus(() => {
-    //Don't refresh if anything is open, or if there is no repository
+    //Do not refresh if we are busy, or if there is no repository
     if (!$(".modal").is(":visible") && !$("#btn-menu-refresh").prop("disabled")) {
         switchRepo(config.active, true);
     }
@@ -408,10 +409,10 @@ $("#modal-clone-input-address").on("keyup", () => {
 $("#modal-clone-btn-clone").click(() => {
     //Show processing screen
     UI.processing(true);
-    //Create a temporary repository profile and see if cloning succeed, we'll save it later
+    //Create a temporary repository profile and see if cloning succeed, it will be saved it later if cloning succeed
     const address = $("#modal-clone-input-address").val();
     const directory = $("#modal-clone-input-directory").val();
-    //This is also what each repository JSON should look like
+    //Every repository will look like this, and saved in LocalStorage with directory being the key
     let tempRepo = {
         address: address,
         directory: directory
@@ -425,10 +426,9 @@ $("#modal-clone-btn-clone").click(() => {
             //There is an error, show it
             UI.dialog("Something went wrong when cloning...", codify(output, true), true);
         } else {
-            //Succeed, we can now update configuration
-            //Update configuration
+            //Succeed, update configuration
             config.repos.push(tempRepo.directory);
-            //We'll auto-fill using the parent directory of this repository's directory next time
+            //Clone directory auto-fill will be done using the parent directory of this repository next time
             config.lastPath = path.resolve(directory, "..");
             config.active = tempRepo.directory;
             //Save configuration
@@ -452,9 +452,9 @@ $("#modal-delete-repo-btn-confirm").click(() => {
     //Get the index then splice the entry out
     let index = config.repos.indexOf(config.active);
     config.repos.splice(index, 1);
-    //We now need to check if there are any repositories left
+    //Check if there are any repositories left
     if (config.repos.length) {
-        //We want to switch to the one before, unless we are already the first one
+        //There are repositories left, we want to switch to the one before, unless we are already the first one
         if (index !== 0) {
             index--;
         }
@@ -464,10 +464,10 @@ $("#modal-delete-repo-btn-confirm").click(() => {
         localStorage.setItem("config", JSON.stringify(config));
         //Redraw repositories list
         UI.repos(config.repos, config.active, switchRepo);
-        //Switch to the repository that is active now
+        //Switch to the repository that is active now, this will redraw branches and changed files list
         switchRepo(config.active, true);
     } else {
-        //We just deleted the last repository, we'll unset active repository
+        //We just deleted the last repository, unset active repository
         config.active = undefined;
         //Save configuration
         localStorage.setItem("config", JSON.stringify(config));
@@ -475,7 +475,7 @@ $("#modal-delete-repo-btn-confirm").click(() => {
         UI.repos(config.repos, config.active, switchRepo);
         UI.branches([], switchBranch);
         UI.diffTable([], rollbackCallback, diffCallback, viewCallback);
-        //We'll lock all buttons (except Clone and Config)
+        //Lock all buttons (except Clone and Config)
         UI.buttons(false, false);
         //Hide processing screen
         UI.processing(false);
@@ -496,13 +496,14 @@ $("#modal-config-btn-save").click(() => {
         //Check if we succeed
         if (hasError) {
             //There is an error, show it
-            //The new configuration will be discarded
             UI.dialog("Something went wrong when applying configuration...", codify(output, true), true);
+            //The new configuration will be discarded
         } else {
-            //There is no error, update and save configuration
+            //There is no error, update configuration
             config.name = name;
             config.email = email;
             config.savePW = savePW;
+            //Save configuration
             localStorage.setItem("config", JSON.stringify(config));
             //Hide processing screen
             UI.processing(false);
@@ -511,7 +512,7 @@ $("#modal-config-btn-save").click(() => {
 });
 //File rollback confirmation button
 $("#modal-rollback-btn-rollback").click(() => {
-    //We'll get the file name from DOM, we set it before showing the modal
+    //Get the file name from DOM, we set it before showing the modal
     if ($("#modal-rollback-pre-file-name").text()) {
         //This part uses similar logic as switchRepo() refresh part, detailed comments are available there
         UI.processing(true);
@@ -522,13 +523,13 @@ $("#modal-rollback-btn-rollback").click(() => {
                 switchRepo(activeRepo.directory, true);
             }
         });
-        //We'll clear the file name from DOM, in case it is not properly set next time, it won't cause confusion
+        //Clear the file name from DOM, so it will not cause confusion in case it is not properly set next time
         $("#modal-rollback-pre-file-name").text("");
     }
 });
 //Switch branch confirmation button
 $("#modal-switch-branch-btn-switch").click(() => {
-    //This function uses similar logic as file rollback confirmation button click event handler, refer back to that for explanations
+    //This function uses similar logic as file rollback confirmation button click event handler, detailed comments are available there
     if ($("#modal-switch-branch-pre-branch").text()) {
         UI.processing(true);
         git.switchBranch(activeRepo.directory, $("#modal-switch-branch-pre-branch").text(), (output, hasError) => {
@@ -559,7 +560,7 @@ $(document).on("keyup", (e) => {
     }
 });
 //Warn the user about the console
-console.log("%cPlease be careful of what you execute in the console, this console has access to your local file system. ", "color: red; font-size: large;");
+console.log("%cPlease be careful of what you execute in this console, this console has access to your local file system. ", "color: red; font-size: large;");
 //Update height of some elements on window resize
 $(window).resize(() => {
     //Main container
@@ -581,22 +582,22 @@ window.openProjectPage = function () {
     ipc.send("open project page");
 };
 //Load configuration
-let config; //View default configuration below for more information
-let activeRepo; //This will be an object containing address and directory of the active repository
+let config; //View default configuration object below for more information
+let activeRepo; //This will be a repository object which has properties address and directory, it will be the repository object of the active one
 try {
-    //We'll load the configuration and copy it, this is a easy way to make sure it is not corrupted in a way that can crash renderer later
+    //Load the configuration and copy it, hopefully we will not run into craches after this validation
     let tempConfig = JSON.parse(localStorage.getItem("config"));
     //Validate type of a few properties, others will have toString() called on them
     if (typeof tempConfig.savePW !== "boolean") {
-        throw "Config Not Valid";
+        throw "Configuration Not Valid";
     }
     if (typeof tempConfig.active !== "undefined" && typeof tempConfig.active !== "string") {
-        throw "Config Not Valid";
+        throw "Configuration Not Valid";
     }
     if (typeof tempConfig.repos !== "object") {
-        throw "Config Not Valid";
+        throw "Configuration Not Valid";
     }
-    //Copy the config
+    //Copy the configuration object
     config = {
         lastPath: tempConfig.lastPath.toString(),
         name: tempConfig.name.toString(),
@@ -605,12 +606,12 @@ try {
         active: tempConfig.active,
         repos: []
     };
-    //Fill in repositories list
+    //Copy repositories list
     for (let i = 0; i < tempConfig.repos.length; i++) {
-        config.repos.push(tempConfig.repos[i]);
+        config.repos.push(tempConfig.repos[i].toString());
     }
 } catch (err) {
-    //The configuration JSON is not valid, we'll use the default one
+    //The configuration JSON is not valid, use the default one
     config = {
         lastPath: ipc.sendSync("get home"), //This is the parent directory of the last repository, it will be used when auto-filling clone directory
         name: "Alpha",
@@ -622,7 +623,8 @@ try {
 }
 //Draw repositories list
 if (config.repos.length) {
-    //We'll validate each repository JSON so we won't run into crashes later
+    //Validate each repository JSON, hopefully we will not run into crashes later
+    //This can be slow if there are a lot of repository, but this is only done once when loading, so it should be fine
     for (let i = 0; i < config.repos.length; i++) {
         try {
             //Get the JSON
@@ -632,35 +634,36 @@ if (config.repos.length) {
                 address: repo.address.toString(),
                 directory: repo.directory.toString()
             };
+            //Check if the key matches directory
+            if (config.repos[i] !== tempRepo.directory) {
+                throw "Repository Not Valid";
+            }
             //Copy active one
             if (repo.directory === config.active) {
-                //Even though switchRepo will parse this again, we do this to confirm that config.active is valid
+                //Even though switchRepo() will parse this again, we do this to confirm that config.active is valid
                 activeRepo = tempRepo;
             }
         } catch (err) {
-            //If this is the active one, unset the active repository
-            if (config.repos[i] === config.active) {
-                config.active = undefined;
-            }
             //Remove this repository from the list
+            //If it is active, it will be unset later, simply removing it from the list is enough
             localStorage.removeItem(config.repos[i]);
             config.repos.splice(i, 1);
-            i--; //We go back by 1 because we spliced the repositories array
+            i--; //We go back by 1 because we spliced the repository out
             //Save the new configuration that has broken repository removed
             localStorage.setItem("config", JSON.stringify(config));
         }
     }
-    //Draw repositories list
-    UI.repos(config.repos, config.active, switchRepo);
     //Check if the active repository is valid, if it is not and there are other repositories, the user can click them from repositories list to set one as active
     if (config.repos.indexOf(config.active) < 0) {
-        //The active repository does not exist, we'll unset it
+        //The active repository does not exist, unset it
         config.active = undefined;
         //Save configuration
         localStorage.setItem("config", JSON.stringify(config));
         //No active repository, lock both action and management buttons
         UI.buttons(false, false);
     }
+    //Draw repositories list
+    UI.repos(config.repos, config.active, switchRepo);
 } else {
     //There is no repository, lock both action and management buttons
     UI.buttons(false, false);
@@ -672,21 +675,23 @@ git.config(config.name, config.email, config.savePW, (output, hasError) => {
     if (hasError) {
         UI.dialog("Something went wrong when applying configuration...", codify(output, true), true);
     } else if (activeRepo) {
-        //There is an active repository, refresh it for the first time
+        //There is an active repository, load it
         switchRepo(config.active, true);
     } else {
-        //No active repo, close processing screen
+        //No active repository, hide processing screen
         UI.processing(false);
     }
 });
-//There some slight issues with modals that we need to duct tape
-//This may be a bug in Bootstrap, or just Bootstrap isn't tested for multiple modal
-//We need to remove a backdrop that is sometimes not removed
+//There some slight issues with modals and we need to duct tape them
+//This may be a bug in Bootstrap, or just Bootstrap is not tested for multiple modal
+//We need to remove a backdrop that is sometimes not removed, it blocks mouse clicks
 setInterval(() => {
+    //This is pretty light, when the software is in the background, CPU usage stays at 0%
     if (!$(".modal").is(":visible") && $(".modal-backdrop.fade").length) {
-        //We are going to check twice to make sure things are right
+        //We are going to check twice to make sure things are taped right
         setTimeout(() => {
             if (!$(".modal").is(":visible") && $(".modal-backdrop.fade").length) {
+                //Remove the extra backdrop
                 $(".modal-backdrop.fade").each(function () {
                     if ($(this).text() === "") {
                         $(this).remove();

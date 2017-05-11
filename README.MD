@@ -4,13 +4,13 @@
 
 This software aims at doing exactly what you want, even though the user interface looks simple, you need some understanding of Git to use it. Make sure that you know what you are clicking, or bad things will happen. 
 
+`F5` can be used to reload the renderer process when it is not busy, and `F12` to open DevTools. 
+
 When there is an error, the raw error message will be shown, there could be times when you need to use the command line tool to fix the problem. 
 
 This software will make reasonable effort to validate configuration data that is saved in the LocalStorage, but there could be times when you need to use DevTools to fix damaged configuration data. 
 
 All the commands that will be executed in the background are in `renderer-lib/git.js`. 
-
-`F5` can be used to reload the renderer process, and F12 to open DevTools. 
 
 Please open an issue if there is something you want me to know. 
 
@@ -28,6 +28,4 @@ Note: A double-click-to-start script is available: `START.BAT` for Windows and `
 Files under `images` are created from [https://loading.io/](https://loading.io/). 
 
 
-### TODO
-
-1. finish commenting other files
+#### TODO: document ui.js and git.js
