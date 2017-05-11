@@ -555,10 +555,10 @@ $("#modal-switch-branch-btn-switch").click(() => {
 $(document).on("keyup", (e) => {
     //For some reason, function keys can only be captured on keyup
     if (e.which === 123) {
-        //F12: DevTools
+        //F12, DevTools
         ipc.send("dev-tools");
     } else if (e.which === 116) {
-        //F5: Reload if not busy
+        //F5, Reload if not busy
         //Note that a reload can be forced from DevTools
         if (!UI.isBusy()) {
             location.reload();
