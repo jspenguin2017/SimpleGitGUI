@@ -1,19 +1,41 @@
 //The Git library for the renderer process
 "use strict";
 
+//=====Load Utility Modules=====
 const {exec} = require("child_process");
 const fs = require("fs");
 
-//Escape argument
+//=====Helper Functions=====
+/**
+ * Escape text to make it safe to be passed to exec (of child_process).
+ * @function
+ * @param {string} text - The text to escape.
+ * @returns {string} The escaped text.
+ */
 const escape = function (text) {
+    //Replace " and \ by \" and \\
     return text.replace(/("|\\)/g, "\\$1");
 };
-
+/**
+ * Combine and format output.
+ * @function
+ * @param {string} code - The code that ran.
+ * The next 3 arguments are supplied by exec (of child_process).
+ * @param {*} err - The error object.
+ * @param {string} stdout - The standard output.
+ * @param {string} stderr - The standard error output.
+ * @returns {string} The combined and formatted output.
+ */
 const format = function (code, err, stdout, stderr) {
+    //Add what just ran
     let out = `>>> ${code}\n`;
+    //Check if there is an error
     if (err) {
+        //It has an error, add error code and standard error output.
         out += `Error code: ${err.code}\n${stderr}`;
     } else {
+        //There is no error, add standard output and standard error output if they are not empty
+        //We need to add standard error output since Git sends some information there
         if (stderr.length) {
             out += `${stderr}\n`;
         }
@@ -21,37 +43,57 @@ const format = function (code, err, stdout, stderr) {
             out += `${stdout}\n`;
         }
     }
+    //Return the processed output
     return out;
 }
-
-//Run code line by line
+/**
+ * Run code line by line, abort remaining lines if there is an error.
+ * @function
+ * @param {Array.<string>} lines - Lines of code to run.
+ * @param {Function} callback - This function to call once everything is done, it will be supplied a formatted output and an error flag.
+ */
 const run = function (lines, callback) {
+    //Presistent variables (until all the lines of code are processed)
     let output = "";
     let hasError = false;
     //Line runner
     const runner = function () {
-        let line;
-        if (line = lines.shift()) {
+        //Get a line
+        let line = lines.shift();
+        //Check if we have any lines left
+        if (line) {
             //We still have code to run
             exec(line, (err, stdout, stderr) => {
+                //Check if there is an error
                 if (err) {
+                    //Update flag
                     hasError = true;
-                    //Abort other commands
+                    //Abort other lines
                     lines = [];
+                    //Line runner will be called again later to send information back to callback
                 }
+                //Format output, then run the next line
                 output += format(line, err, stdout, stderr);
                 runner();
             });
         } else {
+            //No more line to run, call callback
             callback(output, hasError);
         }
     }
+    //Start the line runner
     runner();
 };
-
-//Run code and return lines of standard output stream as an array
+/**
+ * Run a line of code and return standard output as an array of lines if there is no error.
+ * @function
+ * @param {string} code - The line of code to run.
+ * @param {Function} callback - The function to call once the execution ends, it will be supplied the formatted output, an error flag, and the lines of standard output if there is no error.
+ */
 const porcelain = function (code, callback) {
+    //Run the code
     exec(code, (err, stdout, stderr) => {
+        //See if there is an error, and call callback accordingly
         if (err) {
             callback(format(code, err, stdout, stderr), true);
         } else {
@@ -60,12 +102,19 @@ const porcelain = function (code, callback) {
     });
 };
 
-//Force pull, prepare local repo remove command
+//=====Exports Functions=====
+/**
+ * Prepare for force pull (hard reset), generate and save the command that will be used to remove the local repository.
+ * @function
+ * @param {string} directory - The directory of the active repository.
+ * @returns {string} The generated command.
+ */
 let rmCode = "";
 exports.forcePullCmd = function (directory) {
-    //We'll check if directory is obviously bad
+    //The command is different on Windows
     if (process.platform === "win32") {
         //Windows
+        //This is an safety check to make sure directory is not obviously bad
         if (directory.length > 3) {
             rmCode = `RMDIR /S /Q "${escape(directory)}"`;
         } else {
@@ -73,6 +122,7 @@ exports.forcePullCmd = function (directory) {
         }
     } else {
         //Linux and Mac
+        //This is an safety check to make sure directory is not obviously bad
         if (directory.length > 1) {
             rmCode = `rm -rf "${escape(directory)}"`;
         } else {
@@ -81,21 +131,39 @@ exports.forcePullCmd = function (directory) {
     }
     return rmCode;
 };
-//Force pull
+/**
+ * Do force pull (hard reset).
+ * @function
+ * @param {string} directory - The directory of the active repository.
+ * @param {string} address - The adress of the active repository.
+ * @param {Function} callback - The function to call once everything is done, it will be supplied a formatted output and an error flag.
+ */
 exports.forcePull = function (directory, address, callback) {
+    //Check if the local repository removal command is initialized
     if (rmCode) {
+        //It is initialized, start by remove the local directory
         exec(rmCode, (err, stdout, stderr) => {
+            //Log the formatted output
             const output1 = format(rmCode, err, stdout, stderr);
+            //Clear the saved command for safety
             rmCode = "";
-            //We'll ignore the error here since force pull is already destructive, and we can't break something that is already broken
+            //We will not abort even if there is an error, since we want force pull (hard reset) to be able to handle cases where the local repository is gone
+            //Whether or not the local repository is successfully removed will be checked when we create the directory
             fs.mkdir(directory, (err) => {
-                //We'll still try to clone even if creating directory failed
-                run([`git -C "${escape(directory)}" clone --quiet --verbose --depth 1 --no-single-branch --recurse-submodules --shallow-submodules "${escape(address)}" "${escape(directory)}"`], (output2, hasError) => {
-                    callback(output1 + output2, hasError);
-                });
+                //Check if we were able to create the directory
+                if (err) {
+                    //Could not create directory, show error message then abort
+                    callback(`Could not create local repository directory: \n${err.message}\n`, true);
+                } else {
+                    //Clone the repository again
+                    run([`git -C "${escape(directory)}" clone --quiet --verbose --depth 1 --no-single-branch --recurse-submodules --shallow-submodules "${escape(address)}" "${escape(directory)}"`], (output2, hasError) => {
+                        callback(output1 + output2, hasError);
+                    });
+                }
             });
         });
     } else {
+        //It is not initialized, this should not happen unless there is a bug in the user interface
         callback("Local repository removal command is not initialized. ", true);
     }
 };

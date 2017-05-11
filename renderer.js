@@ -106,7 +106,7 @@ const switchRepo = function (directory, doRefresh) {
         git.branches(activeRepo.directory, (output, hasError, data) => {
             //Dump output to the terminal
             ipc.send("console log", { log: output });
-            //Check if we succeed
+            //Check if it succeeded
             if (hasError) {
                 //There is an error, disable action buttons and show error
                 UI.buttons(false, true);
@@ -118,7 +118,7 @@ const switchRepo = function (directory, doRefresh) {
                 git.diff(activeRepo.directory, (output, hasError, data) => {
                     //Dump output to the terminal
                     ipc.send("console log", { log: output });
-                    //Check if we succeed
+                    //Check if it succeeded
                     if (hasError) {
                         //There is an error, disable action buttons and show error
                         UI.buttons(false, true);
@@ -421,7 +421,7 @@ $("#modal-clone-btn-clone").click(() => {
     git.clone(directory, address, (output, hasError) => {
         //Dump output to the terminal
         ipc.send("console log", { log: output });
-        //Check if we succeed
+        //Check if it succeeded
         if (hasError) {
             //There is an error, show it
             UI.dialog("Something went wrong when cloning...", codify(output, true), true);
@@ -493,7 +493,7 @@ $("#modal-config-btn-save").click(() => {
     git.config(name, email, savePW, (output, hasError) => {
         //Dump output to the terminal
         ipc.send("console log", { log: output });
-        //Check if we succeed
+        //Check if it succeeded
         if (hasError) {
             //There is an error, show it
             UI.dialog("Something went wrong when applying configuration...", codify(output, true), true);
@@ -648,7 +648,7 @@ if (config.repos.length) {
             //If it is active, it will be unset later, simply removing it from the list is enough
             localStorage.removeItem(config.repos[i]);
             config.repos.splice(i, 1);
-            i--; //We go back by 1 because we spliced the repository out
+            i--; //Go back by 1 because we spliced the repository out
             //Save the new configuration that has broken repository removed
             localStorage.setItem("config", JSON.stringify(config));
         }
