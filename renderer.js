@@ -94,7 +94,6 @@ const switchRepo = function (directory, doRefresh) {
         //Load the repository JSON
         let tempRepo = JSON.parse(localStorage.getItem(directory));
         activeRepo = {
-            name: tempRepo.name.toString(),
             address: tempRepo.address.toString(),
             directory: tempRepo.directory.toString()
         };
@@ -421,7 +420,6 @@ $("#modal-clone-btn-clone").click(() => {
     const directory = $("#modal-clone-input-directory").val();
     //This is also what each repository JSON should look like
     let tempRepo = {
-        name: directory.split(/\/|\\/).pop(),
         address: address,
         directory: directory
     };
@@ -528,7 +526,7 @@ $("#modal-rollback-btn-rollback").click(() => {
             if (hasError) {
                 UI.dialog("Something went wrong when rolling back...", codify(output, true), true);
             } else {
-                switchRepo(activeRepo.name, true);
+                switchRepo(activeRepo.directory, true);
             }
         });
         //We'll clear the file name from DOM, in case it is not properly set next time, it won't cause confusion
@@ -545,7 +543,7 @@ $("#modal-switch-branch-btn-switch").click(() => {
             if (hasError) {
                 UI.dialog("Something went wrong when switching branch...", codify(output, true), true);
             } else {
-                switchRepo(activeRepo.name, true);
+                switchRepo(activeRepo.directory, true);
             }
         });
         $("#modal-switch-branch-pre-branch").text("");
@@ -590,8 +588,8 @@ window.openProjectPage = function () {
     ipc.send("open project page");
 };
 //Load configuration
-let config;
-let activeRepo;
+let config; //View default configuration below for more information
+let activeRepo; //This will be an object containing address and directory of the active repository
 try {
     //We'll load the configuration and copy it, this is a easy way to make sure it is not corrupted in a way that can crash renderer later
     let tempConfig = JSON.parse(localStorage.getItem("config"));
@@ -621,27 +619,23 @@ try {
 } catch (err) {
     //The configuration JSON is not valid, we'll use the default one
     config = {
-        lastPath: ipc.sendSync("get home"),
+        lastPath: ipc.sendSync("get home"), //This is the parent directory of the last repository, it will be used when auto-filling clone directory
         name: "Alpha",
         email: "alpha@example.com",
-        savePW: true,
-        active: undefined,
-        repos: []
-        //Each repo will be a different entry in LocalStorage
-        //It will be an object with properties name, address, and directory
+        savePW: true, //Whether or not credential helper should be used
+        active: undefined, //This is the directory of the active repository
+        repos: [] //This is a list of directories of repositories
     }
 }
 //Draw repositories list
 if (config.repos.length) {
     //We'll validate each repository JSON so we won't run into crashes later
-    let names = [];
     for (let i = 0; i < config.repos.length; i++) {
         try {
             //Get the JSON
             let repo = JSON.parse(localStorage.getItem(config.repos[i]));
             //Validate it by calling toString() on each property
             let tempRepo = {
-                name: repo.name.toString(),
                 address: repo.address.toString(),
                 directory: repo.directory.toString()
             };
@@ -650,8 +644,6 @@ if (config.repos.length) {
                 //Even though switchRepo will parse this again, we do this to confirm that config.active is valid
                 activeRepo = tempRepo;
             }
-            //Add name to the list if everything goes right
-            names.push(repo.name);
         } catch (err) {
             //If this is the active one, unset the active repository
             if (config.repos[i] === config.active) {
@@ -666,7 +658,7 @@ if (config.repos.length) {
         }
     }
     //Draw repositories list
-    UI.repos(names, config.active, switchRepo);
+    UI.repos(config.repos, config.active, switchRepo);
     //Check if the active repository is valid, if it is not and there are other repositories, the user can click them from repositories list to set one as active
     if (config.repos.indexOf(config.active) < 0) {
         //The active repository does not exist, we'll unset it
