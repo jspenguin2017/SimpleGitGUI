@@ -1,4 +1,5 @@
 //The Git library for the renderer process
+//This file should be loaded with require()
 "use strict";
 
 //=====Load Utility Modules=====
@@ -14,13 +15,14 @@ const fs = require("fs");
  */
 const escape = function (text) {
     //Replace " and \ by \" and \\, and remove new lines
+    //There should never be new lines if the user interface worked properly
     return text.replace(/("|\\)/g, "\\$1").replace(/\n/g, "");
 };
 /**
  * Combine and format output.
  * @function
  * @param {string} code - The code that ran.
- * The next 3 arguments are supplied by exec (of child_process).
+ * The next 3 arguments should be supplied by exec (of child_process).
  * @param {*} err - The error object.
  * @param {string} stdout - The standard output.
  * @param {string} stderr - The standard error output.
@@ -34,7 +36,7 @@ const format = function (code, err, stdout, stderr) {
         //It has an error, add error code and standard error output.
         out += `Error code: ${err.code}\n${stderr}`;
     } else {
-        //There is no error, add standard output and standard error output if they are not empty
+        //There is no error, add standard error output and standard output if they are not empty
         //We need to add standard error output since Git sends some information there
         if (stderr.length) {
             out += `${stderr}\n`;
@@ -50,7 +52,7 @@ const format = function (code, err, stdout, stderr) {
  * Run code line by line, abort remaining lines if there is an error.
  * @function
  * @param {Array.<string>} lines - Lines of code to run.
- * @param {Function} callback - This function to call once everything is done, it will be supplied a formatted output and an error flag.
+ * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
 const run = function (lines, callback) {
     //Presistent variables (until all the lines of code are processed)
@@ -62,7 +64,7 @@ const run = function (lines, callback) {
         let line = lines.shift();
         //Check if we have any lines left
         if (line) {
-            //We still have code to run
+            //We still have code to run, run it
             exec(line, (err, stdout, stderr) => {
                 //Check if there is an error
                 if (err) {
@@ -85,10 +87,10 @@ const run = function (lines, callback) {
     runner();
 };
 /**
- * Run a line of code and return standard output as an array of lines if there is no error.
+ * Run a line of code and send standard output as an array of lines if there is no error to the callback function.
  * @function
  * @param {string} code - The line of code to run.
- * @param {Function} callback - The function to call once the execution ends, it will be supplied the formatted output, an error flag, and the lines of standard output if there is no error.
+ * @param {Function} callback - This function will be called once the execution ends, it will be supplied the formatted output and an error flag, also the lines of standard output if there is no error.
  */
 const porcelain = function (code, callback) {
     //Run the code
@@ -114,7 +116,7 @@ exports.forcePullCmd = function (directory) {
     //The command is different on Windows
     if (process.platform === "win32") {
         //Windows
-        //This is an safety check to make sure directory is not obviously bad
+        //This is an safety check to make sure the directory is not obviously bad
         if (directory.length > 3) {
             rmCode = `RMDIR /S /Q "${escape(directory)}"`;
         } else {
@@ -136,18 +138,18 @@ exports.forcePullCmd = function (directory) {
  * @function
  * @param {string} directory - The directory of the active repository.
  * @param {string} address - The adress of the active repository.
- * @param {Function} callback - The function to call once everything is done, it will be supplied a formatted output and an error flag.
+ * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
 exports.forcePull = function (directory, address, callback) {
     //Check if the local repository removal command is initialized
     if (rmCode) {
-        //It is initialized, start by remove the local directory
+        //It is initialized, remove the local directory using it
         exec(rmCode, (err, stdout, stderr) => {
             //Log the formatted output
             const output1 = format(rmCode, err, stdout, stderr);
             //Clear the saved command for safety
             rmCode = "";
-            //We will not abort even if there is an error, since we want force pull (hard reset) to be able to handle cases where the local repository is gone
+            //We will not abort even if there is an error, since we want force pull (hard reset) to be able to handle cases where the local directory is gone
             //Whether or not the local repository is successfully removed will be checked when we create the directory
             fs.mkdir(directory, (err) => {
                 //Check if we were able to create the directory
@@ -163,7 +165,7 @@ exports.forcePull = function (directory, address, callback) {
             });
         });
     } else {
-        //It is not initialized, this should not happen unless there is a bug in the user interface
+        //It is not initialized, this should not happen if the user interface worked properly
         callback("Local repository removal command is not initialized. ", true);
     }
 };
@@ -171,33 +173,34 @@ exports.forcePull = function (directory, address, callback) {
  * Do pull.
  * @function
  * @param {string} directory - The directory of the active repository.
- * @param {Function} callback - The function to call once everything is done, it will be supplied a formatted output and an error flag.
+ * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
 exports.pull = function (directory, callback) {
     //Run the command
     run([`git -C "${escape(directory)}" pull --verbose`], callback);
 };
 /**
- * Do commit.
+ * Do stage then commit.
  * @function
  * @param {string} directory - The directory of the active repository.
  * @param {Array.<string>} - The commit messages, one paragraph per element.
- * @param {Function} callback - The function to call once everything is done, it will be supplied a formatted output and an error flag.
+ * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
 exports.commit = function (directory, messages, callback) {
+    //Prepare the commit command
     let cmd = `git -C "${escape(directory)}" commit --verbose`;
     //Put in commit comments
     for (let i = 0; i < messages.length; i++) {
         cmd += ` --message="${escape(messages[i])}"`;
     }
-    //Run the command
+    //Run the commands
     run([`git -C "${escape(directory)}" stage --verbose --all`, cmd], callback);
 };
 /**
  * Do push.
  * @function
  * @param {string} directory - The directory of the active repository.
- * @param {Function} callback - The function to call once everything is done, it will be supplied a formatted output and an error flag.
+ * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
 exports.push = function (directory, callback) {
     //Run the command
@@ -208,7 +211,7 @@ exports.push = function (directory, callback) {
  * @function
  * @param {string} directory - The directory of the active repository.
  * @param {string} branch - The current branch.
- * @param {Function} callback - The function to call once everything is done, it will be supplied a formatted output and an error flag.
+ * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
 exports.forcePush = function (directory, branch, callback) {
     //Run the command
@@ -218,7 +221,7 @@ exports.forcePush = function (directory, branch, callback) {
  * Get repository status.
  * @function
  * @param {string} directory - The directory of the active repository.
- * @param {Function} callback - The function to call once everything is done, it will be supplied the formatted output, an error flag, and the lines of standard output if there is no error.
+ * @param {Function} callback - This function will be called once the execution ends, it will be supplied the formatted output and an error flag, also the lines of standard output if there is no error.
  */
 exports.status = function (directory, callback) {
     //Run the command
@@ -229,22 +232,22 @@ exports.status = function (directory, callback) {
  * @function
  * @param {string} directory - The directory to clone into.
  * @param {string} address - The remote repository address.
- * @param {Function} callback - The function to call once everything is done, it will be supplied a formatted output and an error flag.
+ * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
 exports.clone = function (directory, address, callback) {
     //Create the directory
     fs.mkdir(directory, (err) => {
-        //Try to clone even if there is an error, Git will not proceed unless the directory is empty
+        //Try to clone even if there is an error, Git will not proceed unless the directory is empty, we do not need to check it
         run([`git -C "${escape(directory)}" clone --quiet --verbose --depth 5 --no-single-branch --recurse-submodules --shallow-submodules "${escape(address)}" "${escape(directory)}"`], callback);
     });
 };
 /**
- * Set configuration
+ * Set configuration.
  * @function
  * @param {string} name - Name of the user.
  * @param {string} email - Email of the user.
  * @param {boolean} savePW - Whether or not credential helper should be used.
- * @param {Function} callback - The function to call once everything is done, it will be supplied a formatted output and an error flag.
+ * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
 exports.config = function (name, email, savePW, callback) {
     //Intermediate callback to handle credential helper
@@ -259,7 +262,7 @@ exports.config = function (name, email, savePW, callback) {
             exec(code, (err, stdout, stderr) => {
                 //Format the output
                 output += format(code, err, stdout, stderr);
-                //Unsetting without being set before results in an error, we do not want to show it
+                //Unsetting a configuration that is not set before results in an error, we do not want to show the error even if there is one
                 callback(output, hasError);
             });
         }
@@ -273,8 +276,8 @@ exports.config = function (name, email, savePW, callback) {
 /**
  * Get branches list.
  * @function
- * @param {string} directory - The directory to clone into.
- * @param {Function} callback - The function to call once everything is done, it will be supplied the formatted output, an error flag, and the lines of standard output if there is no error.
+ * @param {string} directory - The directory of the active repository.
+ * @param {Function} callback - This function will be called once the execution ends, it will be supplied the formatted output and an error flag, also the lines of standard output if there is no error.
  */
 exports.branches = function (directory, callback) {
     //Run the command
@@ -283,18 +286,19 @@ exports.branches = function (directory, callback) {
 /**
  * Refresh changed files list
  * @function
- * @param {string} directory - The directory to clone into.
- * @param {Function} callback - The function to call once everything is done, it will be supplied the formatted output, an error flag, and the lines of standard output if there is no error.
+ * @param {string} directory - The directory of the active repository.
+ * @param {Function} callback - This function will be called once the execution ends, it will be supplied the formatted output and an error flag, also the lines of standard output if there is no error.
  */
 exports.diff = function (directory, callback) {
+    //Run the command
     porcelain(`git -C "${escape(directory)}" status --porcelain --untracked-files=all`, callback);
 };
 /**
  * Switch branch.
  * @function
- * @param {string} directory - The directory to clone into.
+ * @param {string} directory - The directory of the active repository.
  * @param {string} branch - The branch to switch to.
- * @param {Function} callback - The function to call once everything is done, it will be supplied a formatted output and an error flag.
+ * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
 exports.switchBranch = function (directory, branch, callback) {
     run([`git -C "${escape(directory)}" checkout ${escape(branch)} --`], callback);
@@ -302,9 +306,9 @@ exports.switchBranch = function (directory, branch, callback) {
 /**
  * Rollback a file.
  * @function
- * @param {string} directory - The directory to clone into.
+ * @param {string} directory - The directory of the active repository.
  * @param {string} file - The file to rollback.
- * @param {Function} callback - The function to call once everything is done, it will be supplied a formatted output and an error flag.
+ * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
 exports.rollback = function (directory, file, callback) {
     run([`git -C "${escape(directory)}" checkout -- ${escape(file)}`], callback);
@@ -312,9 +316,9 @@ exports.rollback = function (directory, file, callback) {
 /**
  * Get difference of one file as a patch.
  * @function
- * @param {string} directory - The directory to clone into.
+ * @param {string} directory - The directory of the active repository.
  * @param {string} file - The file in question.
- * @param {Function} callback - The function to call once everything is done, it will be supplied the formatted output, an error flag, and the lines of standard output if there is no error.
+ * @param {Function} callback - This function will be called once the execution ends, it will be supplied the formatted output and an error flag, also the lines of standard output if there is no error.
  */
 exports.fileDiff = function (directory, file, callback) {
     porcelain(`git -C "${escape(directory)}" diff "${escape(file)}"`, callback);

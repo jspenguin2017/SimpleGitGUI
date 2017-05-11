@@ -554,7 +554,7 @@ $(document).on("keyup", (e) => {
     } else if (e.which === 116) {
         //F5, Reload if not busy
         //Note that a reload can be forced from DevTools
-        if (!UI.isBusy()) {
+        if (!UI.isProcessing()) {
             location.reload();
         }
     }
