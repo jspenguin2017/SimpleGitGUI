@@ -97,10 +97,16 @@ const switchRepo = function (directory, doRefresh) {
             address: tempRepo.address.toString(),
             directory: tempRepo.directory.toString()
         };
-        //Update active repository
+        //Update configuration
         config.active = activeRepo.directory;
         //Save configuration
         localStorage.setItem("config", JSON.stringify(config));
+        //Update screen
+        //Redraw repos list to update the active selection
+        UI.repos(config.repos, config.active, switchRepo);
+        //Clear branches list and changed files list
+        UI.branches([], switchBranch);
+        UI.diffTable([], rollbackCallback, diffCallback, viewCallback);
         //Load or refresh everything about this repository
         //Branches
         git.branches(activeRepo.directory, (output, hasError, data) => {
@@ -127,8 +133,6 @@ const switchRepo = function (directory, doRefresh) {
                         //Succeed, enable all buttons and draw changed files list
                         UI.buttons(true, true);
                         UI.diffTable(data, rollbackCallback, diffCallback, viewCallback);
-                        //Redraw repos list to update the active selection
-                        UI.repos(config.repos, config.active, switchRepo);
                         //Hide processing screen
                         UI.processing(false);
                     }
