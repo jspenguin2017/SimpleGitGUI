@@ -24,7 +24,7 @@ Please open an issue if there is something you want me to know.
 3. Install Electron by running this command: `npm install --global electron`. 
 4. Download source code from this repository as `.zip`, extract it, and run `electron .` in the extracted folder. 
 
-Note: A double-click-to-start script is available: `START.BAT` for Windows and `START.SH` for Linux. 
+Note: Double-click-to-start scripts are available: `START.BAT` for Windows and `START.SH` for Linux. 
 
 ## Credits
 
