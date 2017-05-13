@@ -23,7 +23,7 @@ const git = require("./renderer-lib/git.js");
 const binSearch = function (array, key) {
     //Initialize variables
     let lower = 0; //Lower bound
-    let upper = this.length - 1; //Upper bound
+    let upper = array.length - 1; //Upper bound
     let i; //Current index, this will be set later
     let elem; //Current element
     //Start binary search
@@ -36,12 +36,12 @@ const binSearch = function (array, key) {
         if (elem < key) {
             //Element is in the second half
             lower = i + 1;
-        } else if (currentElement > searchElement) {
+        } else if (elem > key) {
             //Element is in the first half
-            maxIndex = currentIndex - 1;
+            upper = i - 1;
         } else {
             //We found it
-            return currentIndex;
+            return i;
         }
     }
     //Lower bond passed upper bond, meaning the element is not in the array
@@ -708,34 +708,32 @@ if (config.repos.length) {
     //There is no repository, lock both action and management buttons
     UI.buttons(false, false);
 }
-//Spellcheck part, renderer keeps crashing for some reason
-if (false) {
-    //The dictionary array, will be loaded later
-    let spellcheckDict = [];
-    //Initialize spellcheck
-    webFrame.setSpellCheckProvider("en-US", false, {
-        spellCheck: function (word) {
-            debugger;
-            if (spellcheckDict.length) {
-                return binSearch(spellcheckDict, word) > -1;
-            } else {
-                //Dictonary is not loaded, return true so words will not all be underlined
-                return true;
-            }
-        }
-    });
-    //Load spellcheck dictionary, fs will be required inline since it is only used once
-    require("fs").readFile(path.join(__dirname, "renderer-lib/debian.dict-8.7.txt"), (err, data) => {
-        //Check if the file is loaded, result will be written to DOM
-        if (err) {
-            $("#modal-commit-spellcheck-load-state").html("Could not load spellcheck dictionary, error logged to console.");
-            console.error(err);
+//The dictionary array, will be loaded later
+let spellcheckDict = [];
+//Initialize spellcheck
+webFrame.setSpellCheckProvider("en-US", false, {
+    spellCheck: function (word) {
+        if (spellcheckDict.length) {
+            return binSearch(spellcheckDict, word) > -1;
         } else {
-            spellcheckDict = data.toString().split("\n");
-            $("#modal-commit-spellcheck-load-state").remove();
+            //Dictonary is not loaded, return true so words will not all be underlined
+            return true;
         }
-    });
-}
+    }
+});
+//Load spellcheck dictionary, fs will be required inline since it is only used once
+require("fs").readFile(path.join(__dirname, "renderer-lib/debian.dict-8.7.txt"), (err, data) => {
+    //Check if it succeed
+    if (err) {
+        //There is an error, update DOM and log it
+        $("#modal-commit-spellcheck-load-state").html("Could not load spellcheck dictionary, error logged to console.");
+        console.error(err);
+    } else {
+        //There is no error, parse the dictionary then update DOM
+        spellcheckDict = data.toString().split("\r\n");
+        $("#modal-commit-spellcheck-load-state").remove();
+    }
+});
 //Apply configuration
 //This part uses similar logic as switchRepo() refresh part, detailed comments are available there
 git.config(config.name, config.email, config.savePW, (output, hasError) => {
