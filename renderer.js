@@ -711,7 +711,7 @@ if (config.repos.length) {
 //The dictionary array, will be loaded later
 let spellcheckDict = [];
 //Initialize spellcheck
-webFrame.setSpellCheckProvider("en-US", false, {
+webFrame.setSpellCheckProvider("en-CA", false, {
     spellCheck: function (word) {
         if (spellcheckDict.length) {
             return binSearch(spellcheckDict, word) > -1;
