@@ -6,12 +6,47 @@ UI.processing(true);
 
 //=====Load Modules=====
 //Electron
-const {ipcRenderer: ipc, clipboard} = require("electron");
+const {ipcRenderer: ipc, clipboard, webFrame} = require("electron");
 //Utilities and libraries
 const path = require("path");
 const git = require("./renderer-lib/git.js");
 
 //=====Helper Functions=====
+/**
+ * Do binary search on an array.
+ * This is significantly faster than Array.prototype.indexOf() for large sorted arrays.
+ * @function
+ * @param {Array} array - The array to search from, it needs to be sorted.
+ * @param {string} key - The item we are looking for.
+ * @returns {integer} The index of the element, or -1 if it is not in the array.
+ */
+const binSearch = function (array, key) {
+    //Initialize variables
+    let lower = 0; //Lower bound
+    let upper = this.length - 1; //Upper bound
+    let i; //Current index, this will be set later
+    let elem; //Current element
+    //Start binary search
+    while (lower <= upper) {
+        //Set current index to be the middle between lower and upper bound, floored
+        i = (lower + upper) / 2 | 0;
+        //Get current element
+        elem = array[i];
+        //Compare the element and update bound
+        if (elem < key) {
+            //Element is in the second half
+            lower = i + 1;
+        } else if (currentElement > searchElement) {
+            //Element is in the first half
+            maxIndex = currentIndex - 1;
+        } else {
+            //We found it
+            return currentIndex;
+        }
+    }
+    //Lower bond passed upper bond, meaning the element is not in the array
+    return -1;
+};
 /**
  * Escape and colorize code.
  * @function
@@ -673,6 +708,34 @@ if (config.repos.length) {
     //There is no repository, lock both action and management buttons
     UI.buttons(false, false);
 }
+//Spellcheck part, renderer keeps crashing for some reason
+if (false) {
+    //The dictionary array, will be loaded later
+    let spellcheckDict = [];
+    //Initialize spellcheck
+    webFrame.setSpellCheckProvider("en-US", false, {
+        spellCheck: function (word) {
+            debugger;
+            if (spellcheckDict.length) {
+                return binSearch(spellcheckDict, word) > -1;
+            } else {
+                //Dictonary is not loaded, return true so words will not all be underlined
+                return true;
+            }
+        }
+    });
+    //Load spellcheck dictionary, fs will be required inline since it is only used once
+    require("fs").readFile(path.join(__dirname, "renderer-lib/debian.dict-8.7.txt"), (err, data) => {
+        //Check if the file is loaded, result will be written to DOM
+        if (err) {
+            $("#modal-commit-spellcheck-load-state").html("Could not load spellcheck dictionary, error logged to console.");
+            console.error(err);
+        } else {
+            spellcheckDict = data.toString().split("\n");
+            $("#modal-commit-spellcheck-load-state").remove();
+        }
+    });
+}
 //Apply configuration
 //This part uses similar logic as switchRepo() refresh part, detailed comments are available there
 git.config(config.name, config.email, config.savePW, (output, hasError) => {
@@ -700,6 +763,8 @@ setInterval(() => {
                 $(".modal-backdrop.fade").each(function () {
                     if ($(this).text() === "") {
                         $(this).remove();
+                        //Make sure modals are hidden properly
+                        $(".modal").modal("hide");
                     }
                 });
             }

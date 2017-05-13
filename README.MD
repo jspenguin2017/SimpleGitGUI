@@ -28,4 +28,6 @@ Note: A double-click-to-start script is available: `START.BAT` for Windows and `
 
 ## Credits
 
-Files under `images` are created from [https://loading.io/](https://loading.io/). 
+Files under `images` are created from [loading.io](https://loading.io/). 
+
+Spellcheck dictionary `renderer-lib/debian.dict-8.7.txt` is extracted from [Debian operating system](https://www.debian.org/). 
