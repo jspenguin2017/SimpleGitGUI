@@ -302,7 +302,7 @@ exports.diff = function (directory, callback) {
  */
 exports.switchBranch = function (directory, branch, callback) {
     //Run the command
-    run([`git -C "${escape(directory)}" checkout ${escape(branch)} --`], callback);
+    run([`git -C "${escape(directory)}" checkout "${escape(branch)}" --`], callback);
 };
 /**
  * Rollback a file.
@@ -313,7 +313,7 @@ exports.switchBranch = function (directory, branch, callback) {
  */
 exports.rollback = function (directory, file, callback) {
     //Run the command
-    run([`git -C "${escape(directory)}" checkout -- ${escape(file)}`], callback);
+    run([`git -C "${escape(directory)}" checkout -- "${escape(file)}"`], callback);
 };
 /**
  * Get difference of one file as a patch.
