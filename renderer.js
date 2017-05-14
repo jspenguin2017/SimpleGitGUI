@@ -748,8 +748,8 @@ git.config(config.name, config.email, config.savePW, (output, hasError) => {
         UI.processing(false);
     }
 });
-//There some slight issues with modals and we need to duct tape them
-//This may be a bug in Bootstrap, or just Bootstrap is not tested for multiple modal
+//There some issues with modals and we need to duct tape them
+//This may be a bug in Bootstrap, or Bootstrap is not designed to handle multiple modals
 //We need to remove a backdrop that is sometimes not removed, it blocks mouse clicks
 setInterval(() => {
     //This is pretty light, when the software is in the background, CPU usage stays at 0%
@@ -761,7 +761,7 @@ setInterval(() => {
                 $(".modal-backdrop.fade").each(function () {
                     if ($(this).text() === "") {
                         $(this).remove();
-                        //Make sure modals are hidden properly
+                        //Make sure all modals are hidden properly, so they can be shown again later
                         $(".modal").modal("hide");
                     }
                 });
