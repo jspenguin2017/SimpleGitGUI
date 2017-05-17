@@ -48,7 +48,7 @@ app.on("ready", () => {
         width: 1300,
         height: 700,
         minHeight: 550,
-        minWidth: 1050
+        minWidth: 1250
     });
     //Remove menu
     main.setMenu(null);

@@ -265,6 +265,10 @@ $("#btn-menu-force-push").click(() => {
 });
 //Refresh will not have a modal
 //Status will not have a modal
+//Import
+$("#btn-menu-import").click(() => {
+    $("#modal-import").modal("show");
+});
 //Clone
 $("#btn-menu-clone").click(() => {
     //Auto fill address
@@ -437,6 +441,28 @@ $("#btn-menu-repo-status").click(() => {
         }
     });
 });
+//Import confirmation button
+$("#modal-import-btn-import").click(() => {
+    //Show processing screen
+    UI.processing(true);
+    //Create a temporary repository profile so we can call JSON.stringify on it
+    let tempRepo = {
+        address: $("#modal-import-input-address").val(),
+        directory: $("#modal-import-input-directory").val()
+    };
+    //Update configuration
+    config.repos.push(tempRepo.directory);
+    config.active = tempRepo.directory;
+    //Save configuration
+    localStorage.setItem(tempRepo.directory, JSON.stringify(tempRepo));
+    localStorage.setItem("config", JSON.stringify(config));
+    //Enable management buttons, ations buttons will be handled by switchRepo
+    UI.buttons(null, true);
+    //Redraw repositories list
+    UI.repos(config.repos, config.active, switchRepo);
+    //Switch to the new repository
+    switchRepo(tempRepo.directory, true);
+});
 //Auto-fill clone directory
 $("#modal-clone-input-address").on("keyup", () => {
     //The name of the directory would be the text between the last / and .git
@@ -450,15 +476,13 @@ $("#modal-clone-btn-clone").click(() => {
     //Show processing screen
     UI.processing(true);
     //Create a temporary repository profile and see if cloning succeed, it will be saved it later if cloning succeed
-    const address = $("#modal-clone-input-address").val();
-    const directory = $("#modal-clone-input-directory").val();
     //Every repository will look like this, and saved in LocalStorage with directory being the key
     let tempRepo = {
-        address: address,
-        directory: directory
+        address: $("#modal-clone-input-address").val(),
+        directory: $("#modal-clone-input-directory").val()
     };
     //Clone the repository
-    git.clone(directory, address, (output, hasError) => {
+    git.clone(tempRepo.directory, tempRepo.address, (output, hasError) => {
         //Dump output to the terminal
         ipc.send("console log", { log: output });
         //Check if it succeeded
@@ -469,7 +493,7 @@ $("#modal-clone-btn-clone").click(() => {
             //Succeed, update configuration
             config.repos.push(tempRepo.directory);
             //Clone directory auto-fill will be done using the parent directory of this repository next time
-            config.lastPath = path.resolve(directory, "..");
+            config.lastPath = path.resolve(tempRepo.directory, "..");
             config.active = tempRepo.directory;
             //Save configuration
             localStorage.setItem(tempRepo.directory, JSON.stringify(tempRepo));

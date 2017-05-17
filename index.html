@@ -65,6 +65,7 @@
                     <li><button type="button" class="btn btn-primary navbar-btn btn-action" id="btn-menu-repo-status"><span class="glyphicon glyphicon-list-alt"></span> Status</button></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
+                    <li><button type="button" class="btn btn-success navbar-btn" id="btn-menu-import"><span class="glyphicon glyphicon-download-alt"></span> Import</button></li>
                     <li><button type="button" class="btn btn-success navbar-btn" id="btn-menu-clone"><span class="glyphicon glyphicon-plus-sign"></span> Clone</button></li>
                     <li><button type="button" class="btn btn-danger navbar-btn btn-management" id="btn-menu-delete-repo"><span class="glyphicon glyphicon-remove-sign"></span> Delete</button></li>
                     <li><button type="button" class="btn btn-info navbar-btn" style="margin-right:12px;" id="btn-menu-config"><span class="glyphicon glyphicon-cog"></span> Config</button></li>
@@ -231,6 +232,32 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-success btn-lg" data-dismiss="modal" onclick="$('#modal-force-push-input-confirm').val('');">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Import modal -->
+    <div id="modal-import" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Import</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group">
+                        <span class="input-group-addon">Remote: </span>
+                        <input type="text" class="form-control" placeholder="git://" id="modal-import-input-address" />
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">Local: </span>
+                        <input type="text" class="form-control" placeholder="" id="modal-import-input-directory" />
+                    </div>
+                    <br />
+                    <p>Inputs will not be validated before adding to configuration database. </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger btn-lg" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success btn-lg" data-dismiss="modal" id="modal-import-btn-import">Import</button>
                 </div>
             </div>
         </div>
