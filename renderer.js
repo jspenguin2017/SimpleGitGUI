@@ -462,6 +462,9 @@ $("#modal-import-btn-import").click(() => {
     UI.repos(config.repos, config.active, switchRepo);
     //Switch to the new repository
     switchRepo(tempRepo.directory, true);
+    //Clear inputs
+    $("#modal-import-input-address").val("");
+    $("#modal-import-input-directory").val("");
 });
 //Auto-fill clone directory
 $("#modal-clone-input-address").on("keyup", () => {
