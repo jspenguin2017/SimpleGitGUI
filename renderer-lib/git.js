@@ -35,6 +35,11 @@ const format = function (code, err, stdout, stderr) {
     if (err) {
         //It has an error, add error code and standard error output.
         out += `Error code: ${err.code}\n${stderr}`;
+        //Check other errors
+        if (err.code === undefined) {
+            //JavaScript error
+            out += err.message;
+        }
     } else {
         //There is no error, add standard error output and standard output if they are not empty
         //We need to add standard error output since Git sends some information there
