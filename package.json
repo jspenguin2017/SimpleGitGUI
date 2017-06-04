@@ -8,7 +8,7 @@
   },
   "description": "A simple Git GUI, free and open. ",
   "engines": {
-    "node": ">=7.10.0"
+    "node": ">=7.4.0"
   },
   "homepage": "https://github.com/jspenguin2017/SimpleGitGUI",
   "license": "GNU GPL v3",
