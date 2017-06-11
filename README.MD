@@ -23,10 +23,15 @@ Please open an issue if there is something you want me to know.
 
 1. Install [Git](https://git-scm.com/downloads). 
 2. Install [Node.js](https://nodejs.org/en/). 
-3. Install Electron by running this command: `npm install --global electron`. 
-4. Download source code from this repository as `.zip`, extract it, and run `electron .` in the extracted folder. 
+3. Whitelist .js file type in your anti-virus software. 
+4. Download all files from this repository to a folder by any convenient method then run `npm install` in it. 
 
-Note: Double-click-to-start scripts are available: `START.BAT` for Windows and `START.SH` for Linux. 
+For Linux: 
+1. Configure your file explorer to execute scripts when double clicked. 
+2. Double click on `Launcher.sh` to start. 
+
+For Windows: 
+1. Double click on `Launcher.exe` to start. 
 
 ## Credits
 

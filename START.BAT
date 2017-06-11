@@ -1,2 +1,0 @@
-@ECHO OFF
-npm start
