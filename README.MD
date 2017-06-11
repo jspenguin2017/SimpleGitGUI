@@ -7,8 +7,8 @@
 This software aims at doing exactly what you want, even though the user interface looks simple, 
 you need some understanding of Git to use it. Make sure that you know what you are clicking, or bad things will happen. 
 
-`F5` can be used to reload the renderer process when it is not busy, and `F12` to open DevTools. The window cannot be 
-closed normally when the renderer is busy. 
+`F5` can be used to reload the renderer process when it is not busy. The window cannot be closed when the renderer is busy, 
+but you can always press `F12` to bring up DevTools to fix it if it is stuck. 
 
 When there is an error, the raw error message will be shown, there could be times when you need to use the command line tool 
 to fix the problem. 
