@@ -4,6 +4,9 @@ using System.Windows.Forms;
 
 namespace Launcher
 {
+    /// <summary>
+    /// Launch Simple Git GUI without a shell in the background
+    /// </summary>
     public partial class MainForm : Form
     {
         public MainForm()
@@ -30,6 +33,11 @@ namespace Launcher
             process.Start();
             //Exit
             Application.Exit();
+        }
+
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }
