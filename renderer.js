@@ -6,7 +6,7 @@ UI.processing(true);
 
 //=====Load Modules=====
 //Electron
-const {ipcRenderer: ipc, clipboard, webFrame} = require("electron");
+const { ipcRenderer: ipc, clipboard, webFrame } = require("electron");
 //Utilities and libraries
 const path = require("path");
 const git = require("./renderer-lib/git.js");
@@ -452,6 +452,8 @@ $("#modal-import-btn-import").click(() => {
     };
     //Update configuration
     config.repos.push(tempRepo.directory);
+    //Keep repositories in order
+    config.repos.sort();
     config.active = tempRepo.directory;
     //Save configuration
     localStorage.setItem(tempRepo.directory, JSON.stringify(tempRepo));
@@ -495,6 +497,8 @@ $("#modal-clone-btn-clone").click(() => {
         } else {
             //Succeed, update configuration
             config.repos.push(tempRepo.directory);
+            //Keep repositories in order
+            config.repos.sort();
             //Clone directory auto-fill will be done using the parent directory of this repository next time
             config.lastPath = path.resolve(tempRepo.directory, "..");
             config.active = tempRepo.directory;
@@ -628,6 +632,12 @@ $(document).on("keyup", (e) => {
 });
 //Warn the user about the console
 console.log("%cPlease be careful of what you execute in this console, this console has access to your local file system. ", "color: red; font-size: large;");
+//Prevent the window from closing when we are busy
+window.onbeforeunload = (e) => {
+    if (UI.isProcessing()) {
+        e.returnValue = false;
+    }
+};
 //Update height of some elements on window resize
 $(window).resize(() => {
     //Main container
@@ -677,6 +687,8 @@ try {
     for (let i = 0; i < tempConfig.repos.length; i++) {
         config.repos.push(tempConfig.repos[i].toString());
     }
+    //Keep repositories in order, it should be already in order, sort again to make sure
+    config.repos.sort();
 } catch (err) {
     //The configuration JSON is not valid, use the default one
     config = {
