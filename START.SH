@@ -1,2 +1,2 @@
 #!/bin/bash
-electron .
+npm start
