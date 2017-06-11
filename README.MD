@@ -36,8 +36,7 @@ For Linux:
 For Windows: 
 1. Double click on `Launcher.exe` to start. 
 
-Note: These launchers simply execute `npm start` without showing the terminal window, it works for all packages that can be 
-started by running `npm start`. 
+Note: These launchers simply execute `npm start` without showing the terminal window. 
 
 ## Credits
 
