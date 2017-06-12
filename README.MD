@@ -24,7 +24,7 @@ Please open an issue if there is something you want me to know.
 
 1. Install [Git](https://git-scm.com/downloads). 
 2. Install [Node.js](https://nodejs.org/en/). 
-3. Whitelist .js file type in your anti-virus software. 
+3. Whitelist `.js` file type in your anti-virus software. 
 4. Download all files from this repository to a folder by any convenient method then run `npm install` in it. 
 
 For Linux: 
