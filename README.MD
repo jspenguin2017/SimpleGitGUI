@@ -1,6 +1,4 @@
-# Simple Git GUI
-
-[![Dependencies](https://david-dm.org/jspenguin2017/SimpleGitGUI.svg)](https://david-dm.org/jspenguin2017/SimpleGitGUI)
+# Simple Git GUI [![Dependencies](https://david-dm.org/jspenguin2017/SimpleGitGUI.svg)](https://david-dm.org/jspenguin2017/SimpleGitGUI)
 
 ![Main Window](http://i.imgur.com/VaeQ2Qm.png)
 
