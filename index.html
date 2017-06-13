@@ -368,12 +368,12 @@
                     <h4 class="modal-title">Delete branch</h4>
                 </div>
                 <div class="modal-body">
-                    <p>Delete this local branch?</p>
+                    <p>This will delete the local branch, the remote branch, if exists, will not be touched, continue?</p>
                     <pre id="modal-delete-branch-pre-branch"></pre>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-success btn-lg" data-dismiss="modal" onclick="$('#modal-delete-branch-pre-branch').text('');">No</button>
-                    <button type="button" class="btn btn-warning btn-lg" data-dismiss="modal" id="modal-delete-branch-btn-confirm">Yes</button>
+                    <button type="button" class="btn btn-danger btn-lg" data-dismiss="modal" id="modal-delete-branch-btn-confirm">Yes</button>
                 </div>
             </div>
         </div>

@@ -624,6 +624,34 @@ $("#modal-switch-branch-btn-switch").click(() => {
         $("#modal-switch-branch-pre-branch").text("");
     }
 });
+//Delete branch button
+$("#modal-switch-branch-btn-delete").click(() => {
+    //Move the name over and show delete confirm modal
+    const name = $("#modal-switch-branch-pre-branch").text().trim();
+    if (name) {
+        $("#modal-delete-branch-pre-branch").text(name);
+        $("#modal-switch-branch-pre-branch").text("");
+        $("#modal-delete-branch").modal("show");
+    }
+    //If the user interface worked properly, name would not be blank
+});
+//Delete branch confirmation button
+$("#modal-delete-branch-btn-confirm").click(() => {
+    //This function uses similar logic as file rollback confirmation button click event handler, detailed comments are available there
+    const name = $("#modal-delete-branch-pre-branch").text().trim();
+    if (name) {
+        UI.processing(true);
+        git.deleteBranch(activeRepo.directory, name, (output, hasError) => {
+            ipc.send("console log", { log: output });
+            if (hasError) {
+                UI.dialog("Something went wrong when deleting branch...", codify(output, true), true);
+            } else {
+                switchRepo(activeRepo.directory, true);
+            }
+        });
+        $("#modal-delete-branch-pre-branch").text("");
+    }
+});
 
 //=====Initialization=====
 //Bind shortcut keys
@@ -634,14 +662,13 @@ $(document).on("keyup", (e) => {
         ipc.send("dev-tools");
     } else if (e.which === 116) {
         //F5, Reload if not busy
-        //Note that a reload can be forced from DevTools
         if (!UI.isProcessing()) {
             location.reload();
         }
     }
 });
 //Warn the user about the console
-console.log("%cPlease be careful of what you execute in this console, this console has access to your local file system.", "color: red; font-size: large;");
+console.log("%cPlease be careful of what you execute in this console, it has access to your local file system.", "color:red; font-size:large;");
 //Prevent the window from closing when we are busy
 window.onbeforeunload = (e) => {
     if (UI.isProcessing()) {
