@@ -631,7 +631,7 @@ $(document).on("keyup", (e) => {
     }
 });
 //Warn the user about the console
-console.log("%cPlease be careful of what you execute in this console, this console has access to your local file system. ", "color: red; font-size: large;");
+console.log("%cPlease be careful of what you execute in this console, this console has access to your local file system.", "color: red; font-size: large;");
 //Prevent the window from closing when we are busy
 window.onbeforeunload = (e) => {
     if (UI.isProcessing()) {

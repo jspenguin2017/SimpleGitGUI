@@ -171,7 +171,7 @@ exports.forcePull = function (directory, address, callback) {
         });
     } else {
         //It is not initialized, this should not happen if the user interface worked properly
-        callback("Local repository removal command is not initialized. ", true);
+        callback("Local repository removal command is not initialized.", true);
     }
 };
 /**
