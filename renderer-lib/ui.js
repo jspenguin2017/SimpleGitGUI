@@ -165,8 +165,17 @@ UI.diffTable = function (data, rollbackCallback, diffCallback, viewCallback) {
         if (!data[i]) {
             continue;
         }
-        //Get changed file name
-        let file = data[i].substring(2).trim().split("/");
+        //Get changed file's name
+        let file = data[i].substring(2).trim();
+        //In case of rename, the file name would be like `file1 -> file2`
+        //In case of file name with space: `"file 1" -> "file 2"`
+        //Assuming ">" is not a valid character for file name
+        if (file.includes(" -> ")) {
+            //Taking the second file to be the shown file name
+            file = file.split(" -> ")[1].split("/");
+        } else {
+            file = file.split("/");
+        }
         //Remove redundant double quote
         if ((file[0]).startsWith("\"")) {
             file[0] = (file[0]).substring(1);
@@ -178,7 +187,7 @@ UI.diffTable = function (data, rollbackCallback, diffCallback, viewCallback) {
         let File = {
             fullName: file.join("/"), //This is used when calling callback
             name: file.pop(), //This is shown in File Name column
-            directory: "/" + file.join("/"), //This is shown in Directory column
+            directory: file.join("/") || "/", //This is shown in Directory column
             state: [] //[Remote, Local] state, will be shown in the appropriate column
         };
         //Add state
