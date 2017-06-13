@@ -167,9 +167,9 @@ UI.diffTable = function (data, rollbackCallback, diffCallback, viewCallback) {
         }
         //Get changed file's name
         let file = data[i].substring(2).trim();
-        //In case of rename, the file name would be like `file1 -> file2`
-        //In case of file name with space: `"file 1" -> "file 2"`
-        //Assuming ">" is not a valid character for file name
+        //In case of rename, the file name would be like `file1 -> file2` or `"file 1" -> "file 2"` if the file name contains space
+        //Assuming ">" is not a valid character for file name, even though ">" along with new line and backspace are allowed on Linux
+        //Hopefully everyone would follow the best practice
         if (file.includes(" -> ")) {
             //Taking the second file to be the shown file name
             file = file.split(" -> ")[1].split("/");
