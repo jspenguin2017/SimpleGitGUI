@@ -8,46 +8,49 @@
  */
 var UI = {};
 
-/**
- * Show or hide processing screen.
- * @function
- * @param {boolean} isProcessing - True to show the processing screen, false to hide.
- */
-//This variable saves the current processing image state, this is used when toggling between the two processing image
-let processingImageFlag = false;
-//This variable saves the current processing state, it is also used in UI.isProcessing()
-let currentProcessingState = null;
-UI.processing = function (isProcessing) {
-    //Check if the current state is the supplied state
-    if (currentProcessingState !== isProcessing) {
-        //It is not, proceed
-        //Update current state flag
-        currentProcessingState = isProcessing;
-        //Show modal
-        $("#modal-processing-screen").modal(isProcessing ? "show" : "hide");
-        //Toggle processing image only when showing the screen, or the user will always see the same one
-        if (isProcessing) {
-            if (processingImageFlag) {
-                $("#modal-processing-screen-img-1").hide();
-                $("#modal-processing-screen-img-2").show();
-            } else {
-                $("#modal-processing-screen-img-1").show();
-                $("#modal-processing-screen-img-2").hide();
+//UI.processing and UI.isProcessing
+((root) => {
+    //This variable saves the current processing image state, this is used when toggling between the two processing image
+    let processingImageFlag = false;
+    //This variable saves the current processing state, it is also used in UI.isProcessing()
+    let currentProcessingState = null;
+    /**
+     * Show or hide processing screen.
+     * @function
+     * @param {boolean} isProcessing - True to show the processing screen, false to hide.
+     */
+    root.processing = (isProcessing) => {
+        //Check if the current state is the supplied state
+        if (currentProcessingState !== isProcessing) {
+            //It is not, proceed
+            //Update current state flag
+            currentProcessingState = isProcessing;
+            //Show modal
+            $("#modal-processing-screen").modal(isProcessing ? "show" : "hide");
+            //Toggle processing image only when showing the screen, or the user will always see the same one
+            if (isProcessing) {
+                if (processingImageFlag) {
+                    $("#modal-processing-screen-img-1").hide();
+                    $("#modal-processing-screen-img-2").show();
+                } else {
+                    $("#modal-processing-screen-img-1").show();
+                    $("#modal-processing-screen-img-2").hide();
+                }
+                //Flip the flag
+                processingImageFlag = !processingImageFlag;
             }
-            //Flip the flag
-            processingImageFlag = !processingImageFlag;
         }
-    }
-    //Ignore if current state is the same as the supplied state
-};
-/**
- * Get current processing state.
- * @function
- * @returns {boolean} The current processing state, true for processing, false for idle.
- */
-UI.isProcessing = function () {
-    return currentProcessingState;
-};
+        //Ignore if current state is the same as the supplied state
+    };
+    /**
+     * Get current processing state.
+     * @function
+     * @returns {boolean} The current processing state, true for processing, false for idle.
+     */
+    root.isProcessing = () => {
+        return currentProcessingState;
+    };
+})(UI);
 /**
  * Show a generic dialog box.
  * This will hide processing screen.
@@ -56,7 +59,7 @@ UI.isProcessing = function () {
  * @param {string} message - The body of the dialog box, must be a safe HTML string.
  * @param {boolean} isError - Set this to true to make the title red.
  */
-UI.dialog = function (title, message, isError) {
+UI.dialog = (title, message, isError) => {
     //Hide processing screen
     UI.processing(false);
     //Update DOM
@@ -73,7 +76,7 @@ UI.dialog = function (title, message, isError) {
  * @param {*} action - Supply a boolean to update action buttons availability, supply anything else to keep the availability as-is.
  * @param {*} management - Supply a boolean to update management buttons availability, supply anything else to keep the availability as-is.
  */
-UI.buttons = function (action, management) {
+UI.buttons = (action, management) => {
     if (typeof action === "boolean") {
         $(".btn-action").prop("disabled", !action);
     }
@@ -88,7 +91,7 @@ UI.buttons = function (action, management) {
  * @param {string} active - The directory of the active repository.
  * @param {Function} switchCallback - This function will be called when the user clicks on a repository, the directory of the repository will be supplied.
  */
-UI.repos = function (directories, active, switchCallback) {
+UI.repos = (directories, active, switchCallback) => {
     //Empty repositories list
     $("#div-repos-list").empty();
     //Add repositories to the list one by one
@@ -113,7 +116,7 @@ UI.repos = function (directories, active, switchCallback) {
  * @param {Array.<string>} data - Raw branches data from git.branches().
  * @param {Function} switchCallback - This function will be called when the user clicks on a branch, the name of the branch will be supplied.
  */
-UI.branches = function (data, switchCallback) {
+UI.branches = (data, switchCallback) => {
     //Parse data
     let names = [];
     let active;
@@ -157,7 +160,7 @@ UI.branches = function (data, switchCallback) {
  * @param {Function} diffCallback - This function will be called when the user click on the Difference button of a file, the file name will be supplied.
  * @param {Function} viewCallback - This function will be called when the user click on the View button of a file, the file name will be supplied.
  */
-UI.diffTable = function (data, rollbackCallback, diffCallback, viewCallback) {
+UI.diffTable = (data, rollbackCallback, diffCallback, viewCallback) => {
     //Parse data
     let changedFiles = [];
     for (let i = 0; i < data.length; i++) {

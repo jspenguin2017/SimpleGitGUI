@@ -20,7 +20,7 @@ const git = require("./renderer-lib/git.js");
  * @param {string} key - The item we are looking for.
  * @returns {integer} The index of the element, or -1 if it is not in the array.
  */
-const binSearch = function (array, key) {
+const binSearch = (array, key) => {
     //Initialize variables
     let lower = 0; //Lower bound
     let upper = array.length - 1; //Upper bound
@@ -54,7 +54,7 @@ const binSearch = function (array, key) {
  * @param {bool} [noColor=false] - Set this to true to not colorize code.
  * @returns {string} The HTML string that is ready to be inserted to DOM.
  */
-const codify = function (code, noColor) {
+const codify = (code, noColor) => {
     //Escape HTML, & and < are the only ones we need to worry about since it will be wrapped in <pre>
     code = code.replace(/\&/g, "&amp;").replace(/\</g, "&lt;");
     //Color each line
@@ -82,7 +82,7 @@ const codify = function (code, noColor) {
  * @function
  * @returns {Array.<string>} Lines of commit message, a default message will be returned if the user has not enter any message.
  */
-const getCommitMsg = function () {
+const getCommitMsg = () => {
     //Read commit message
     let msg = $("#modal-commit-input-commit-message").val().split("\n");
     //Clear the text box for next commit
@@ -111,7 +111,7 @@ const getCommitMsg = function () {
  * @param {bool} [doRefresh=false] - Set this to true to do a refresh regardless whether or not the repository is already active, this will also prevent the directory from opening.
  * @listens $(".repos-list-btn-switch-repo").click
  */
-const switchRepo = function (directory, doRefresh) {
+const switchRepo = (directory, doRefresh) => {
     //Show processing screen 
     UI.processing(true);
     //Check what should we do
@@ -182,7 +182,7 @@ const switchRepo = function (directory, doRefresh) {
  * @function
  * @listens $(".branches-list-btn-switch-branch").click
  */
-const switchBranch = function (name) {
+const switchBranch = (name) => {
     //Fill in the branch to switch to
     $("#modal-switch-branch-pre-branch").text(name.split("/").pop());
     //Show modal
@@ -193,7 +193,7 @@ const switchBranch = function (name) {
  * @function
  * @listens $(".diff-table-btn-file-rollback").click
  */
-const rollbackCallback = function (file) {
+const rollbackCallback = (file) => {
     //Fill in the file to rollback
     $("#modal-rollback-pre-file-name").text(file);
     //Show modal
@@ -204,7 +204,7 @@ const rollbackCallback = function (file) {
  * @function
  * @listens $(".diff-table-btn-file-diff").click
  */
-const diffCallback = function (file) {
+const diffCallback = (file) => {
     //This function uses similar logic as switchRepo() refresh part, detailed comments are available there
     UI.processing(true);
     git.fileDiff(activeRepo.directory, file, (output, hasError, data) => {
@@ -222,7 +222,7 @@ const diffCallback = function (file) {
  * @function
  * @listens $(".diff-table-btn-file-view").click
  */
-const viewCallback = function (file) {
+const viewCallback = (file) => {
     //This function uses similar logic as switchRepo() open directory part, detailed comments are available there
     UI.processing(true);
     ipc.once("show file in folder done", () => {
@@ -584,10 +584,11 @@ $("#modal-config-btn-save").click(() => {
 //File rollback confirmation button
 $("#modal-rollback-btn-rollback").click(() => {
     //Get the file name from DOM, we set it before showing the modal
-    if ($("#modal-rollback-pre-file-name").text()) {
+    const name = $("#modal-rollback-pre-file-name").text().trim();
+    if (name) {
         //This part uses similar logic as switchRepo() refresh part, detailed comments are available there
         UI.processing(true);
-        git.rollback(activeRepo.directory, $("#modal-rollback-pre-file-name").text(), (output, hasError) => {
+        git.rollback(activeRepo.directory, name, (output, hasError) => {
             if (hasError) {
                 UI.dialog("Something went wrong when rolling back...", codify(output, true), true);
             } else {
@@ -597,13 +598,15 @@ $("#modal-rollback-btn-rollback").click(() => {
         //Clear the file name from DOM, so it will not cause confusion in case it is not properly set next time
         $("#modal-rollback-pre-file-name").text("");
     }
+    //If the user interface worked properly, name would not be blank
 });
 //Switch branch confirmation button
 $("#modal-switch-branch-btn-switch").click(() => {
     //This function uses similar logic as file rollback confirmation button click event handler, detailed comments are available there
-    if ($("#modal-switch-branch-pre-branch").text()) {
+    const name = $("#modal-switch-branch-pre-branch").text().trim();
+    if (name) {
         UI.processing(true);
-        git.switchBranch(activeRepo.directory, $("#modal-switch-branch-pre-branch").text(), (output, hasError) => {
+        git.switchBranch(activeRepo.directory, name, (output, hasError) => {
             ipc.send("console log", { log: output });
             if (hasError) {
                 UI.dialog("Something went wrong when switching branch...", codify(output, true), true);
@@ -650,7 +653,7 @@ $(window).resize(() => {
 //Update height for the first time
 $(window).trigger("resize");
 //Project page event handler, this will be called from inline code
-window.openProjectPage = function () {
+window.openProjectPage = () => {
     //This function uses similar logic as switchRepo() open directory part, detailed comments are available there
     UI.processing(true);
     ipc.once("open project page done", () => {
@@ -751,7 +754,7 @@ if (config.repos.length) {
 let spellcheckDict = [];
 //Initialize spellcheck
 webFrame.setSpellCheckProvider("en-CA", false, {
-    spellCheck: function (word) {
+    spellCheck(word) {
         if (spellcheckDict.length) {
             return binSearch(spellcheckDict, word) > -1;
         } else {
@@ -790,6 +793,7 @@ git.config(config.name, config.email, config.savePW, (output, hasError) => {
 //There some issues with modals and we need to duct tape them
 //This may be a bug in Bootstrap, or Bootstrap is not designed to handle multiple modals
 //We need to remove a backdrop that is sometimes not removed, it blocks mouse clicks
+/*
 setInterval(() => {
     //This is pretty light, when the software is in the background, CPU usage stays at 0%
     if (!$(".modal").is(":visible") && $(".modal-backdrop.fade").length) {
@@ -808,3 +812,4 @@ setInterval(() => {
         }, 250);
     }
 }, 750);
+*/

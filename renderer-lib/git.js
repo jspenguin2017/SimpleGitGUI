@@ -13,7 +13,7 @@ const fs = require("fs");
  * @param {string} text - The text to escape.
  * @returns {string} The escaped text.
  */
-const escape = function (text) {
+const escape = (text) => {
     //Replace " and \ by \" and \\, and remove new lines
     //There should never be new lines if the user interface worked properly
     return text.replace(/("|\\)/g, "\\$1").replace(/\n/g, "");
@@ -28,7 +28,7 @@ const escape = function (text) {
  * @param {string} stderr - The standard error output.
  * @returns {string} The combined and formatted output.
  */
-const format = function (code, err, stdout, stderr) {
+const format = (code, err, stdout, stderr) => {
     //Add what just ran
     let out = `>>> ${code}\n`;
     //Check if there is an error
@@ -59,12 +59,12 @@ const format = function (code, err, stdout, stderr) {
  * @param {Array.<string>} lines - Lines of code to run.
  * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
-const run = function (lines, callback) {
+const run = (lines, callback) => {
     //Presistent variables (until all the lines of code are processed)
     let output = "";
     let hasError = false;
     //Line runner
-    const runner = function () {
+    const runner = () => {
         //Get a line
         let line = lines.shift();
         //Check if we have any lines left
@@ -97,7 +97,7 @@ const run = function (lines, callback) {
  * @param {string} code - The line of code to run.
  * @param {Function} callback - This function will be called once the execution ends, it will be supplied the formatted output and an error flag, also the lines of standard output if there is no error.
  */
-const porcelain = function (code, callback) {
+const porcelain = (code, callback) => {
     //Run the code
     exec(code, (err, stdout, stderr) => {
         //See if there is an error, and call callback accordingly
@@ -117,7 +117,7 @@ const porcelain = function (code, callback) {
  * @returns {string} The generated command.
  */
 let rmCode = "";
-exports.forcePullCmd = function (directory) {
+exports.forcePullCmd = (directory) => {
     //The command is different on Windows
     if (process.platform === "win32") {
         //Windows
@@ -145,7 +145,7 @@ exports.forcePullCmd = function (directory) {
  * @param {string} address - The adress of the active repository.
  * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
-exports.forcePull = function (directory, address, callback) {
+exports.forcePull = (directory, address, callback) => {
     //Check if the local repository removal command is initialized
     if (rmCode) {
         //It is initialized, remove the local directory using it
@@ -180,7 +180,7 @@ exports.forcePull = function (directory, address, callback) {
  * @param {string} directory - The directory of the active repository.
  * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
-exports.pull = function (directory, callback) {
+exports.pull = (directory, callback) => {
     //Run the command
     run([
         `git -C "${escape(directory)}" pull --verbose`,
@@ -194,7 +194,7 @@ exports.pull = function (directory, callback) {
  * @param {Array.<string>} - The commit messages, one paragraph per element.
  * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
-exports.commit = function (directory, messages, callback) {
+exports.commit = (directory, messages, callback) => {
     //Prepare the commit command
     let cmd = `git -C "${escape(directory)}" commit --verbose`;
     //Put in commit comments
@@ -210,7 +210,7 @@ exports.commit = function (directory, messages, callback) {
  * @param {string} directory - The directory of the active repository.
  * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
-exports.push = function (directory, callback) {
+exports.push = (directory, callback) => {
     //Run the command
     run([`git -C "${escape(directory)}" push --verbose`], callback);
 };
@@ -221,7 +221,7 @@ exports.push = function (directory, callback) {
  * @param {string} branch - The current branch.
  * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
-exports.forcePush = function (directory, branch, callback) {
+exports.forcePush = (directory, branch, callback) => {
     //Run the command
     run([`git -C "${escape(directory)}" push origin "${escape(branch)}" --force --verbose`], callback);
 };
@@ -231,7 +231,7 @@ exports.forcePush = function (directory, branch, callback) {
  * @param {string} directory - The directory of the active repository.
  * @param {Function} callback - This function will be called once the execution ends, it will be supplied the formatted output and an error flag, also the lines of standard output if there is no error.
  */
-exports.status = function (directory, callback) {
+exports.status = (directory, callback) => {
     //Run the command
     porcelain(`git -C "${escape(directory)}" status --untracked-files=all`, callback);
 };
@@ -242,7 +242,7 @@ exports.status = function (directory, callback) {
  * @param {string} address - The remote repository address.
  * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
-exports.clone = function (directory, address, callback) {
+exports.clone = (directory, address, callback) => {
     //Create the directory
     fs.mkdir(directory, (err) => {
         //Try to clone even if there is an error, Git will not proceed unless the directory is empty, we do not need to check it
@@ -257,9 +257,9 @@ exports.clone = function (directory, address, callback) {
  * @param {boolean} savePW - Whether or not credential helper should be used.
  * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
-exports.config = function (name, email, savePW, callback) {
+exports.config = (name, email, savePW, callback) => {
     //Intermediate callback to handle credential helper
-    const intermediate = function (output, hasError) {
+    const intermediate = (output, hasError) => {
         //Check if there is already an error
         if (hasError) {
             //There is, return error message and abort
@@ -287,7 +287,7 @@ exports.config = function (name, email, savePW, callback) {
  * @param {string} directory - The directory of the active repository.
  * @param {Function} callback - This function will be called once the execution ends, it will be supplied the formatted output and an error flag, also the lines of standard output if there is no error.
  */
-exports.branches = function (directory, callback) {
+exports.branches = (directory, callback) => {
     //Run the command
     porcelain(`git -C "${escape(directory)}" branch --list --all`, callback);
 };
@@ -297,7 +297,7 @@ exports.branches = function (directory, callback) {
  * @param {string} directory - The directory of the active repository.
  * @param {Function} callback - This function will be called once the execution ends, it will be supplied the formatted output and an error flag, also the lines of standard output if there is no error.
  */
-exports.diff = function (directory, callback) {
+exports.diff = (directory, callback) => {
     //Run the command
     porcelain(`git -C "${escape(directory)}" status --porcelain --untracked-files=all`, callback);
 };
@@ -308,7 +308,7 @@ exports.diff = function (directory, callback) {
  * @param {string} branch - The branch to switch to.
  * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
-exports.switchBranch = function (directory, branch, callback) {
+exports.switchBranch = (directory, branch, callback) => {
     //Run the command
     run([`git -C "${escape(directory)}" checkout "${escape(branch)}" --`], callback);
 };
@@ -319,7 +319,7 @@ exports.switchBranch = function (directory, branch, callback) {
  * @param {string} file - The file to rollback.
  * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
-exports.rollback = function (directory, file, callback) {
+exports.rollback = (directory, file, callback) => {
     //Run the command
     run([`git -C "${escape(directory)}" checkout -- "${escape(file)}"`], callback);
 };
@@ -330,7 +330,7 @@ exports.rollback = function (directory, file, callback) {
  * @param {string} file - The file in question.
  * @param {Function} callback - This function will be called once the execution ends, it will be supplied the formatted output and an error flag, also the lines of standard output if there is no error.
  */
-exports.fileDiff = function (directory, file, callback) {
+exports.fileDiff = (directory, file, callback) => {
     //Run the command
     porcelain(`git -C "${escape(directory)}" diff "${escape(file)}"`, callback);
 };
