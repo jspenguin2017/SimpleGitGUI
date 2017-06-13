@@ -185,6 +185,13 @@ const switchRepo = (directory, doRefresh) => {
 const switchBranch = (name) => {
     //Fill in the branch to switch to
     $("#modal-switch-branch-pre-branch").text(name.split("/").pop());
+    //Set delete button visibility, only show for local branches
+    if (name.includes("/")) {
+        //Remote branch
+        $("#modal-switch-branch-btn-delete").hide();
+    } else {
+        $("#modal-switch-branch-btn-delete").show();
+    }
     //Show modal
     $("#modal-switch-branch").modal("show");
 };
