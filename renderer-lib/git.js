@@ -3,7 +3,7 @@
 "use strict";
 
 //=====Load Utility Modules=====
-const {exec} = require("child_process");
+const { exec } = require("child_process");
 const fs = require("fs");
 
 //=====Helper Functions=====
@@ -182,7 +182,10 @@ exports.forcePull = function (directory, address, callback) {
  */
 exports.pull = function (directory, callback) {
     //Run the command
-    run([`git -C "${escape(directory)}" pull --verbose`], callback);
+    run([
+        `git -C "${escape(directory)}" pull --verbose`,
+        `git -C "${escape(directory)}" remote prune origin`,
+    ], callback);
 };
 /**
  * Do stage then commit.
@@ -275,7 +278,7 @@ exports.config = function (name, email, savePW, callback) {
     //Run the commands
     run([
         `git config --global user.name "${escape(name)}"`,
-        `git config --global user.email "${escape(email)}"`
+        `git config --global user.email "${escape(email)}"`,
     ], intermediate);
 };
 /**
