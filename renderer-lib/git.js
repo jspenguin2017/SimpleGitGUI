@@ -313,6 +313,17 @@ exports.switchBranch = (directory, branch, callback) => {
     run([`git -C "${escape(directory)}" checkout "${escape(branch)}" --`], callback);
 };
 /**
+ * Delete a local branch.
+ * @function
+ * @param {string} directory - The directory of the active repository.
+ * @param {string} branch - The branch to delete.
+ * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
+ */
+exports.deleteBranch = (directory, branch, callback) => {
+    //Run the command
+    run([`git -C "${escape(directory)}" branch --delete "${escape(branch)}"`], callback);
+};
+/**
  * Rollback a file.
  * @function
  * @param {string} directory - The directory of the active repository.
