@@ -41,3 +41,8 @@ Note: These launchers simply execute `npm start` without showing the terminal wi
 Files under `images` are created from [loading.io](https://loading.io/). 
 
 Spellcheck dictionary `renderer-lib/debian.dict-8.7.txt` is extracted from [Debian operating system](https://www.debian.org/). 
+
+## TODO
+
+1. Add branch delete button
+2. Add background fetch and alert the user when there are changes (a watch / unwatch button?)
