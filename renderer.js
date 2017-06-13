@@ -68,8 +68,8 @@ const codify = function (code, noColor) {
                 //Removal
                 lines[i] = `<span class="code-remove">${lines[i]}</span>`;
             } else if ((lines[i]).startsWith("@")) {
-                //Header
-                lines[i] = `<span class="code-area">${lines[i]}</span>`;
+                //Section header
+                lines[i] = `<span class="code-section">${lines[i]}</span>`;
             }
         }
         code = lines.join("\n");
