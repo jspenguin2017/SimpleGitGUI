@@ -16,6 +16,7 @@ var UI = {};
     let currentProcessingState = null;
     /**
      * Show or hide processing screen.
+     * window.onProcessingEnds() will be called when hidding the processing screen.
      * @function
      * @param {boolean} isProcessing - True to show the processing screen, false to hide.
      */
