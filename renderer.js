@@ -916,11 +916,18 @@ const scheduleIconRefresh = (() => {
                 git.fetch(directory, (output, hasError) => {
                     //Dump output to the terminal
                     ipc.send("console log", { log: output });
-                    //Update icon
-                    getRunner(directory).then(() => {
-                        //Schedule next tick
-                        setTimeout(runTask, delay);
-                    });
+                    //Update icon if there is no error
+                    if (!hasError) {
+                        getRunner(directory).then(() => {
+                            //Schedule next tick
+                            setTimeout(runTask, delay);
+                        });
+                    } else {
+                        //Update the icon to be error (will be the same icon as diverged)
+                        if (icons[directory]) {
+                            updateIcons(directory, "diverged");
+                        }
+                    }
                     //Update flag and run scheduled runner
                     isFetching = false;
                     if (typeof window.onceFetchingDone === "function") {
