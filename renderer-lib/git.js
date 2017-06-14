@@ -383,14 +383,14 @@ exports.compare = (directory, callback) => {
             if (results[0] === results[1]) {
                 //Local is the same as remote, nothing to do
                 callback("up to date", output);
-            } else if (results[0] === results[1]) {
+            } else if (results[0] === results[2]) {
                 //Remote branch is ahead, looks like this:
                 //C for commit, L for last commit of local branch, R for last commit of remote branch
                 // --C--C--L
                 //          \
                 //           R--C
                 callback("need pull", output);
-            } else if (result[1] === result[2]) {
+            } else if (results[1] === results[2]) {
                 //Local branch is ahread, looks like this:
                 //           L--C
                 //          /

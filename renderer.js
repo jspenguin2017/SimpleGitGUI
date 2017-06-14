@@ -864,10 +864,10 @@ const updateIcons = (directory, status) => {
             icons[directory].removeClass().addClass("glyphicon glyphicon-ok");
             break;
         case "need pull":
-            icons[directory].removeClass().addClass("glyphicon glyphicon-down");
+            icons[directory].removeClass().addClass("glyphicon glyphicon-arrow-down");
             break;
         case "need push":
-            icons[directory].removeClass().addClass("glyphicon glyphicon-up");
+            icons[directory].removeClass().addClass("glyphicon glyphicon-arrow-up");
             break;
         case "diverged":
             icons[directory].removeClass().addClass("glyphicon glyphicon-remove-sign");
