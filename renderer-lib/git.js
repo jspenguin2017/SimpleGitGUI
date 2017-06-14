@@ -175,7 +175,7 @@ exports.forcePull = (directory, address, callback) => {
     }
 };
 /**
- * Do pull.
+ * Prune branches then pull.
  * @function
  * @param {string} directory - The directory of the active repository.
  * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
