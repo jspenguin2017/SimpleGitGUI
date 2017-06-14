@@ -183,8 +183,8 @@ exports.forcePull = (directory, address, callback) => {
 exports.pull = (directory, callback) => {
     //Run the command
     run([
-        `git -C "${escape(directory)}" pull --verbose`,
         `git -C "${escape(directory)}" remote --verbose prune origin`,
+        `git -C "${escape(directory)}" pull --verbose`,
     ], callback);
 };
 /**
