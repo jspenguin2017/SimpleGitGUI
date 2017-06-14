@@ -345,20 +345,67 @@ exports.fileDiff = (directory, file, callback) => {
     //Run the command
     porcelain(`git -C "${escape(directory)}" diff "${escape(file)}"`, callback);
 };
-
-
-/*
-LOCAL=$(git rev-parse @)
-REMOTE=$(git rev-parse @{u})
-BASE=$(git merge-base @ @{u})
-
-if [ $LOCAL = $REMOTE ]; then
-    echo "Up-to-date"
-elif [ $LOCAL = $BASE ]; then
-    echo "Need to pull"
-elif [ $REMOTE = $BASE ]; then
-    echo "Need to push"
-else
-    echo "Diverged"
-fi
-*/
+/**
+ * Fetch the remote directory.
+ * @function
+ * @param {string} directory - The directory of the repository to fetch.
+ * @param {Function} callback - This function will be called once the execution ends, it will be supplied the formatted output and an error flag, also the lines of standard output if there is no error.
+ */
+exports.fetch = (directory, callback) => {
+    run([`git -C "${escape(directory)}" fetch --verbose`], callback);
+};
+/**
+ * Compare hashes of recent commits to see what is the status of the repository.
+ * @function
+ * @param {string} directory - The directory of the repository to compare.
+ * @param {Function} callback - This function will be called once the execution ends, it will be supplied the status and output.
+ ** Status can be "up to date", "need pull", "need push", "diverged", or "error".
+ */
+exports.compare = (directory, callback) => {
+    run([
+        `git -C "${escape(directory)}" rev-parse @`,
+        `git -C "${escape(directory)}" rev-parse @{upstream}`,
+        `git -C "${escape(directory)}" merge-base @ @{upstream}`,
+    ], (output, hasError) => {
+        if (hasError) {
+            callback("error", output);
+        } else {
+            //Extract hashes
+            const lines = output.split("\n");
+            let results = [];
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (line !== "" && !line.startsWith(">>>")) {
+                    results.push(line);
+                }
+            }
+            //Parse status, index 0 is local branch, 1 is remote branch, 2 is common ancestor
+            if (results[0] === results[1]) {
+                //Local is the same as remote, nothing to do
+                callback("up to date", output);
+            } else if (results[0] === results[1]) {
+                //Remote branch is ahead, looks like this:
+                //C for commit, L for last commit of local branch, R for last commit of remote branch
+                // --C--C--L
+                //          \
+                //           R--C
+                callback("need pull", output);
+            } else if (result[1] === result[2]) {
+                //Local branch is ahread, looks like this:
+                //           L--C
+                //          /
+                // --C--C--R
+                callback("need push", output);
+            } else {
+                //All three are different, looks like this:
+                //A for common ancestor
+                //           L--C
+                //          /
+                // --C--C--A
+                //          \
+                //           R--C--C
+                callback("diverged", output);
+            }
+        }
+    });
+};

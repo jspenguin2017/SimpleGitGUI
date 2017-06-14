@@ -667,7 +667,7 @@ $(document).on("keyup", (e) => {
         //F12, DevTools
         ipc.send("dev-tools");
     } else if (e.which === 116) {
-        //F5, Reload if not busy
+        //F5, Reload, busy state check is done by window.onbeforeunload()
         if (!UI.isProcessing()) {
             location.reload();
         }
@@ -675,9 +675,18 @@ $(document).on("keyup", (e) => {
 });
 //Warn the user about the console
 console.log("%cPlease be careful of what you execute in this console, it has access to your local file system.", "color:red; font-size:large;");
-//Prevent the window from closing when we are busy
+//Prevent the window from reloading or closing when we are busy
 window.onbeforeunload = (e) => {
     if (UI.isProcessing()) {
+        //Busy screen open
+        e.returnValue = false;
+    } else if (isFetching) {
+        //Fetching, close the window as soon as fetching finishes
+        UI.processing(true);
+        window.onceFetchingDone = () => {
+            UI.processing(false);
+            window.close();
+        };
         e.returnValue = false;
     }
 };
@@ -703,7 +712,7 @@ window.openProjectPage = () => {
 };
 //Load configuration
 let config; //Chech the default configuration object below for more information
-let icons = {}; //Icons indicating the state of the repository
+let icons = {}; //Icons indicating the status of the repository
 let activeRepo; //This will be a repository object which has properties address and directory, it will be the repository object of the active repository
 try {
     //Load the configuration and copy it, hopefully we will not run into craches after this validation
@@ -835,26 +844,104 @@ git.config(config.name, config.email, config.savePW, (output, hasError) => {
         UI.processing(false);
     }
 });
-//There some issues with modals and we need to duct tape them
-//This may be a bug in Bootstrap, or Bootstrap is not designed to handle multiple modals
-//We need to remove a backdrop that is sometimes not removed, it blocks mouse clicks
-/* //Removing since I don't think this is right
-setInterval(() => {
-    //This is pretty light, when the software is in the background, CPU usage stays at 0%
-    if (!$(".modal").is(":visible") && $(".modal-backdrop.fade").length) {
-        //We are going to check twice to make sure things are taped right
-        setTimeout(() => {
-            if (!$(".modal").is(":visible") && $(".modal-backdrop.fade").length) {
-                //Remove the extra backdrop
-                $(".modal-backdrop.fade").each(function () {
-                    if ($(this).text() === "") {
-                        $(this).remove();
-                        //Make sure all modals are hidden properly, so they can be shown again later
-                        $(".modal").modal("hide");
+
+//=====Remote Status Watcher=====
+/**
+ * Whether or not we are fetching remote changes. Define window.onceFetchingDone() will cause it being called as soon as the next fetching finishes.
+ * @var {boolean}
+ */
+let isFetching = false;
+//Helper functions
+/**
+ * Update icon for a repository.
+ * @function
+ * @param {string} directory - The directory of the repository.
+ * @param {string} status - A valid status returned from git.compare().
+ */
+const updateIcons = (directory, status) => {
+    switch (status) {
+        case "up to date":
+            icons[directory].removeClass().addClass("glyphicon glyphicon-ok");
+            break;
+        case "need pull":
+            icons[directory].removeClass().addClass("glyphicon glyphicon-down");
+            break;
+        case "need push":
+            icons[directory].removeClass().addClass("glyphicon glyphicon-up");
+            break;
+        case "diverged":
+            icons[directory].removeClass().addClass("glyphicon glyphicon-remove-sign");
+            break;
+    }
+};
+/**
+ * Get a icon refresh job runner.
+ * @function
+ * @param {string} directory - The directory to check.
+ * @return {Promise} A promise of the job.
+ */
+const getRunner = (directory) => {
+    return new Promise((resolve) => {
+        git.compare(directory, (result, output) => {
+            //Dump output to the terminal
+            ipc.send("console log", { log: output });
+            //Update the icon if possible, need to check the icons dictionary as it may change
+            if (result !== "error" && icons[directory]) {
+                updateIcons(directory, result);
+            }
+            resolve();
+        });
+    });
+};
+/**
+ * Start refresh task schedule, one tick is done every 5 minutes.
+ * @function
+ */
+const scheduleIconRefresh = (() => {
+    let i = 0;
+    const delay = 5 * 60 * 1000;
+    return () => {
+        const runTask = () => {
+            //Check if there are repositories at all
+            if (config.repos.length === 0) {
+                setTimeout(runTask, delay);
+            } else {
+                //Check if we need to reset i to 0
+                if (i >= config.repos.length) {
+                    i = 0;
+                }
+                //The directory exists, cache it and increment the counter, in case the array changed when we come back
+                const directory = config.repos[i++];
+                isFetching = true;
+                git.fetch(directory, (output, hasError) => {
+                    //Dump output to the terminal
+                    ipc.send("console log", { log: output });
+                    //Update icon
+                    getRunner(directory).then(() => {
+                        //Schedule next tick
+                        setTimeout(runTask, delay);
+                    });
+                    //Update flag and run scheduled runner
+                    isFetching = false;
+                    if (typeof window.onceFetchingDone === "function") {
+                        //Swap it like this in case this event handler synchronously updated the handler
+                        const func = window.onceFetchingDone;
+                        window.onceFetchingDone = null;
+                        func();
                     }
                 });
             }
-        }, 250);
+        };
+        //Start the timer for the first time
+        setTimeout(runTask, delay);
+    };
+})();
+//Initialization
+(() => {
+    //Initialize icons with what we know so far
+    let tasks = [];
+    for (let i = 0; i < config.repos.length; i++) {
+        tasks.push(getRunner(config.repos[i]));
     }
-}, 750);
-*/
+    Promise.all(tasks).then(() => { scheduleIconRefresh(); });
+})();
