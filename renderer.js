@@ -958,6 +958,8 @@ window.onProcessingEnds = () => {
     }
     Promise.all(tasks).then(() => { scheduleIconRefresh(); });
 })();
+
+//=====Duct Tape=====
 //There some issues with modals and we need to duct tape them
 //This may be a bug in Bootstrap, or Bootstrap is not designed to handle multiple modals
 //We need to remove a backdrop that is sometimes not removed, it blocks mouse clicks
