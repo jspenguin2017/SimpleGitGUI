@@ -23,7 +23,7 @@ const escape = (text) => {
  * @function
  * @param {string} code - The code that ran.
  * The next 3 arguments should be supplied by exec (of child_process).
- * @param {*} err - The error object.
+ * @param {Error} err - The error object.
  * @param {string} stdout - The standard output.
  * @param {string} stderr - The standard error output.
  * @returns {string} The combined and formatted output.
@@ -345,3 +345,20 @@ exports.fileDiff = (directory, file, callback) => {
     //Run the command
     porcelain(`git -C "${escape(directory)}" diff "${escape(file)}"`, callback);
 };
+
+
+/*
+LOCAL=$(git rev-parse @)
+REMOTE=$(git rev-parse @{u})
+BASE=$(git merge-base @ @{u})
+
+if [ $LOCAL = $REMOTE ]; then
+    echo "Up-to-date"
+elif [ $LOCAL = $BASE ]; then
+    echo "Need to pull"
+elif [ $REMOTE = $BASE ]; then
+    echo "Need to push"
+else
+    echo "Diverged"
+fi
+*/

@@ -139,7 +139,7 @@ const switchRepo = (directory, doRefresh) => {
         localStorage.setItem("config", JSON.stringify(config));
         //Update screen
         //Redraw repos list to update the active selection
-        UI.repos(config.repos, config.active, switchRepo);
+        UI.repos(config.repos, icons, config.active, switchRepo);
         //Clear branches list and changed files list
         UI.branches([], switchBranch);
         UI.diffTable([], rollbackCallback, diffCallback, viewCallback);
@@ -459,6 +459,8 @@ $("#modal-import-btn-import").click(() => {
     };
     //Update configuration
     config.repos.push(tempRepo.directory);
+    //Add icon
+    icons[tempRepo.directory] = $(`<span>`).addClass("glyphicon glyphicon-refresh");
     //Keep repositories in order
     config.repos.sort();
     config.active = tempRepo.directory;
@@ -468,7 +470,7 @@ $("#modal-import-btn-import").click(() => {
     //Enable management buttons, ations buttons will be handled by switchRepo
     UI.buttons(null, true);
     //Redraw repositories list
-    UI.repos(config.repos, config.active, switchRepo);
+    UI.repos(config.repos, icons, config.active, switchRepo);
     //Switch to the new repository
     switchRepo(tempRepo.directory, true);
     //Clear inputs
@@ -504,6 +506,8 @@ $("#modal-clone-btn-clone").click(() => {
         } else {
             //Succeed, update configuration
             config.repos.push(tempRepo.directory);
+            //Add icon
+            icons[tempRepo.directory] = $(`<span>`).addClass("glyphicon glyphicon-refresh");
             //Keep repositories in order
             config.repos.sort();
             //Clone directory auto-fill will be done using the parent directory of this repository next time
@@ -515,7 +519,7 @@ $("#modal-clone-btn-clone").click(() => {
             //Enable management buttons, ations buttons will be handled by switchRepo
             UI.buttons(null, true);
             //Redraw repositories list
-            UI.repos(config.repos, config.active, switchRepo);
+            UI.repos(config.repos, icons, config.active, switchRepo);
             //Switch to the new repository
             switchRepo(tempRepo.directory, true);
         }
@@ -529,7 +533,9 @@ $("#modal-delete-repo-btn-confirm").click(() => {
     localStorage.removeItem(config.active);
     //Get the index then splice the entry out
     let index = config.repos.indexOf(config.active);
-    config.repos.splice(index, 1);
+    const deleted = config.repos.splice(index, 1);
+    //Delete icon
+    delete icons[deleted[0]];
     //Check if there are any repositories left
     if (config.repos.length) {
         //There are repositories left, we want to switch to the one before, unless we are already the first one
@@ -541,7 +547,7 @@ $("#modal-delete-repo-btn-confirm").click(() => {
         //Save configuration
         localStorage.setItem("config", JSON.stringify(config));
         //Redraw repositories list
-        UI.repos(config.repos, config.active, switchRepo);
+        UI.repos(config.repos, icons, config.active, switchRepo);
         //Switch to the repository that is active now, this will redraw branches and changed files list
         switchRepo(config.active, true);
     } else {
@@ -550,7 +556,7 @@ $("#modal-delete-repo-btn-confirm").click(() => {
         //Save configuration
         localStorage.setItem("config", JSON.stringify(config));
         //Redraw repositories list to empty it, same for branches and changed files list
-        UI.repos(config.repos, config.active, switchRepo);
+        UI.repos(config.repos, icons, config.active, switchRepo);
         UI.branches([], switchBranch);
         UI.diffTable([], rollbackCallback, diffCallback, viewCallback);
         //Lock all buttons (except Clone and Config)
@@ -697,6 +703,7 @@ window.openProjectPage = () => {
 };
 //Load configuration
 let config; //Chech the default configuration object below for more information
+let icons = {}; //Icons indicating the state of the repository
 let activeRepo; //This will be a repository object which has properties address and directory, it will be the repository object of the active repository
 try {
     //Load the configuration and copy it, hopefully we will not run into craches after this validation
@@ -723,6 +730,8 @@ try {
     //Copy repositories directories array
     for (let i = 0; i < tempConfig.repos.length; i++) {
         config.repos.push(tempConfig.repos[i].toString());
+        //Add icon
+        icons[config.repos[i]] = $(`<span>`).addClass("glyphicon glyphicon-refresh");
     }
     //Keep repositories in order, it should be already in order, sort again to make sure
     config.repos.sort();
@@ -763,7 +772,9 @@ if (config.repos.length) {
             //Remove this repository from the array
             //If it is active, config.active will be unset later, simply removing it from the array is enough
             localStorage.removeItem(config.repos[i]);
-            config.repos.splice(i, 1);
+            const deleted = config.repos.splice(i, 1);
+            //Remove icon
+            delete icons[deleted[0]];
             i--; //Go back by 1 because we spliced the repository out
             //Save the new configuration that has broken repository removed
             localStorage.setItem("config", JSON.stringify(config));
@@ -779,7 +790,7 @@ if (config.repos.length) {
         UI.buttons(false, false);
     }
     //Draw repositories list
-    UI.repos(config.repos, config.active, switchRepo);
+    UI.repos(config.repos, icons, config.active, switchRepo);
 } else {
     //There is no repository, lock both action and management buttons
     UI.buttons(false, false);
@@ -827,7 +838,7 @@ git.config(config.name, config.email, config.savePW, (output, hasError) => {
 //There some issues with modals and we need to duct tape them
 //This may be a bug in Bootstrap, or Bootstrap is not designed to handle multiple modals
 //We need to remove a backdrop that is sometimes not removed, it blocks mouse clicks
-/*
+/* //Removing since I don't think this is right
 setInterval(() => {
     //This is pretty light, when the software is in the background, CPU usage stays at 0%
     if (!$(".modal").is(":visible") && $(".modal-backdrop.fade").length) {

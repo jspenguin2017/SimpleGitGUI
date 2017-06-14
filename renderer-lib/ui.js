@@ -73,8 +73,8 @@ UI.dialog = (title, message, isError) => {
 /**
  * Update button availability, true for active, false for diabled.
  * @function
- * @param {*} action - Supply a boolean to update action buttons availability, supply anything else to keep the availability as-is.
- * @param {*} management - Supply a boolean to update management buttons availability, supply anything else to keep the availability as-is.
+ * @param {Any} action - Supply a boolean to update action buttons availability, supply anything else to keep the availability as-is.
+ * @param {Any} management - Supply a boolean to update management buttons availability, supply anything else to keep the availability as-is.
  */
 UI.buttons = (action, management) => {
     if (typeof action === "boolean") {
@@ -88,16 +88,20 @@ UI.buttons = (action, management) => {
  * Redraw repositories list.
  * @function
  * @param {Array.<string>} directories - Directories of repositories.
+ * @param {DOMSpan} - A dictionary containing icons where the keys are directories of matching repository.
  * @param {string} active - The directory of the active repository.
  * @param {Function} switchCallback - This function will be called when the user clicks on a repository, the directory of the repository will be supplied.
  */
-UI.repos = (directories, active, switchCallback) => {
+UI.repos = (directories, icons, active, switchCallback) => {
     //Empty repositories list
     $("#div-repos-list").empty();
     //Add repositories to the list one by one
     for (let i = 0; i < directories.length; i++) {
         //The last folder name will be shown on the button, directory will be saved in jQuery data
-        let elem = $(`<button type="button" class="list-group-item repos-list-btn-switch-repo"></button>`).text(directories[i].split(/\/|\\/).pop()).data("directory", directories[i]);
+        let elem = $(`<button type="button" class="list-group-item repos-list-btn-switch-repo"></button>`)
+            .append(icons[directories[i]])
+            .append(document.createTextNode(" " + directories[i].split(/\/|\\/).pop()))
+            .data("directory", directories[i]);
         //Check and set active state
         if (directories[i] === active) {
             elem.addClass("active");
