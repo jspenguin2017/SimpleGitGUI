@@ -958,3 +958,24 @@ window.onProcessingEnds = () => {
     }
     Promise.all(tasks).then(() => { scheduleIconRefresh(); });
 })();
+//There some issues with modals and we need to duct tape them
+//This may be a bug in Bootstrap, or Bootstrap is not designed to handle multiple modals
+//We need to remove a backdrop that is sometimes not removed, it blocks mouse clicks
+setInterval(() => {
+    //This is pretty light, when this software is in the background, CPU usage stays at 0%
+    if (!$(".modal").is(":visible") && $(".modal-backdrop.fade").length) {
+        //We are going to check twice to make sure things are taped right
+        setTimeout(() => {
+            if (!$(".modal").is(":visible") && $(".modal-backdrop.fade").length) {
+                //Remove the extra backdrop
+                $(".modal-backdrop.fade").each(function () {
+                    if ($(this).text() === "") {
+                        $(this).remove();
+                        //Make sure all modals are hidden properly, so they can be shown again later
+                        $(".modal").modal("hide");
+                    }
+                });
+            }
+        }, 250);
+    }
+}, 750);
