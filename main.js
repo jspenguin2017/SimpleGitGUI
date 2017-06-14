@@ -63,5 +63,5 @@ app.on("ready", () => {
         app.quit();
     });
     //This will open DevTools when the main window loads, this helps in debugging the renderer when it does not work at all, uncomment as needed
-    main.webContents.openDevTools();
+    //main.webContents.openDevTools();
 });
