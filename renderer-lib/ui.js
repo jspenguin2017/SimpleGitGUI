@@ -39,6 +39,10 @@ var UI = {};
                 //Flip the flag
                 processingImageFlag = !processingImageFlag;
             }
+            //When processing ends, refresh the icon of current repository
+            if (!isProcessing) {
+                window.onProcessingEnds();
+            }
         }
         //Ignore if current state is the same as the supplied state
     };

@@ -943,6 +943,12 @@ const scheduleIconRefresh = (() => {
         setTimeout(runTask, delay);
     };
 })();
+//When processing ends, refresh the icon of current repository
+window.onProcessingEnds = () => {
+    if (config.active) {
+        getRunner(config.active);
+    }
+};
 //Initialization
 (() => {
     //Initialize icons with what we know so far
