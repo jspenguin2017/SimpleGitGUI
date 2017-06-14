@@ -1,18 +1,22 @@
 # Simple Git GUI [![Dependencies](https://david-dm.org/jspenguin2017/SimpleGitGUI.svg)](https://david-dm.org/jspenguin2017/SimpleGitGUI)
 
-![Main Window](https://i.imgur.com/VaeQ2Qm.png)
+![Main Window](https://i.imgur.com/jKEvBBk.png)
 
 This software aims at doing exactly what you want, even though the user interface looks simple, 
 you need some understanding of Git to use it. Make sure that you know what you are clicking, or bad things will happen. 
 
+Once every 5 minutes, one repository will be fetched in the background, and the icon beside repository name will reflect 
+the status of the repository. 
+
 The window cannot be closed when the renderer is busy, but you can always press `F12` to bring up DevTools to fix it if 
-it gets stuck. Also, `F5` can be used to reload the renderer process when it is not busy. 
+it gets stuck. Also, `F5` can be used to reload the renderer process when it is not busy. The renderer is considered busy 
+if it is showing the processing screen or fetching changes in the background. 
 
 When there is an error, the raw error message will be shown, there could be times when you need to use the command line tool 
 to fix the problem. 
 
-This software will make reasonable effort to validate configuration data that is saved in the LocalStorage, 
-but there could be times when you need to use DevTools to fix damaged configuration data. 
+Reasonable effort will be made to validate configuration data that is saved in the LocalStorage, but there could be times 
+when you need to use DevTools to fix damaged configuration data. 
 
 All the commands that will be executed in the background are in `renderer-lib/git.js`. 
 
@@ -41,8 +45,3 @@ Note: These launchers simply execute `npm start` without showing the terminal wi
 Files under `images` are created from [loading.io](https://loading.io/). 
 
 Spellcheck dictionary `renderer-lib/debian.dict-8.7.txt` is extracted from [Debian operating system](https://www.debian.org/). 
-
-## TODO
-
-1. Add branch delete button
-2. Add background fetch and alert the user when there are changes (a watch / unwatch button?)
