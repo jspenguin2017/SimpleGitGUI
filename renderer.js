@@ -667,8 +667,8 @@ $(document).on("keyup", (e) => {
         //F12, DevTools
         ipc.send("dev-tools");
     } else if (e.which === 116) {
-        //F5, Reload, busy state check is done by window.onbeforeunload()
-        if (!UI.isProcessing()) {
+        //F5, Reload if not busy
+        if (!UI.isProcessing() && !isFetching) {
             location.reload();
         }
     }
