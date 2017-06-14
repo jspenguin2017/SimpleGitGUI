@@ -17,7 +17,7 @@ When there is an error, the raw error message will be shown, there could be time
 to fix the problem. 
 
 Reasonable effort will be made to validate configuration data that is saved in the LocalStorage, but there could be times 
-when you need to use DevTools to fix damaged configuration data. 
+when you need to use DevTools to fix damaged configuration data. Do not start more than one instance of this software. 
 
 All the commands that will be executed in the background are in `renderer-lib/git.js`. 
 
