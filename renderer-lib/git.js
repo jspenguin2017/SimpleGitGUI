@@ -404,6 +404,7 @@ exports.compare = (directory, callback) => {
                 // --C--C--A
                 //          \
                 //           R--C--C
+                //This can be fixed with synchronize if there is no conflict
                 callback("diverged", output);
             }
         }

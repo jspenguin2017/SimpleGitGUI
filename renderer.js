@@ -536,7 +536,7 @@ $("#modal-delete-repo-btn-confirm").click(() => {
     const deleted = config.repos.splice(index, 1);
     //Delete icon
     delete icons[deleted[0]];
-    //Check if there are any repositories left
+    //Check if there are repositories left
     if (config.repos.length) {
         //There are repositories left, we want to switch to the one before, unless we are already the first one
         if (index !== 0) {
