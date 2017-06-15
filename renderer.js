@@ -122,7 +122,7 @@ const switchRepo = (directory, doRefresh) => {
     //Show processing screen 
     UI.processing(true);
     //Check what should we do
-    if (directory === config.active && !doRefresh) {
+    if (!doRefresh && directory === config.active) {
         //Open the directory of the repository
         ipc.once("open folder done", () => {
             //Hide processing screen once the directory is opened
@@ -134,7 +134,7 @@ const switchRepo = (directory, doRefresh) => {
         });
     } else {
         //Load or refresh the repository
-        //Load the repository JSON
+        //Load the repository JSON, this is verified before, so we do not need to try-catch it
         let tempRepo = JSON.parse(localStorage.getItem(directory));
         activeRepo = {
             address: tempRepo.address.toString(),
@@ -242,7 +242,7 @@ const viewCallback = (file) => {
         UI.processing(false);
     });
     ipc.send("show file in folder", {
-        file: (config.active + "/" + file)
+        file: path.join(config.active, file)
     });
 };
 
@@ -490,7 +490,7 @@ $("#modal-clone-input-address").on("keyup", (() => {
         //The name of the directory would be the text between the last / and .git
         const match = $("#modal-clone-input-address").val().match(matcher);
         if (match) {
-            $("#modal-clone-input-directory").val(path.join(config.lastPath, match.pop()));
+            $("#modal-clone-input-directory").val(path.join(config.lastPath, match[match.length - 1]));
         }
     }
 })());
