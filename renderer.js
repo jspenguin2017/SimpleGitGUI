@@ -81,7 +81,7 @@ const codify = (() => {
             code = lines.join("\n");
         }
         //Return the code
-        return `<pre>${code}</pre>`;
+        return `<pre id="modal-dialog-pre">${code}</pre>`;
     };
 })();
 /**
@@ -676,7 +676,7 @@ $(document).on("keyup", (e) => {
         ipc.send("dev-tools");
     } else if (e.which === 116) {
         //F5, Reload if not busy
-        if (!UI.isProcessing() && !isFetching) {
+        if (!UI.isProcessing && !isFetching) {
             location.reload();
         }
     }
@@ -691,7 +691,7 @@ $(document).on("keyup", (e) => {
 console.log("%cPlease be careful of what you execute in this console, it has access to your local file system.", "color:red; font-size:large;");
 //Prevent the window from reloading or closing when we are busy
 window.onbeforeunload = (e) => {
-    if (UI.isProcessing()) {
+    if (UI.isProcessing) {
         //Busy screen open
         e.returnValue = false;
     } else if (isFetching) {
@@ -709,7 +709,7 @@ $(window).resize(() => {
     //Main container
     $("#div-main-container").height($(document.body).height() - 90);
     //Code section (to make it scroll)
-    $("pre").css("max-height", $(document.body).height() - 240);
+    $("#modal-dialog-pre").css("max-height", $(document.body).height() - 240);
     //Changed files list (to make it scroll)
     $("#tbody-diff-table").css("max-height", $(document.body).height() - 150);
 });

@@ -8,12 +8,15 @@
  */
 var UI = {};
 
-//UI.processing and UI.isProcessing
+//UI.processing() and UI.isProcessing
 (() => {
     //This variable saves the current processing image state, this is used when toggling between the two processing image
     let processingImageFlag = false;
-    //This variable saves the current processing state, it is also used in UI.isProcessing()
-    let currentProcessingState = null;
+    /**
+     * The current processing state, true for busy and false for idle.
+     * @var {boolean}
+     */
+    UI.isProcessing = null;
     /**
      * Show or hide processing screen.
      * window.onProcessingEnds() will be called when hidding the processing screen.
@@ -22,10 +25,10 @@ var UI = {};
      */
     UI.processing = (isProcessing) => {
         //Check if the current state is the supplied state
-        if (currentProcessingState !== isProcessing) {
+        if (isProcessing !== UI.isProcessing) {
             //It is not, proceed
             //Update current state flag
-            currentProcessingState = isProcessing;
+            UI.isProcessing = isProcessing;
             //Show modal
             $("#modal-processing-screen").modal(isProcessing ? "show" : "hide");
             //Toggle processing image only when showing the screen, or the user will always see the same one
@@ -47,14 +50,6 @@ var UI = {};
         }
         //Ignore if current state is the same as the supplied state
     };
-    /**
-     * Get current processing state.
-     * @function
-     * @returns {boolean} The current processing state, true for processing, false for idle.
-     */
-    UI.isProcessing = () => {
-        return currentProcessingState;
-    };
 })();
 /**
  * Show a generic dialog box.
@@ -68,10 +63,10 @@ UI.dialog = (title, message, isError) => {
     //Hide processing screen
     UI.processing(false);
     //Update DOM
-    $("#modal-dialog-title").text(title).css("color", isError ? "red" : "#333333");
+    $("#modal-dialog-title").text(title).css("color", isError ? "red" : "#333");
     $("#modal-dialog-body").html(message);
-    //Trigger resize once in case this dialog is used to show code
-    $(window).trigger("resize");
+    //Set size of code
+    $("#modal-dialog-pre").css("max-height", $(document.body).height() - 240);
     //Show modal
     $("#modal-dialog").modal("show");
 };
@@ -81,14 +76,20 @@ UI.dialog = (title, message, isError) => {
  * @param {Any} action - Supply a boolean to update action buttons availability, supply anything else to keep the availability as-is.
  * @param {Any} management - Supply a boolean to update management buttons availability, supply anything else to keep the availability as-is.
  */
-UI.buttons = (action, management) => {
-    if (typeof action === "boolean") {
-        $(".btn-action").prop("disabled", action);
-    }
-    if (typeof management === "boolean") {
-        $(".btn-management").prop("disabled", management);
-    }
-};
+UI.buttons = (() => {
+    let currentAction = null;
+    let currentManagement = null;
+    return (action, management) => {
+        if (typeof action === "boolean" && action !== currentAction) {
+            currentAction = action;
+            $(".btn-action").prop("disabled", action);
+        }
+        if (typeof management === "boolean" && management !== currentManagement) {
+            currentManagement = management;
+            $(".btn-management").prop("disabled", management);
+        }
+    };
+})();
 /**
  * Redraw repositories list.
  * @function
@@ -148,10 +149,12 @@ UI.branches = (() => {
         //Add branches to the list one by one
         for (let i = 0; i < names.length; i++) {
             //The name will be shown as-is (almost, white space trimmed) on the button, this (trimmed) name will also be saved in jQuery data
-            let elem = $(`<button type="button" class="list-group-item btn-action branches-list-btn-switch-branch"></button>`).text(names[i]).data("name", names[i]);
+            let elem = $(`<button type="button" class="list-group-item"></button>`).text(names[i]).data("name", names[i]);
             //Branch containing "/HEAD -> /" is special and is not clickable, the active branch is also not clickable
             if (isHead.test(elem.text()) || names[i] === active) {
-                elem.removeClass("btn-action branches-list-btn-switch-branch").addClass("disabled");
+                elem.addClass("disabled");
+            } else {
+                elem.addClass("btn-action branches-list-btn-switch-branch");
             }
             //Check and set active state
             if (names[i] === active) {
@@ -186,25 +189,30 @@ UI.diffTable = (data, rollbackCallback, diffCallback, viewCallback) => {
         let file = data[i].substring(2).trim();
         //In case of rename, the file name would be like `file1 -> file2` or `"file 1" -> "file 2"` if the file name contains space
         //Assuming ">" is not a valid character for file name, even though ">" along with new line and backspace are allowed on Linux
-        //Hopefully everyone would follow the best practice
-        if (file.includes(" -> ")) {
+        //Hopefully everyone will follow the best practice
+        let index = file.indexOf(" -> ");
+        if (index > -1) {
             //Taking the second file to be the shown file name
-            file = file.split(" -> ")[1].split("/");
-        } else {
-            file = file.split("/");
+            file = file.substring(index + 4);
         }
         //Remove redundant double quote
-        if ((file[0]).startsWith("\"")) {
-            file[0] = (file[0]).substring(1);
-        }
-        if ((file[file.length - 1]).endsWith("\"")) {
-            file[file.length - 1] = (file[file.length - 1]).substring(0, file[file.length - 1].length - 1);
+        if (file.startsWith("\"")) {
+            file = file.slice(1, -1);
         }
         //Prepare file object
+        index = file.lastIndexOf("/");
+        let name, directory;
+        if (index === -1) {
+            name = file;
+            directory = "/";
+        } else {
+            name = file.slice(index).substring(1);
+            directory = file.substring(0, index);
+        }
         let File = {
-            fullName: file.join("/"), //This is used when calling callback
-            name: file.pop(), //This is shown in File Name column
-            directory: file.join("/") || "/", //This is shown in Directory column
+            fullName: file, //This is used when calling callback
+            name: name, //This is shown in File Name column
+            directory: directory, //This is shown in Directory column
             state: [] //[Remote, Local] state, will be shown in the appropriate column
         };
         //Add state
