@@ -20,7 +20,7 @@ const escape = (() => {
         //Replace " and \ by \" and \\, and remove new lines
         //There should never be new lines if the user interface worked properly
         return text.replace(matcher, "\\$1").replace(newLine, "");
-    }
+    };
 })();
 /**
  * Combine and format output.
@@ -56,44 +56,52 @@ const format = (code, err, stdout, stderr) => {
     }
     //Return the processed output
     return out;
-}
+};
 /**
  * Run code line by line, abort remaining lines if there is an error.
  * @function
- * @param {Array.<string>} lines - Lines of code to run.
+ * @param {string|Array.<string>} lines - Line or lines of code to run.
  * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
 const run = (lines, callback) => {
-    //Presistent variables (until all the lines of code are processed)
-    let output = "";
-    let hasError = false;
-    //Line runner
-    const runner = () => {
-        //Get a line
-        let line = lines.shift();
-        //Check if we have any lines left
-        if (line) {
-            //We still have code to run, run it
-            exec(line, (err, stdout, stderr) => {
-                //Check if there is an error
-                if (err) {
-                    //Update flag
-                    hasError = true;
-                    //Abort other lines
-                    lines = [];
-                    //Line runner will be called again later to send information back to callback
-                }
-                //Format output, then run the next line
-                output += format(line, err, stdout, stderr);
-                runner();
-            });
-        } else {
-            //No more line to run, call callback
-            callback(output, hasError);
+    if (typeof lines === "string") {
+        //One line, fast mode
+        exec(line, (err, stdout, stderr) => {
+            callback(format(line, err, stdout, stderr), Boolean(err));
+        });
+    } else {
+        //Many lines, slow mode
+        //Presistent variables (until all the lines of code are processed)
+        let output = "";
+        let hasError = false;
+        //Line runner
+        const runner = () => {
+            //Get a line
+            let line = lines.shift();
+            //Check if we have any lines left
+            if (line) {
+                //We still have code to run, run it
+                exec(line, (err, stdout, stderr) => {
+                    //Check if there is an error
+                    if (err) {
+                        //Update flag
+                        hasError = true;
+                        //Abort other lines
+                        lines = [];
+                        //Line runner will be called again later to send information back to callback
+                    }
+                    //Format output, then run the next line
+                    output += format(line, err, stdout, stderr);
+                    runner();
+                });
+            } else {
+                //No more line to run, call callback
+                callback(output, hasError);
+            }
         }
+        //Start the line runner
+        runner();
     }
-    //Start the line runner
-    runner();
 };
 /**
  * Run a line of code and send standard output as an array of lines (if there is no error) to the callback function.
@@ -114,70 +122,73 @@ const porcelain = (code, callback) => {
 };
 
 //=====Exports Functions=====
-/**
- * Prepare for force pull (hard reset), generate and save the command that will be used to remove the local repository.
- * @function
- * @param {string} directory - The directory of the active repository.
- * @returns {string} The generated command.
- */
-let rmCode = "";
-exports.forcePullCmd = (directory) => {
-    //The command is different on Windows
-    if (process.platform === "win32") {
-        //Windows
-        //This is an safety check to make sure the directory is not obviously bad
-        if (directory.length > 3) {
-            rmCode = `RMDIR /S /Q "${escape(directory)}"`;
+//exports.forcePullCmd() and exports.forcePull()
+(() => {
+    /**
+     * Prepare for force pull (hard reset), generate and save the command that will be used to remove the local repository.
+     * @function
+     * @param {string} directory - The directory of the active repository.
+     * @returns {string} The generated command.
+     */
+    let rmCode = "";
+    exports.forcePullCmd = (directory) => {
+        //The command is different on Windows
+        if (process.platform === "win32") {
+            //Windows
+            //This is an safety check to make sure the directory is not obviously bad
+            if (directory.length > 3) {
+                rmCode = `RMDIR /S /Q "${escape(directory)}"`;
+            } else {
+                rmCode = "";
+            }
         } else {
-            rmCode = "";
+            //Linux and Mac
+            //This is an safety check to make sure directory is not obviously bad
+            if (directory.length > 1) {
+                rmCode = `rm -rf "${escape(directory)}"`;
+            } else {
+                rmCode = "";
+            }
         }
-    } else {
-        //Linux and Mac
-        //This is an safety check to make sure directory is not obviously bad
-        if (directory.length > 1) {
-            rmCode = `rm -rf "${escape(directory)}"`;
-        } else {
-            rmCode = "";
-        }
-    }
-    return rmCode;
-};
-/**
- * Do force pull (hard reset).
- * @function
- * @param {string} directory - The directory of the active repository.
- * @param {string} address - The adress of the active repository.
- * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
- */
-exports.forcePull = (directory, address, callback) => {
-    //Check if the local repository removal command is initialized
-    if (rmCode) {
-        //It is initialized, remove the local directory using it
-        exec(rmCode, (err, stdout, stderr) => {
-            //Log the formatted output
-            const output1 = format(rmCode, err, stdout, stderr);
-            //Clear the saved command for safety
-            rmCode = "";
-            //We will not abort even if there is an error, since we want force pull (hard reset) to be able to handle cases where the local directory is gone
-            //Whether or not the local repository is successfully removed will be checked when we create the directory
-            fs.mkdir(directory, (err) => {
-                //Check if we were able to create the directory
-                if (err) {
-                    //Could not create directory, show error message then abort
-                    callback(`Could not create local repository directory: \n${err.message}\n`, true);
-                } else {
-                    //Clone the repository again
-                    run([`git -C "${escape(directory)}" clone --quiet --verbose --depth 1 --no-single-branch --recurse-submodules --shallow-submodules "${escape(address)}" "${escape(directory)}"`], (output2, hasError) => {
-                        callback(output1 + output2, hasError);
-                    });
-                }
+        return rmCode;
+    };
+    /**
+     * Do force pull (hard reset).
+     * @function
+     * @param {string} directory - The directory of the active repository.
+     * @param {string} address - The adress of the active repository.
+     * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
+     */
+    exports.forcePull = (directory, address, callback) => {
+        //Check if the local repository removal command is initialized
+        if (rmCode) {
+            //It is initialized, remove the local directory using it
+            exec(rmCode, (err, stdout, stderr) => {
+                //Log the formatted output
+                const output1 = format(rmCode, err, stdout, stderr);
+                //Clear the saved command for safety
+                rmCode = "";
+                //We will not abort even if there is an error, since we want force pull (hard reset) to be able to handle cases where the local directory is gone
+                //Whether or not the local repository is successfully removed will be checked when we create the directory
+                fs.mkdir(directory, (err) => {
+                    //Check if we were able to create the directory
+                    if (err) {
+                        //Could not create directory, show error message then abort
+                        callback(`Could not create local repository directory: \n${err.message}\n`, true);
+                    } else {
+                        //Clone the repository again
+                        run([`git -C "${escape(directory)}" clone --quiet --verbose --depth 1 --no-single-branch --recurse-submodules --shallow-submodules "${escape(address)}" "${escape(directory)}"`], (output2, hasError) => {
+                            callback(output1 + output2, hasError);
+                        });
+                    }
+                });
             });
-        });
-    } else {
-        //It is not initialized, this should not happen if the user interface worked properly
-        callback("Local repository removal command is not initialized.", true);
-    }
-};
+        } else {
+            //It is not initialized, this should not happen if the user interface worked properly
+            callback("Local repository removal command is not initialized.", true);
+        }
+    };
+})();
 /**
  * Prune branches then pull.
  * @function
@@ -206,7 +217,10 @@ exports.commit = (directory, messages, callback) => {
         cmd += ` --message="${escape(messages[i])}"`;
     }
     //Run the commands
-    run([`git -C "${escape(directory)}" stage --verbose --all`, cmd], callback);
+    run([
+        `git -C "${escape(directory)}" stage --verbose --all`,
+        cmd,
+    ], callback);
 };
 /**
  * Do push.
@@ -216,7 +230,7 @@ exports.commit = (directory, messages, callback) => {
  */
 exports.push = (directory, callback) => {
     //Run the command
-    run([`git -C "${escape(directory)}" push --verbose`], callback);
+    run(`git -C "${escape(directory)}" push --verbose`, callback);
 };
 /**
  * Do force push.
@@ -227,7 +241,7 @@ exports.push = (directory, callback) => {
  */
 exports.forcePush = (directory, branch, callback) => {
     //Run the command
-    run([`git -C "${escape(directory)}" push origin "${escape(branch)}" --force --verbose`], callback);
+    run(`git -C "${escape(directory)}" push origin "${escape(branch)}" --force --verbose`, callback);
 };
 /**
  * Get repository status.
@@ -250,7 +264,7 @@ exports.clone = (directory, address, callback) => {
     //Create the directory
     fs.mkdir(directory, (err) => {
         //Try to clone even if there is an error, Git will not proceed unless the directory is empty, we do not need to check it
-        run([`git -C "${escape(directory)}" clone --quiet --verbose --depth 5 --no-single-branch --recurse-submodules --shallow-submodules "${escape(address)}" "${escape(directory)}"`], callback);
+        run(`git -C "${escape(directory)}" clone --quiet --verbose --depth 5 --no-single-branch --recurse-submodules --shallow-submodules "${escape(address)}" "${escape(directory)}"`, callback);
     });
 };
 /**
@@ -314,7 +328,7 @@ exports.diff = (directory, callback) => {
  */
 exports.switchBranch = (directory, branch, callback) => {
     //Run the command
-    run([`git -C "${escape(directory)}" checkout "${escape(branch)}" --`], callback);
+    run(`git -C "${escape(directory)}" checkout "${escape(branch)}" --`, callback);
 };
 /**
  * Delete a local branch.
@@ -325,7 +339,7 @@ exports.switchBranch = (directory, branch, callback) => {
  */
 exports.deleteBranch = (directory, branch, callback) => {
     //Run the command
-    run([`git -C "${escape(directory)}" branch --delete "${escape(branch)}"`], callback);
+    run(`git -C "${escape(directory)}" branch --delete "${escape(branch)}"`, callback);
 };
 /**
  * Rollback a file.
@@ -336,7 +350,7 @@ exports.deleteBranch = (directory, branch, callback) => {
  */
 exports.rollback = (directory, file, callback) => {
     //Run the command
-    run([`git -C "${escape(directory)}" checkout -- "${escape(file)}"`], callback);
+    run(`git -C "${escape(directory)}" checkout -- "${escape(file)}"`, callback);
 };
 /**
  * Get difference of one file as a patch.
@@ -356,7 +370,7 @@ exports.fileDiff = (directory, file, callback) => {
  * @param {Function} callback - This function will be called once the execution ends, it will be supplied the formatted output and an error flag.
  */
 exports.fetch = (directory, callback) => {
-    run([`git -C "${escape(directory)}" fetch --verbose`], callback);
+    run(`git -C "${escape(directory)}" fetch --verbose`, callback);
 };
 /**
  * Compare hashes of recent commits to see what is the status of the repository.
