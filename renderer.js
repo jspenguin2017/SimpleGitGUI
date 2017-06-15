@@ -116,9 +116,10 @@ const getCommitMsg = () => {
  * @function
  * @param {string} directory - The directory of the repository, there must be a valid JSON string stored in LocalStorage with this directory being the key.
  * @param {bool} [doRefresh=false] - Set this to true to do a refresh regardless whether or not the repository is already active, this will also prevent the directory from opening.
+ * @param {bool} [forceRefetch=false] - Whether or not configuration data must be loaded.
  * @listens $(".repos-list-btn-switch-repo").click
  */
-const switchRepo = (directory, doRefresh) => {
+const switchRepo = (directory, doRefresh, forceRefetch) => {
     //Show processing screen 
     UI.processing(true);
     //Check what should we do
@@ -133,25 +134,33 @@ const switchRepo = (directory, doRefresh) => {
             folder: config.active,
         });
     } else {
-        //Update configuration
-        config.active = directory;
-        //Save configuration
-        localStorage.setItem("config", JSON.stringify(config));
-        //Load configuration data
-        try {
-            const tempRepo = JSON.parse(localStorage.getItem(directory));
-            activeRepo = {
-                address: tempRepo.address.toString(),
-                directory: tempRepo.directory.toString(),
-            };
-            if (activeRepo.directory !== directory) {
-                throw "Configuration Data Not Valid";
+        if (forceRefetch || directory !== config.active) {
+            //Update configuration
+            config.active = directory;
+            //Save configuration
+            localStorage.setItem("config", JSON.stringify(config));
+            //Load configuration data
+            try {
+                const tempRepo = JSON.parse(localStorage.getItem(directory));
+                activeRepo = {
+                    address: tempRepo.address.toString(),
+                    directory: tempRepo.directory.toString(),
+                };
+                if (activeRepo.directory !== directory) {
+                    throw "Configuration Data Not Valid";
+                }
+            } catch (err) {
+                activeRepo = null;
+                UI.buttons(true, false);
+                UI.dialog("Something went wrong when loading configuration...", codify(err.message, true), true);
+                //Abort here, active repository is changed to an invalid one, but the user can always switch to another one or delete it
+                return;
             }
-        } catch (err) {
-            activeRepo = null;
-            UI.buttons(true, false);
-            UI.dialog("Something went wrong when loading configuration...", codify(err.message, true), true);
-            //Abort here, active repository is changed to an invalid one, but the user can always switch to another one or delete it
+        }
+        if (activeRepo === null) {
+            //Configuration is damaged
+            UI.dialog("Configuration file damaged", "<p>Delete this repository or use DevTools to fix damaged configuration data.</p>", true);
+            //Abort here
             return;
         }
         //Load or refresh branches and changed files list for this repository
@@ -269,10 +278,16 @@ const viewCallback = (file) => {
 $("#btn-menu-hard-reset").click(() => {
     //To make sure this will not be triggered accidentally, the input box will be cleared
     $("#modal-hard-reset-input-confirm").val("");
-    //Generate and show directory removal command
-    $("#modal-hard-reset-pre-rm-code").text(git.forcePullCmd(config.active));
-    //Show the modal
-    $("#modal-hard-reset").modal("show");
+    //Check if the current repository is valid
+    if (activeRepo === null) {
+        //Configuration is damaged
+        UI.dialog("Configuration file damaged", "<p>Delete this repository or use DevTools to fix damaged configuration data.</p>", true);
+    } else {
+        //Generate and show directory removal command
+        $("#modal-hard-reset-pre-rm-code").text(git.forcePullCmd(config.active));
+        //Show the modal
+        $("#modal-hard-reset").modal("show");
+    }
 });
 //Pull
 $("#btn-menu-pull").click(() => {
@@ -325,26 +340,21 @@ $("#btn-menu-config").click(() => {
 //=====Other Events=====
 //Force pull (hard reset) confirmation button
 $("#modal-hard-reset-input-confirm").on("keyup", () => {
-    if (activeRepo === null) {
-        //Configuration is damaged
-        UI.dialog("This repository is not valid", "<p>Delete this repository or use DevTools to fix damaged configuration data.</p>", true);
-    } else {
-        //Check if "confirm" is typed
-        if ($("#modal-hard-reset-input-confirm").val() === "confirm") {
-            $("#modal-hard-reset-input-confirm").val("");
-            //Show processing screen and hide force pull (hard reset) confirmation modal
-            UI.processing(true);
-            $("#modal-hard-reset").modal("hide");
-            //This part uses similar logic as switchRepo() refresh part, detailed comments are available there
-            git.forcePull(activeRepo.directory, activeRepo.address, (output, hasError) => {
-                ipc.send("console log", { log: output });
-                if (hasError) {
-                    UI.dialog("Something went wrong when force pulling...", codify(output, true), true);
-                } else {
-                    switchRepo(config.active, true);
-                }
-            });
-        }
+    //Check if "confirm" is typed
+    if ($("#modal-hard-reset-input-confirm").val() === "confirm") {
+        $("#modal-hard-reset-input-confirm").val("");
+        //Show processing screen and hide force pull (hard reset) confirmation modal
+        UI.processing(true);
+        $("#modal-hard-reset").modal("hide");
+        //This part uses similar logic as switchRepo() refresh part, detailed comments are available there
+        git.forcePull(activeRepo.directory, activeRepo.address, (output, hasError) => {
+            ipc.send("console log", { log: output });
+            if (hasError) {
+                UI.dialog("Something went wrong when force pulling...", codify(output, true), true);
+            } else {
+                switchRepo(config.active, true);
+            }
+        });
     }
 });
 //Pull confirmation button
@@ -503,7 +513,7 @@ $("#modal-import-btn-import").click(() => {
     //Redraw repositories list
     UI.repos(config.repos, icons, config.active, switchRepo);
     //Switch to the new repository
-    switchRepo(config.active, true);
+    switchRepo(config.active, true, true);
 });
 //Auto-fill clone directory
 $("#modal-clone-input-address").on("keyup", (() => {
@@ -552,7 +562,7 @@ $("#modal-clone-btn-clone").click(() => {
             //Redraw repositories list
             UI.repos(config.repos, icons, config.active, switchRepo);
             //Switch to the new repository
-            switchRepo(config.active, true);
+            switchRepo(config.active, true, true);
         }
     });
 });
@@ -580,7 +590,7 @@ $("#modal-delete-repo-btn-confirm").click(() => {
         //Redraw repositories list
         UI.repos(config.repos, icons, config.active, switchRepo);
         //Switch to the repository that is active now, this will redraw branches and changed files list
-        switchRepo(config.active, true);
+        switchRepo(config.active, true, true);
     } else {
         //We just deleted the last repository, unset active repository
         config.active = undefined;
@@ -852,7 +862,7 @@ git.config(config.name, config.email, config.savePW, (output, hasError) => {
         UI.dialog("Something went wrong when applying configuration...", codify(output, true), true);
     } else if (config.active) {
         //There is an active repository, load it
-        switchRepo(config.active, true);
+        switchRepo(config.active, true, true);
     } else {
         //No active repository, hide processing screen
         UI.processing(false);
