@@ -861,15 +861,18 @@ let isFetching = false;
 const updateIcons = (directory, status) => {
     switch (status) {
         case "up to date":
-            icons[directory].removeClass().addClass("glyphicon glyphicon-ok");
+            icons[directory].removeClass().addClass("glyphicon glyphicon-ok-sign");
             break;
         case "need pull":
-            icons[directory].removeClass().addClass("glyphicon glyphicon-arrow-down");
+            icons[directory].removeClass().addClass("glyphicon glyphicon-circle-arrow-down");
             break;
         case "need push":
-            icons[directory].removeClass().addClass("glyphicon glyphicon-arrow-up");
+            icons[directory].removeClass().addClass("glyphicon glyphicon-circle-arrow-up");
             break;
         case "diverged":
+            icons[directory].removeClass().addClass("glyphicon glyphicon-exclamation-sign");
+            break;
+        case "error":
             icons[directory].removeClass().addClass("glyphicon glyphicon-remove-sign");
             break;
     }
@@ -886,7 +889,7 @@ const getRunner = (directory) => {
             //Dump output to the terminal
             ipc.send("console log", { log: output });
             //Update the icon if possible, need to check the icons dictionary as it may change
-            if (result !== "error" && icons[directory]) {
+            if (icons[directory]) {
                 updateIcons(directory, result);
             }
             resolve();
@@ -895,6 +898,7 @@ const getRunner = (directory) => {
 };
 /**
  * Start refresh task schedule, one tick is done every 5 minutes.
+ * This function should only be called once.
  * @function
  */
 const scheduleIconRefresh = (() => {

@@ -13,11 +13,15 @@ const fs = require("fs");
  * @param {string} text - The text to escape.
  * @returns {string} The escaped text.
  */
-const escape = (text) => {
-    //Replace " and \ by \" and \\, and remove new lines
-    //There should never be new lines if the user interface worked properly
-    return text.replace(/("|\\)/g, "\\$1").replace(/\n/g, "");
-};
+const escape = (() => {
+    const matcher = /("|\\)/g;
+    const newLine = /\n/g;
+    return (text) => {
+        //Replace " and \ by \" and \\, and remove new lines
+        //There should never be new lines if the user interface worked properly
+        return text.replace(matcher, "\\$1").replace(newLine, "");
+    }
+})();
 /**
  * Combine and format output.
  * @function
@@ -33,12 +37,12 @@ const format = (code, err, stdout, stderr) => {
     let out = `>>> ${code}\n`;
     //Check if there is an error
     if (err) {
-        //It has an error, add error code and standard error output.
-        out += `Error code: ${err.code}\n${stderr}`;
-        //Check other errors
         if (err.code === undefined) {
             //JavaScript error
-            out += err.message;
+            out += `Error: ${err.message}`;
+        } else {
+            //Git error, add error code and standard error output
+            out += `Error code: ${err.code}\nError: ${stderr}`;
         }
     } else {
         //There is no error, add standard error output and standard output if they are not empty
