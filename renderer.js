@@ -226,7 +226,7 @@ const diffCallback = (file) => {
             UI.dialog("Something went wrong when loading difference...", codify(output, true), true);
         } else {
             //Show colored file difference using the general purpose modal
-            UI.dialog("File Difference", codify(data.join("\n")));
+            UI.dialog("File Difference", codify(data));
         }
     });
 };
