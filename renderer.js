@@ -653,6 +653,7 @@ $("#modal-switch-branch-btn-delete").click(() => {
 $("#modal-delete-branch-btn-confirm").click(() => {
     //This function uses similar logic as file rollback confirmation button click event handler, detailed comments are available there
     const name = $("#modal-delete-branch-pre-branch").text().trim();
+    $("#modal-delete-branch-pre-branch").text("");
     if (name) {
         UI.processing(true);
         git.deleteBranch(config.active, name, (output, hasError) => {
@@ -663,12 +664,11 @@ $("#modal-delete-branch-btn-confirm").click(() => {
                 switchRepo(config.active, true);
             }
         });
-        $("#modal-delete-branch-pre-branch").text("");
     }
 });
 
 //=====Initialization=====
-//Bind shortcut keys and prevent dropping files onto the window
+//Bind shortcut keys and prevent dropping files into the window
 $(document).on("keyup", (e) => {
     //For some reason, function keys can only be captured on keyup
     if (e.which === 123) {
@@ -753,8 +753,6 @@ try {
     //Copy repositories directories array
     for (let i = 0; i < tempConfig.repos.length; i++) {
         config.repos.push(tempConfig.repos[i].toString());
-        //Add icon
-        icons[config.repos[i]] = $(`<span>`).addClass("glyphicon glyphicon-refresh");
     }
     //Keep repositories in order, it should be already in order, sort again to make sure
     config.repos.sort();
@@ -795,10 +793,9 @@ if (config.repos.length) {
             //Remove this repository from the array
             //If it is active, config.active will be unset later, simply removing it from the array is enough
             localStorage.removeItem(config.repos[i]);
-            const deleted = config.repos.splice(i, 1);
-            //Remove icon
-            delete icons[deleted[0]];
-            i--; //Go back by 1 because we spliced the repository out
+            config.repos.splice(i, 1);
+            //Go back by 1 because we spliced the repository out
+            i--;
             //Save the new configuration that has broken repository removed
             localStorage.setItem("config", JSON.stringify(config));
         }
@@ -812,6 +809,10 @@ if (config.repos.length) {
         //No active repository, lock both action and management buttons
         UI.buttons(true, true);
     }
+    //Set in loading icons
+    for (let i = 0; i < config.repos.length; i++) {
+        icons[config.repos[i]] = $(`<span>`).addClass("glyphicon glyphicon-refresh");
+    }
     //Draw repositories list
     UI.repos(config.repos, icons, config.active, switchRepo);
 } else {
@@ -820,17 +821,17 @@ if (config.repos.length) {
     UI.buttons(true, true);
 }
 //The dictionary array, will be loaded later
-let spellcheckDict = [];
+let spellcheckDict;
 //Initialize spellcheck
 webFrame.setSpellCheckProvider("en-CA", false, {
     spellCheck(word) {
-        if (spellcheckDict.length) {
+        if (spellcheckDict) {
             return binSearch(spellcheckDict, word) > -1;
         } else {
             //Dictonary is not loaded, return true so words will not all be underlined
             return true;
         }
-    }
+    },
 });
 //Load spellcheck dictionary, fs will be required inline since it is only used once
 require("fs").readFile(path.join(__dirname, "renderer-lib/debian.dict-8.7.txt"), (err, data) => {
@@ -841,6 +842,7 @@ require("fs").readFile(path.join(__dirname, "renderer-lib/debian.dict-8.7.txt"),
         console.error(err);
     } else {
         //There is no error, parse the dictionary then update DOM
+        //Assuming the file is formatted with Windows line break
         spellcheckDict = data.toString().split("\r\n");
         $("#modal-commit-spellcheck-load-state").remove();
     }
@@ -873,7 +875,7 @@ let isFetching = false;
  * @param {string} directory - The directory of the repository.
  * @param {string} status - A valid status returned from git.compare().
  */
-const updateIcons = (directory, status) => {
+const updateIcon = (directory, status) => {
     switch (status) {
         case "up to date":
             icons[directory].removeClass().addClass("glyphicon glyphicon-ok");
@@ -898,14 +900,14 @@ const updateIcons = (directory, status) => {
  * @param {string} directory - The directory to check.
  * @return {Promise} A promise of the job.
  */
-const getRunner = (directory) => {
+const refreshIcon = (directory) => {
     return new Promise((resolve) => {
         git.compare(directory, (result, output) => {
             //Dump output to the terminal
             ipc.send("console log", { log: output });
             //Update the icon if possible, need to check the icons dictionary as it may change
             if (icons[directory]) {
-                updateIcons(directory, result);
+                updateIcon(directory, result);
             }
             resolve();
         });
@@ -936,20 +938,20 @@ const scheduleIconRefresh = (() => {
                     //Dump output to the terminal
                     ipc.send("console log", { log: output });
                     //Update icon if there is no error
-                    if (!hasError) {
-                        getRunner(directory).then(() => {
+                    if (hasError) {
+                        //Update the icon to be error
+                        if (icons[directory]) {
+                            updateIcon(directory, "error");
+                        }
+                    } else {
+                        refreshIcon(directory).then(() => {
                             //Schedule next tick
                             setTimeout(runTask, delay);
                         });
-                    } else {
-                        //Update the icon to be error (will be the same icon as diverged)
-                        if (icons[directory]) {
-                            updateIcons(directory, "diverged");
-                        }
                     }
                     //Update flag and run scheduled runner
                     isFetching = false;
-                    if (typeof window.onceFetchingDone === "function") {
+                    if (window.onceFetchingDone) {
                         //Swap it like this in case this event handler synchronously updated the handler
                         const func = window.onceFetchingDone;
                         window.onceFetchingDone = null;
@@ -965,7 +967,7 @@ const scheduleIconRefresh = (() => {
 //When processing ends, refresh the icon of current repository
 window.onProcessingEnds = () => {
     if (config.active) {
-        getRunner(config.active);
+        refreshIcon(config.active);
     }
 };
 //Initialization
@@ -973,7 +975,7 @@ window.onProcessingEnds = () => {
     //Initialize icons with what we know so far
     let tasks = [];
     for (let i = 0; i < config.repos.length; i++) {
-        tasks.push(getRunner(config.repos[i]));
+        tasks.push(refreshIcon(config.repos[i]));
     }
     Promise.all(tasks).then(() => { scheduleIconRefresh(); });
 })();
