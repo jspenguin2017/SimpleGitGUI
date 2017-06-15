@@ -85,10 +85,8 @@ const run = (lines, callback) => {
                     callback(output, true);
                     return;
                 } else {
-                    //Increment counter
-                    index++;
                     //Check if we are done
-                    if (index === lines.length) {
+                    if (++index === lines.length) {
                         callback(output, false);
                         return;
                     }
