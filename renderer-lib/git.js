@@ -108,7 +108,7 @@ const porcelain = (code, callback) => {
         if (err) {
             callback(format(code, err, stdout, stderr), true);
         } else {
-            callback(format(code, err, stdout, stderr), false, stdout.split("\n"));
+            callback(format(code, err, stdout, stderr), false, stdout);
         }
     });
 };
@@ -233,7 +233,7 @@ exports.forcePush = (directory, branch, callback) => {
  * Get repository status.
  * @function
  * @param {string} directory - The directory of the active repository.
- * @param {Function} callback - This function will be called once the execution ends, it will be supplied the formatted output and an error flag, also the lines of standard output if there is no error.
+ * @param {Function} callback - This function will be called once the execution ends, it will be supplied the formatted output and an error flag, also the standard output if there is no error.
  */
 exports.status = (directory, callback) => {
     //Run the command
@@ -289,7 +289,7 @@ exports.config = (name, email, savePW, callback) => {
  * Get branches list.
  * @function
  * @param {string} directory - The directory of the active repository.
- * @param {Function} callback - This function will be called once the execution ends, it will be supplied the formatted output and an error flag, also the lines of standard output if there is no error.
+ * @param {Function} callback - This function will be called once the execution ends, it will be supplied the formatted output and an error flag, also the standard output if there is no error.
  */
 exports.branches = (directory, callback) => {
     //Run the command
@@ -299,7 +299,7 @@ exports.branches = (directory, callback) => {
  * Refresh changed files list
  * @function
  * @param {string} directory - The directory of the active repository.
- * @param {Function} callback - This function will be called once the execution ends, it will be supplied the formatted output and an error flag, also the lines of standard output if there is no error.
+ * @param {Function} callback - This function will be called once the execution ends, it will be supplied the formatted output and an error flag, also the standard output if there is no error.
  */
 exports.diff = (directory, callback) => {
     //Run the command
@@ -343,7 +343,7 @@ exports.rollback = (directory, file, callback) => {
  * @function
  * @param {string} directory - The directory of the active repository.
  * @param {string} file - The file in question.
- * @param {Function} callback - This function will be called once the execution ends, it will be supplied the formatted output and an error flag, also the lines of standard output if there is no error.
+ * @param {Function} callback - This function will be called once the execution ends, it will be supplied the formatted output and an error flag, also the standard output if there is no error.
  */
 exports.fileDiff = (directory, file, callback) => {
     //Run the command
@@ -353,7 +353,7 @@ exports.fileDiff = (directory, file, callback) => {
  * Fetch the remote directory.
  * @function
  * @param {string} directory - The directory of the repository to fetch.
- * @param {Function} callback - This function will be called once the execution ends, it will be supplied the formatted output and an error flag, also the lines of standard output if there is no error.
+ * @param {Function} callback - This function will be called once the execution ends, it will be supplied the formatted output and an error flag.
  */
 exports.fetch = (directory, callback) => {
     run([`git -C "${escape(directory)}" fetch --verbose`], callback);
@@ -362,7 +362,7 @@ exports.fetch = (directory, callback) => {
  * Compare hashes of recent commits to see what is the status of the repository.
  * @function
  * @param {string} directory - The directory of the repository to compare.
- * @param {Function} callback - This function will be called once the execution ends, it will be supplied the status and output.
+ * @param {Function} callback - This function will be called once the execution ends, it will be supplied the formatted output and status.
  ** Status can be "up to date", "need pull", "need push", "diverged", or "error".
  */
 exports.compare = (directory, callback) => {

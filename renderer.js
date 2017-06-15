@@ -50,7 +50,7 @@ const binSearch = (array, key) => {
 /**
  * Escape and colorize code.
  * @function
- * @param {string|Array.<string>} code - The code to show.
+ * @param {string} code - The code to show.
  * @param {bool} [noColor=false] - Set this to true to not colorize code.
  * @returns {string} The HTML string that is ready to be inserted to DOM.
  */
@@ -62,9 +62,9 @@ const codify = (() => {
         code = code.replace(amp, "&amp;").replace(lt, "&lt;");
         //Color each line
         if (!noColor) {
-            let lines = typeof code === "object" ? code : code.split("\n");
+            let lines = code.split("\n");
             for (let i = 0; i < lines.length; i++) {
-                switch (lines[i]) {
+                switch (lines[i][0]) {
                     case "+":
                         //Addition
                         lines[i] = `<span class="code-add">${lines[i]}</span>`;
@@ -130,7 +130,7 @@ const switchRepo = (directory, doRefresh) => {
         })
         //Ask main process to open the directory
         ipc.send("open folder", {
-            folder: activeRepo.directory,
+            folder: config.active,
         });
     } else {
         //Load or refresh the repository
@@ -149,7 +149,7 @@ const switchRepo = (directory, doRefresh) => {
         $("#div-branches-list, #tbody-diff-table").empty();
         //Load or refresh branches and changed files list for this repository
         //Branches
-        git.branches(activeRepo.directory, (output, hasError, data) => {
+        git.branches(config.active, (output, hasError, data) => {
             //Dump output to the terminal
             ipc.send("console log", { log: output });
             //Check if it succeeded
@@ -158,10 +158,12 @@ const switchRepo = (directory, doRefresh) => {
                 UI.buttons(true, false);
                 UI.dialog("Something went wrong when loading branches...", codify(output, true), true);
             } else {
+                data = data.split("\n");
                 //Succeed, draw branches
                 UI.branches(data, switchBranch);
                 //Load changed files
-                git.diff(activeRepo.directory, (output, hasError, data) => {
+                git.diff(config.active, (output, hasError, data) => {
+                    data = data.split("\n");
                     //Dump output to the terminal
                     ipc.send("console log", { log: output });
                     //Check if it succeeded
@@ -218,13 +220,13 @@ const rollbackCallback = (file) => {
 const diffCallback = (file) => {
     //This function uses similar logic as switchRepo() refresh part, detailed comments are available there
     UI.processing(true);
-    git.fileDiff(activeRepo.directory, file, (output, hasError, data) => {
+    git.fileDiff(config.active, file, (output, hasError, data) => {
         ipc.send("console log", { log: output });
         if (hasError) {
             UI.dialog("Something went wrong when loading difference...", codify(output, true), true);
         } else {
             //Show colored file difference using the general purpose modal
-            UI.dialog("File Difference", codify(data));
+            UI.dialog("File Difference", codify(data.join("\n")));
         }
     });
 };
@@ -240,7 +242,7 @@ const viewCallback = (file) => {
         UI.processing(false);
     });
     ipc.send("show file in folder", {
-        file: (activeRepo.directory + "/" + file)
+        file: (config.active + "/" + file)
     });
 };
 
@@ -251,7 +253,7 @@ $("#btn-menu-hard-reset").click(() => {
     //To make sure this will not be triggered accidentally, the input box will be cleared
     $("#modal-hard-reset-input-confirm").val("");
     //Generate and show directory removal command
-    $("#modal-hard-reset-pre-rm-code").text(git.forcePullCmd(activeRepo.directory));
+    $("#modal-hard-reset-pre-rm-code").text(git.forcePullCmd(config.active));
     //Show the modal
     $("#modal-hard-reset").modal("show");
 });
@@ -308,9 +310,9 @@ $("#btn-menu-config").click(() => {
 $("#modal-hard-reset-input-confirm").on("keyup", () => {
     //Check if "confirm" is typed
     if ($("#modal-hard-reset-input-confirm").val() === "confirm") {
+        $("#modal-hard-reset-input-confirm").val("");
         //Show processing screen and hide force pull (hard reset) confirmation modal
         UI.processing(true);
-        $("#modal-hard-reset-input-confirm").val("");
         $("#modal-hard-reset").modal("hide");
         //This part uses similar logic as switchRepo() refresh part, detailed comments are available there
         git.forcePull(activeRepo.directory, activeRepo.address, (output, hasError) => {
@@ -327,7 +329,7 @@ $("#modal-hard-reset-input-confirm").on("keyup", () => {
 $("#modal-pull-btn-pull").click(() => {
     //This function uses similar logic as switchRepo() refresh part, detailed comments are available there
     UI.processing(true);
-    git.pull(activeRepo.directory, (output, hasError) => {
+    git.pull(config.active, (output, hasError) => {
         ipc.send("console log", { log: output });
         if (hasError) {
             UI.dialog("Something went wrong when pulling...", codify(output, true), true);
@@ -341,12 +343,12 @@ $("#modal-sync-btn-sync").click(() => {
     //This function uses similar logic as switchRepo() refresh part, detailed comments are available there
     //We had to copy this since we cannot chain button clicks
     UI.processing(true);
-    git.pull(activeRepo.directory, (output, hasError) => {
+    git.pull(config.active, (output, hasError) => {
         ipc.send("console log", { log: output });
         if (hasError) {
             UI.dialog("Something went wrong when pulling...", codify(output, true), true);
         } else {
-            git.push(activeRepo.directory, (output, hasError) => {
+            git.push(config.active, (output, hasError) => {
                 ipc.send("console log", { log: output });
                 if (hasError) {
                     UI.dialog("Something went wrong when pushing...", codify(output, true), true);
@@ -361,7 +363,7 @@ $("#modal-sync-btn-sync").click(() => {
 $("#modal-commit-btn-commit").click(() => {
     //This function uses similar logic as switchRepo() refresh part, detailed comments are available there
     UI.processing(true);
-    git.commit(activeRepo.directory, getCommitMsg(), (output, hasError) => {
+    git.commit(config.active, getCommitMsg(), (output, hasError) => {
         ipc.send("console log", { log: output });
         if (hasError) {
             UI.dialog("Something went wrong when committing...", codify(output, true), true);
@@ -375,12 +377,12 @@ $("#modal-commit-btn-commit-push").click(() => {
     //This function uses similar logic as switchRepo() refresh part, detailed comments are available there
     //Same as synchronize confirmation button click event handler, we had to copy the code due to not being able to chain button clicks
     UI.processing(true);
-    git.commit(activeRepo.directory, getCommitMsg(), (output, hasError) => {
+    git.commit(config.active, getCommitMsg(), (output, hasError) => {
         ipc.send("console log", { log: output });
         if (hasError) {
             UI.dialog("Something went wrong when committing...", codify(output, true), true);
         } else {
-            git.push(activeRepo.directory, (output, hasError) => {
+            git.push(config.active, (output, hasError) => {
                 ipc.send("console log", { log: output });
                 if (hasError) {
                     UI.dialog("Something went wrong when pushing...", codify(output, true), true);
@@ -399,7 +401,7 @@ $("#modal-commit").on("shown.bs.modal", () => {
 $("#btn-menu-push").click(() => {
     //This function uses similar logic as switchRepo() refresh part, detailed comments are available there
     UI.processing(true);
-    git.push(activeRepo.directory, (output, hasError) => {
+    git.push(config.active, (output, hasError) => {
         ipc.send("console log", { log: output });
         if (hasError) {
             UI.dialog("Something went wrong when pushing...", codify(output, true), true);
@@ -412,12 +414,12 @@ $("#btn-menu-push").click(() => {
 $("#modal-force-push-input-confirm").on("keyup", () => {
     //This function uses similar logic as force pull (hard reset) confirmation handler, detailed comments are available there
     if ($("#modal-force-push-input-confirm").val() === "confirm") {
-        UI.processing(true);
         $("#modal-force-push-input-confirm").val("");
+        UI.processing(true);
         $("#modal-force-push").modal("hide");
         //We need the name of the current branch, just find it from branches list
         //Force push button should be disabled if branches list did not load
-        git.forcePush(activeRepo.directory, $("#div-branches-list").find(".active").text(), (output, hasError) => {
+        git.forcePush(config.active, $("#div-branches-list").find(".active").text(), (output, hasError) => {
             ipc.send("console log", { log: output });
             if (hasError) {
                 UI.dialog("Something went wrong when force pushing...", codify(output, true), true);
@@ -434,8 +436,8 @@ $("#btn-menu-refresh").click(() => {
 });
 //Auto-refresh when window gain focus
 $(window).focus(() => {
-    //Do not refresh if we are busy, or if there is no repository
-    if (!$(".modal").is(":visible") && !$("#btn-menu-refresh").prop("disabled")) {
+    //Do not refresh if there is no repository, or if we are busy
+    if (config.active && !$(".modal").is(":visible")) {
         switchRepo(config.active, true);
     }
 });
@@ -443,7 +445,7 @@ $(window).focus(() => {
 $("#btn-menu-repo-status").click(() => {
     //This function uses similar logic as switchRepo() refresh part, detailed comments are available there
     UI.processing(true);
-    git.status(activeRepo.directory, (output, hasError, data) => {
+    git.status(config.active, (output, hasError, data) => {
         ipc.send("console log", { log: output });
         if (hasError) {
             UI.dialog("Something went wrong when loading status...", codify(output, true), true);
@@ -461,6 +463,9 @@ $("#modal-import-btn-import").click(() => {
         address: $("#modal-import-input-address").val(),
         directory: $("#modal-import-input-directory").val()
     };
+    //Clear inputs
+    $("#modal-import-input-address").val("");
+    $("#modal-import-input-directory").val("");
     //Update configuration
     config.repos.push(tempRepo.directory);
     //Add icon
@@ -476,19 +481,19 @@ $("#modal-import-btn-import").click(() => {
     //Redraw repositories list
     UI.repos(config.repos, icons, config.active, switchRepo);
     //Switch to the new repository
-    switchRepo(tempRepo.directory, true);
-    //Clear inputs
-    $("#modal-import-input-address").val("");
-    $("#modal-import-input-directory").val("");
+    switchRepo(config.active, true);
 });
 //Auto-fill clone directory
-$("#modal-clone-input-address").on("keyup", () => {
-    //The name of the directory would be the text between the last / and .git
-    const match = $("#modal-clone-input-address").val().match(/([^/]*)\.git$/);
-    if (match) {
-        $("#modal-clone-input-directory").val(path.join(config.lastPath, match.pop()));
+$("#modal-clone-input-address").on("keyup", (() => {
+    const matcher = /([^/]*)\.git$/;
+    return () => {
+        //The name of the directory would be the text between the last / and .git
+        const match = $("#modal-clone-input-address").val().match(matcher);
+        if (match) {
+            $("#modal-clone-input-directory").val(path.join(config.lastPath, match.pop()));
+        }
     }
-});
+})());
 //Clone confirmation button
 $("#modal-clone-btn-clone").click(() => {
     //Show processing screen
@@ -525,7 +530,7 @@ $("#modal-clone-btn-clone").click(() => {
             //Redraw repositories list
             UI.repos(config.repos, icons, config.active, switchRepo);
             //Switch to the new repository
-            switchRepo(tempRepo.directory, true);
+            switchRepo(config.active, true);
         }
     });
 });
@@ -559,10 +564,9 @@ $("#modal-delete-repo-btn-confirm").click(() => {
         config.active = undefined;
         //Save configuration
         localStorage.setItem("config", JSON.stringify(config));
-        //Redraw repositories list to empty it, same for branches and changed files list
+        //Redraw UI
+        $("#div-branches-list, #tbody-diff-table").empty();
         UI.repos(config.repos, icons, config.active, switchRepo);
-        UI.branches([], switchBranch);
-        UI.diffTable([], rollbackCallback, diffCallback, viewCallback);
         //Lock all buttons (except Clone and Config)
         UI.buttons(true, true);
         //Hide processing screen
@@ -602,18 +606,18 @@ $("#modal-config-btn-save").click(() => {
 $("#modal-rollback-btn-rollback").click(() => {
     //Get the file name from DOM, we set it before showing the modal
     const name = $("#modal-rollback-pre-file-name").text().trim();
+    //Clear the file name from DOM, so it will not cause confusion in case it is not properly set next time
+    $("#modal-rollback-pre-file-name").text("");
     if (name) {
         //This part uses similar logic as switchRepo() refresh part, detailed comments are available there
         UI.processing(true);
-        git.rollback(activeRepo.directory, name, (output, hasError) => {
+        git.rollback(config.active, name, (output, hasError) => {
             if (hasError) {
                 UI.dialog("Something went wrong when rolling back...", codify(output, true), true);
             } else {
-                switchRepo(activeRepo.directory, true);
+                switchRepo(config.active, true);
             }
         });
-        //Clear the file name from DOM, so it will not cause confusion in case it is not properly set next time
-        $("#modal-rollback-pre-file-name").text("");
     }
     //If the user interface worked properly, name would not be blank
 });
@@ -621,26 +625,26 @@ $("#modal-rollback-btn-rollback").click(() => {
 $("#modal-switch-branch-btn-switch").click(() => {
     //This function uses similar logic as file rollback confirmation button click event handler, detailed comments are available there
     const name = $("#modal-switch-branch-pre-branch").text().trim();
+    $("#modal-switch-branch-pre-branch").text("");
     if (name) {
         UI.processing(true);
-        git.switchBranch(activeRepo.directory, name, (output, hasError) => {
+        git.switchBranch(config.active, name, (output, hasError) => {
             ipc.send("console log", { log: output });
             if (hasError) {
                 UI.dialog("Something went wrong when switching branch...", codify(output, true), true);
             } else {
-                switchRepo(activeRepo.directory, true);
+                switchRepo(config.active, true);
             }
         });
-        $("#modal-switch-branch-pre-branch").text("");
     }
 });
 //Delete branch button
 $("#modal-switch-branch-btn-delete").click(() => {
     //Move the name over and show delete confirm modal
     const name = $("#modal-switch-branch-pre-branch").text().trim();
+    $("#modal-switch-branch-pre-branch").text("");
     if (name) {
         $("#modal-delete-branch-pre-branch").text(name);
-        $("#modal-switch-branch-pre-branch").text("");
         $("#modal-delete-branch").modal("show");
     }
     //If the user interface worked properly, name would not be blank
@@ -651,12 +655,12 @@ $("#modal-delete-branch-btn-confirm").click(() => {
     const name = $("#modal-delete-branch-pre-branch").text().trim();
     if (name) {
         UI.processing(true);
-        git.deleteBranch(activeRepo.directory, name, (output, hasError) => {
+        git.deleteBranch(config.active, name, (output, hasError) => {
             ipc.send("console log", { log: output });
             if (hasError) {
                 UI.dialog("Something went wrong when deleting branch...", codify(output, true), true);
             } else {
-                switchRepo(activeRepo.directory, true);
+                switchRepo(config.active, true);
             }
         });
         $("#modal-delete-branch-pre-branch").text("");
@@ -664,7 +668,7 @@ $("#modal-delete-branch-btn-confirm").click(() => {
 });
 
 //=====Initialization=====
-//Bind shortcut keys
+//Bind shortcut keys and prevent dropping files onto the window
 $(document).on("keyup", (e) => {
     //For some reason, function keys can only be captured on keyup
     if (e.which === 123) {
@@ -676,6 +680,12 @@ $(document).on("keyup", (e) => {
             location.reload();
         }
     }
+}).on("dragover", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+}).on("drop", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
 });
 //Warn the user about the console
 console.log("%cPlease be careful of what you execute in this console, it has access to your local file system.", "color:red; font-size:large;");
@@ -805,6 +815,7 @@ if (config.repos.length) {
     //Draw repositories list
     UI.repos(config.repos, icons, config.active, switchRepo);
 } else {
+    config.active = undefined;
     //There is no repository, lock both action and management buttons
     UI.buttons(true, true);
 }
@@ -840,7 +851,7 @@ git.config(config.name, config.email, config.savePW, (output, hasError) => {
     ipc.send("console log", { log: output });
     if (hasError) {
         UI.dialog("Something went wrong when applying configuration...", codify(output, true), true);
-    } else if (activeRepo) {
+    } else if (config.active) {
         //There is an active repository, load it
         switchRepo(config.active, true);
     } else {
