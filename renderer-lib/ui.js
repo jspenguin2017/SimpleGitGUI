@@ -76,17 +76,17 @@ UI.dialog = (title, message, isError) => {
     $("#modal-dialog").modal("show");
 };
 /**
- * Update button availability, true for active, false for diabled.
+ * Update button availability, true for disable, false for active.
  * @function
  * @param {Any} action - Supply a boolean to update action buttons availability, supply anything else to keep the availability as-is.
  * @param {Any} management - Supply a boolean to update management buttons availability, supply anything else to keep the availability as-is.
  */
 UI.buttons = (action, management) => {
     if (typeof action === "boolean") {
-        $(".btn-action").prop("disabled", !action);
+        $(".btn-action").prop("disabled", action);
     }
     if (typeof management === "boolean") {
-        $(".btn-management").prop("disabled", !management);
+        $(".btn-management").prop("disabled", management);
     }
 };
 /**

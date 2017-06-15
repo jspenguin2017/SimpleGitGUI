@@ -50,7 +50,7 @@ const binSearch = (array, key) => {
 /**
  * Escape and colorize code.
  * @function
- * @param {string} code - The code to show.
+ * @param {string|Array.<string>} code - The code to show.
  * @param {bool} [noColor=false] - Set this to true to not colorize code.
  * @returns {string} The HTML string that is ready to be inserted to DOM.
  */
@@ -62,7 +62,7 @@ const codify = (() => {
         code = code.replace(amp, "&amp;").replace(lt, "&lt;");
         //Color each line
         if (!noColor) {
-            let lines = code.split("\n");
+            let lines = typeof code === "object" ? code : code.split("\n");
             for (let i = 0; i < lines.length; i++) {
                 switch (lines[i]) {
                     case "+":
@@ -155,7 +155,7 @@ const switchRepo = (directory, doRefresh) => {
             //Check if it succeeded
             if (hasError) {
                 //There is an error, disable action buttons and show error
-                UI.buttons(false, true);
+                UI.buttons(true, false);
                 UI.dialog("Something went wrong when loading branches...", codify(output, true), true);
             } else {
                 //Succeed, draw branches
@@ -167,11 +167,11 @@ const switchRepo = (directory, doRefresh) => {
                     //Check if it succeeded
                     if (hasError) {
                         //There is an error, disable action buttons and show error
-                        UI.buttons(false, true);
+                        UI.buttons(true, false);
                         UI.dialog("Something went wrong when loading file changes...", codify(output, true), true);
                     } else {
                         //Succeed, enable all buttons and draw changed files list
-                        UI.buttons(true, true);
+                        UI.buttons(false, false);
                         UI.diffTable(data, rollbackCallback, diffCallback, viewCallback);
                         //Hide processing screen
                         UI.processing(false);
@@ -224,7 +224,7 @@ const diffCallback = (file) => {
             UI.dialog("Something went wrong when loading difference...", codify(output, true), true);
         } else {
             //Show colored file difference using the general purpose modal
-            UI.dialog("File Difference", codify(data.join("\n")));
+            UI.dialog("File Difference", codify(data));
         }
     });
 };
@@ -284,7 +284,7 @@ $("#btn-menu-import").click(() => {
 $("#btn-menu-clone").click(() => {
     //Auto fill address
     const data = clipboard.readText("plain/text");
-    if ((/\.git$/).test(data)) {
+    if (data.endsWith(".git")) {
         //Simply set the address in the address box, then trigger another event handler that will take care of it
         $("#modal-clone-input-address").val(data).trigger("keyup");
     }
@@ -448,7 +448,7 @@ $("#btn-menu-repo-status").click(() => {
         if (hasError) {
             UI.dialog("Something went wrong when loading status...", codify(output, true), true);
         } else {
-            UI.dialog("Repository Status", codify(data.join("\n"), true));
+            UI.dialog("Repository Status", codify(data, true));
         }
     });
 });
@@ -472,7 +472,7 @@ $("#modal-import-btn-import").click(() => {
     localStorage.setItem(tempRepo.directory, JSON.stringify(tempRepo));
     localStorage.setItem("config", JSON.stringify(config));
     //Enable management buttons, ations buttons will be handled by switchRepo
-    UI.buttons(null, true);
+    UI.buttons(null, false);
     //Redraw repositories list
     UI.repos(config.repos, icons, config.active, switchRepo);
     //Switch to the new repository
@@ -521,7 +521,7 @@ $("#modal-clone-btn-clone").click(() => {
             localStorage.setItem(tempRepo.directory, JSON.stringify(tempRepo));
             localStorage.setItem("config", JSON.stringify(config));
             //Enable management buttons, ations buttons will be handled by switchRepo
-            UI.buttons(null, true);
+            UI.buttons(null, false);
             //Redraw repositories list
             UI.repos(config.repos, icons, config.active, switchRepo);
             //Switch to the new repository
@@ -564,7 +564,7 @@ $("#modal-delete-repo-btn-confirm").click(() => {
         UI.branches([], switchBranch);
         UI.diffTable([], rollbackCallback, diffCallback, viewCallback);
         //Lock all buttons (except Clone and Config)
-        UI.buttons(false, false);
+        UI.buttons(true, true);
         //Hide processing screen
         UI.processing(false);
     }
@@ -800,13 +800,13 @@ if (config.repos.length) {
         //Save configuration
         localStorage.setItem("config", JSON.stringify(config));
         //No active repository, lock both action and management buttons
-        UI.buttons(false, false);
+        UI.buttons(true, true);
     }
     //Draw repositories list
     UI.repos(config.repos, icons, config.active, switchRepo);
 } else {
     //There is no repository, lock both action and management buttons
-    UI.buttons(false, false);
+    UI.buttons(true, true);
 }
 //The dictionary array, will be loaded later
 let spellcheckDict = [];
