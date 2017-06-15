@@ -9,7 +9,7 @@
 var UI = {};
 
 //UI.processing and UI.isProcessing
-((root) => {
+(() => {
     //This variable saves the current processing image state, this is used when toggling between the two processing image
     let processingImageFlag = false;
     //This variable saves the current processing state, it is also used in UI.isProcessing()
@@ -20,7 +20,7 @@ var UI = {};
      * @function
      * @param {boolean} isProcessing - True to show the processing screen, false to hide.
      */
-    root.processing = (isProcessing) => {
+    UI.processing = (isProcessing) => {
         //Check if the current state is the supplied state
         if (currentProcessingState !== isProcessing) {
             //It is not, proceed
@@ -52,10 +52,10 @@ var UI = {};
      * @function
      * @returns {boolean} The current processing state, true for processing, false for idle.
      */
-    root.isProcessing = () => {
+    UI.isProcessing = () => {
         return currentProcessingState;
     };
-})(UI);
+})();
 /**
  * Show a generic dialog box.
  * This will hide processing screen.
@@ -116,6 +116,8 @@ UI.repos = (directories, icons, active, switchCallback) => {
     }
     //Bind click event handler
     $(".repos-list-btn-switch-repo").click(function () {
+        //Update active selection
+        $(this).addClass("active").siblings().removeClass("active");
         switchCallback($(this).data("directory"));
     });
 };
@@ -125,42 +127,45 @@ UI.repos = (directories, icons, active, switchCallback) => {
  * @param {Array.<string>} data - Raw branches data from git.branches().
  * @param {Function} switchCallback - This function will be called when the user clicks on a branch, the name of the branch will be supplied.
  */
-UI.branches = (data, switchCallback) => {
-    //Parse data
-    let names = [];
-    let active;
-    for (let i = 0; i < data.length; i++) {
-        //Active branch starts with a star, we want to set the button as active, but not show the star
-        if (data[i].startsWith("*")) {
-            data[i] = data[i].substring(1);
-            active = data[i].trim();
+UI.branches = (() => {
+    const isHead = /\/HEAD -> .*\//;
+    return (data, switchCallback) => {
+        //Parse data
+        let names = [];
+        let active;
+        for (let i = 0; i < data.length; i++) {
+            //Active branch starts with a star, we want to set the button as active, but not show the star
+            if (data[i].startsWith("*")) {
+                data[i] = data[i].substring(1);
+                active = data[i].trim();
+            }
+            //Trim off excess white space and add to array
+            let temp = data[i].trim();
+            temp && names.push(temp);
         }
-        //Trim off excess white space and add to array
-        let temp = data[i].trim();
-        temp && names.push(temp);
-    }
-    //Empty branches list
-    $("#div-branches-list").empty();
-    //Add branches to the list one by one
-    for (let i = 0; i < names.length; i++) {
-        //The name will be shown as-is (almost, white space trimmed) on the button, this (trimmed) name will also be saved in jQuery data
-        let elem = $(`<button type="button" class="list-group-item btn-action branches-list-btn-switch-branch"></button>`).text(names[i]).data("name", names[i]);
-        //Branch containing "/HEAD -> /" is special and is not clickable, the active branch is also not clickable
-        if ((/\/HEAD\ \-\>\ .*\//).test(elem.text()) || names[i] === active) {
-            elem.removeClass("btn-action branches-list-btn-switch-branch").addClass("disabled");
+        //Empty branches list
+        $("#div-branches-list").empty();
+        //Add branches to the list one by one
+        for (let i = 0; i < names.length; i++) {
+            //The name will be shown as-is (almost, white space trimmed) on the button, this (trimmed) name will also be saved in jQuery data
+            let elem = $(`<button type="button" class="list-group-item btn-action branches-list-btn-switch-branch"></button>`).text(names[i]).data("name", names[i]);
+            //Branch containing "/HEAD -> /" is special and is not clickable, the active branch is also not clickable
+            if (isHead.test(elem.text()) || names[i] === active) {
+                elem.removeClass("btn-action branches-list-btn-switch-branch").addClass("disabled");
+            }
+            //Check and set active state
+            if (names[i] === active) {
+                elem.addClass("active");
+            }
+            //Add to list
+            $("#div-branches-list").append(elem);
         }
-        //Check and set active state
-        if (names[i] === active) {
-            elem.addClass("active");
-        }
-        //Add to list
-        $("#div-branches-list").append(elem);
-    }
-    //Bind click event handler
-    $(".branches-list-btn-switch-branch").click(function () {
-        switchCallback($(this).data("name"));
-    });
-};
+        //Bind click event handler
+        $(".branches-list-btn-switch-branch").click(function () {
+            switchCallback($(this).data("name"));
+        });
+    };
+})();
 /**
  * Redraw changed files list.
  * @function

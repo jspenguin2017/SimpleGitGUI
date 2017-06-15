@@ -54,29 +54,36 @@ const binSearch = (array, key) => {
  * @param {bool} [noColor=false] - Set this to true to not colorize code.
  * @returns {string} The HTML string that is ready to be inserted to DOM.
  */
-const codify = (code, noColor) => {
-    //Escape HTML, & and < are the only ones we need to worry about since it will be wrapped in <pre>
-    code = code.replace(/\&/g, "&amp;").replace(/\</g, "&lt;");
-    //Color each line
-    if (!noColor) {
-        let lines = code.split("\n");
-        for (let i = 0; i < lines.length; i++) {
-            if ((lines[i]).startsWith("+")) {
-                //Addition
-                lines[i] = `<span class="code-add">${lines[i]}</span>`;
-            } else if ((lines[i]).startsWith("-")) {
-                //Removal
-                lines[i] = `<span class="code-remove">${lines[i]}</span>`;
-            } else if ((lines[i]).startsWith("@")) {
-                //Section header
-                lines[i] = `<span class="code-section">${lines[i]}</span>`;
+const codify = (() => {
+    const amp = /\&/g;
+    const lt = /\</g;
+    return (code, noColor) => {
+        //Escape HTML, & and < are the only ones we need to worry about since it will be wrapped in <pre>
+        code = code.replace(amp, "&amp;").replace(lt, "&lt;");
+        //Color each line
+        if (!noColor) {
+            let lines = code.split("\n");
+            for (let i = 0; i < lines.length; i++) {
+                switch (lines[i]) {
+                    case "+":
+                        //Addition
+                        lines[i] = `<span class="code-add">${lines[i]}</span>`;
+                        break;
+                    case "-":
+                        //Removal
+                        lines[i] = `<span class="code-remove">${lines[i]}</span>`;
+                        break;
+                    case "@":
+                        //Section header
+                        lines[i] = `<span class="code-section">${lines[i]}</span>`;
+                }
             }
+            code = lines.join("\n");
         }
-        code = lines.join("\n");
-    }
-    //Return the code
-    return `<pre>${code}</pre>`;
-};
+        //Return the code
+        return `<pre>${code}</pre>`;
+    };
+})();
 /**
  * Get commit message.
  * @function
@@ -88,15 +95,15 @@ const getCommitMsg = () => {
     //Clear the text box for next commit
     $("#modal-commit-input-commit-message").val("");
     //Check if message empty
-    let hasMsg = false;
+    let noMsg = true;
     for (let i = 0; i < msg.length; i++) {
         if (msg[i].trim().length) {
-            hasMsg = true;
+            noMsg = false;
             break;
         }
     }
     //Set in default commit message if the user did not write one
-    if (!hasMsg) {
+    if (noMsg) {
         msg = ["No commit message"];
     }
     //Return the message
@@ -123,7 +130,7 @@ const switchRepo = (directory, doRefresh) => {
         })
         //Ask main process to open the directory
         ipc.send("open folder", {
-            folder: activeRepo.directory
+            folder: activeRepo.directory,
         });
     } else {
         //Load or refresh the repository
@@ -131,18 +138,15 @@ const switchRepo = (directory, doRefresh) => {
         let tempRepo = JSON.parse(localStorage.getItem(directory));
         activeRepo = {
             address: tempRepo.address.toString(),
-            directory: tempRepo.directory.toString()
+            directory: tempRepo.directory.toString(),
         };
         //Update configuration
         config.active = activeRepo.directory;
         //Save configuration
         localStorage.setItem("config", JSON.stringify(config));
         //Update screen
-        //Redraw repos list to update the active selection
-        UI.repos(config.repos, icons, config.active, switchRepo);
         //Clear branches list and changed files list
-        UI.branches([], switchBranch);
-        UI.diffTable([], rollbackCallback, diffCallback, viewCallback);
+        $("#div-branches-list, #tbody-diff-table").empty();
         //Load or refresh branches and changed files list for this repository
         //Branches
         git.branches(activeRepo.directory, (output, hasError, data) => {
@@ -184,10 +188,10 @@ const switchRepo = (directory, doRefresh) => {
  */
 const switchBranch = (name) => {
     //Fill in the branch to switch to
-    $("#modal-switch-branch-pre-branch").text(name.split("/").pop());
+    let i = name.lastIndexOf("/");
+    $("#modal-switch-branch-pre-branch").text(i > -1 ? name.substring(i + 1) : name);
     //Set delete button visibility, only show for local branches
     if (name.includes("/")) {
-        //Remote branch
         $("#modal-switch-branch-btn-delete").hide();
     } else {
         $("#modal-switch-branch-btn-delete").show();
