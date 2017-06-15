@@ -870,7 +870,7 @@ const updateIcons = (directory, status) => {
             icons[directory].removeClass().addClass("glyphicon glyphicon-chevron-up");
             break;
         case "diverged":
-            icons[directory].removeClass().addClass("glyphicon glyphicon-warning-sign");
+            icons[directory].removeClass().addClass("glyphicon glyphicon-remove-circle");
             break;
         case "error":
             icons[directory].removeClass().addClass("glyphicon glyphicon-remove");
