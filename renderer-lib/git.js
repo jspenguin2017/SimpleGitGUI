@@ -66,7 +66,7 @@ const format = (code, err, stdout, stderr) => {
 const run = (lines, callback) => {
     if (typeof lines === "string") {
         //One line, fast mode
-        exec(line, (err, stdout, stderr) => {
+        exec(lines, (err, stdout, stderr) => {
             callback(format(line, err, stdout, stderr), Boolean(err));
         });
     } else {
