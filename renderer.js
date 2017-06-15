@@ -150,8 +150,14 @@ const switchRepo = (directory, doRefresh, forceRefetch) => {
                     throw "Configuration Data Not Valid";
                 }
             } catch (err) {
+                //Update UI
                 activeRepo = null;
                 UI.buttons(true, false);
+                $("#div-branches-list, #tbody-diff-table").empty();
+                //Flush draw cache
+                drawCache.branches = "";
+                drawCache.diffs = "";
+                //Show error message
                 UI.dialog("Something went wrong when loading configuration...", codify(err.message, true), true);
                 //Abort here, active repository is changed to an invalid one, but the user can always switch to another one or delete it
                 return;
@@ -909,15 +915,24 @@ const updateIcon = (directory, status) => {
  */
 const refreshIcon = (directory) => {
     return new Promise((resolve) => {
-        git.compare(directory, (result, output) => {
-            //Dump output to the terminal
-            ipc.send("console log", { log: output });
-            //Update the icon if possible, need to check the icons dictionary as it may change
-            if (icons[directory]) {
-                updateIcon(directory, result);
-            }
-            resolve();
-        });
+        if (directory === config.active && activeRepo === null) {
+            //Configuration damaged
+            updateIcon(directory, "error");
+            process.nextTick(resolve);
+        } else {
+            git.compare(directory, (result, output) => {
+                //Dump output to the terminal
+                ipc.send("console log", { log: output });
+                //Update the icon if possible, need to check the icons dictionary as it may change
+                if (directory === config.active && activeRepo === null) {
+                    result = "error";
+                }
+                if (icons[directory]) {
+                    updateIcon(directory, result);
+                }
+                resolve();
+            });
+        }
     });
 };
 /**
@@ -939,32 +954,38 @@ const scheduleIconRefresh = (() => {
                     i = 0;
                 }
                 //The directory exists, cache it and increment the counter, in case the array changed when we come back
-                const directory = config.repos[i++];
-                isFetching = true;
-                git.fetch(directory, (output, hasError) => {
-                    //Dump output to the terminal
-                    ipc.send("console log", { log: output });
-                    //Update icon if there is no error
-                    if (hasError) {
-                        //Update the icon to be error
-                        if (icons[directory]) {
-                            updateIcon(directory, "error");
+                let directory = config.repos[i++];
+                if (directory === config.active && activeRepo === null) {
+                    //Configuration damaged
+                    updateIcon(directory, "error");
+                    process.nextTick(runTask);
+                } else {
+                    isFetching = true;
+                    git.fetch(directory, (output, hasError) => {
+                        //Dump output to the terminal
+                        ipc.send("console log", { log: output });
+                        //Update icon if there is no error
+                        if (hasError) {
+                            //Update the icon to be error
+                            if (icons[directory]) {
+                                updateIcon(directory, "error");
+                            }
+                        } else {
+                            refreshIcon(directory).then(() => {
+                                //Schedule next tick
+                                setTimeout(runTask, delay);
+                            });
                         }
-                    } else {
-                        refreshIcon(directory).then(() => {
-                            //Schedule next tick
-                            setTimeout(runTask, delay);
-                        });
-                    }
-                    //Update flag and run scheduled runner
-                    isFetching = false;
-                    if (window.onceFetchingDone) {
-                        //Swap it like this in case this event handler synchronously updated the handler
-                        const func = window.onceFetchingDone;
-                        window.onceFetchingDone = null;
-                        func();
-                    }
-                });
+                        //Update flag and run scheduled runner
+                        isFetching = false;
+                        if (window.onceFetchingDone) {
+                            //Swap it like this in case this event handler synchronously updated the handler
+                            const func = window.onceFetchingDone;
+                            window.onceFetchingDone = null;
+                            func();
+                        }
+                    });
+                }
             }
         };
         //Start the timer for the first time
