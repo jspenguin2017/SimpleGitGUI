@@ -93,6 +93,7 @@ const run = (lines, callback) => {
                         return;
                     }
                 }
+                //Next line
                 runner();
             });
         }
