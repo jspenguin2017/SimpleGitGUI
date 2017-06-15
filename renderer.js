@@ -180,6 +180,9 @@ const switchRepo = (directory, doRefresh, forceRefetch) => {
                 UI.buttons(true, false);
                 //Clear branches list and changed files list
                 $("#div-branches-list, #tbody-diff-table").empty();
+                //Flush draw cache
+                drawCache.branches = "";
+                drawCache.diffs = "";
                 UI.dialog("Something went wrong when loading branches...", codify(output, true), true);
             } else {
                 //Succeed, draw branches
@@ -198,6 +201,9 @@ const switchRepo = (directory, doRefresh, forceRefetch) => {
                         UI.buttons(true, false);
                         //Clear branches list and changed files list
                         $("#div-branches-list, #tbody-diff-table").empty();
+                        //Flush draw cache
+                        drawCache.branches = "";
+                        drawCache.diffs = "";
                         UI.dialog("Something went wrong when loading file changes...", codify(output, true), true);
                     } else {
                         //Succeed, enable all buttons and draw changed files list
