@@ -133,20 +133,27 @@ const switchRepo = (directory, doRefresh) => {
             folder: config.active,
         });
     } else {
-        //Load or refresh the repository
-        //Load the repository JSON, this is verified before, so we do not need to try-catch it
-        let tempRepo = JSON.parse(localStorage.getItem(directory));
-        activeRepo = {
-            address: tempRepo.address.toString(),
-            directory: tempRepo.directory.toString(),
-        };
         //Update configuration
-        config.active = activeRepo.directory;
+        config.active = directory;
         //Save configuration
         localStorage.setItem("config", JSON.stringify(config));
-        //Update screen
-        //Clear branches list and changed files list
-        $("#div-branches-list, #tbody-diff-table").empty();
+        //Load configuration data
+        try {
+            const tempRepo = JSON.parse(localStorage.getItem(directory));
+            activeRepo = {
+                address: tempRepo.address.toString(),
+                directory: tempRepo.directory.toString(),
+            };
+            if (activeRepo.directory !== directory) {
+                throw "Configuration Data Not Valid";
+            }
+        } catch (err) {
+            activeRepo = null;
+            UI.buttons(true, false);
+            UI.dialog("Something went wrong when loading configuration...", codify(err.message, true), true);
+            //Abort here, active repository is changed to an invalid one, but the user can always switch to another one or delete it
+            return;
+        }
         //Load or refresh branches and changed files list for this repository
         //Branches
         git.branches(config.active, (output, hasError, data) => {
@@ -156,25 +163,35 @@ const switchRepo = (directory, doRefresh) => {
             if (hasError) {
                 //There is an error, disable action buttons and show error
                 UI.buttons(true, false);
+                //Clear branches list and changed files list
+                $("#div-branches-list, #tbody-diff-table").empty();
                 UI.dialog("Something went wrong when loading branches...", codify(output, true), true);
             } else {
-                data = data.split("\n");
                 //Succeed, draw branches
-                UI.branches(data, switchBranch);
+                if (data !== drawCache.branches) {
+                    drawCache.branches = data;
+                    data = data.split("\n");
+                    UI.branches(data, switchBranch);
+                }
                 //Load changed files
                 git.diff(config.active, (output, hasError, data) => {
-                    data = data.split("\n");
                     //Dump output to the terminal
                     ipc.send("console log", { log: output });
                     //Check if it succeeded
                     if (hasError) {
                         //There is an error, disable action buttons and show error
                         UI.buttons(true, false);
+                        //Clear branches list and changed files list
+                        $("#div-branches-list, #tbody-diff-table").empty();
                         UI.dialog("Something went wrong when loading file changes...", codify(output, true), true);
                     } else {
                         //Succeed, enable all buttons and draw changed files list
                         UI.buttons(false, false);
-                        UI.diffTable(data, rollbackCallback, diffCallback, viewCallback);
+                        if (data !== drawCache.diffs) {
+                            drawCache.diffs = data;
+                            data = data.split("\n");
+                            UI.diffTable(data, rollbackCallback, diffCallback, viewCallback);
+                        }
                         //Hide processing screen
                         UI.processing(false);
                     }
@@ -308,21 +325,26 @@ $("#btn-menu-config").click(() => {
 //=====Other Events=====
 //Force pull (hard reset) confirmation button
 $("#modal-hard-reset-input-confirm").on("keyup", () => {
-    //Check if "confirm" is typed
-    if ($("#modal-hard-reset-input-confirm").val() === "confirm") {
-        $("#modal-hard-reset-input-confirm").val("");
-        //Show processing screen and hide force pull (hard reset) confirmation modal
-        UI.processing(true);
-        $("#modal-hard-reset").modal("hide");
-        //This part uses similar logic as switchRepo() refresh part, detailed comments are available there
-        git.forcePull(activeRepo.directory, activeRepo.address, (output, hasError) => {
-            ipc.send("console log", { log: output });
-            if (hasError) {
-                UI.dialog("Something went wrong when force pulling...", codify(output, true), true);
-            } else {
-                switchRepo(config.active, true);
-            }
-        });
+    if (activeRepo === null) {
+        //Configuration is damaged
+        UI.dialog("This repository is not valid", "<p>Delete this repository or use DevTools to fix damaged configuration data.</p>", true);
+    } else {
+        //Check if "confirm" is typed
+        if ($("#modal-hard-reset-input-confirm").val() === "confirm") {
+            $("#modal-hard-reset-input-confirm").val("");
+            //Show processing screen and hide force pull (hard reset) confirmation modal
+            UI.processing(true);
+            $("#modal-hard-reset").modal("hide");
+            //This part uses similar logic as switchRepo() refresh part, detailed comments are available there
+            git.forcePull(activeRepo.directory, activeRepo.address, (output, hasError) => {
+                ipc.send("console log", { log: output });
+                if (hasError) {
+                    UI.dialog("Something went wrong when force pulling...", codify(output, true), true);
+                } else {
+                    switchRepo(config.active, true);
+                }
+            });
+        }
     }
 });
 //Pull confirmation button
@@ -564,9 +586,11 @@ $("#modal-delete-repo-btn-confirm").click(() => {
         config.active = undefined;
         //Save configuration
         localStorage.setItem("config", JSON.stringify(config));
-        //Redraw UI
-        $("#div-branches-list, #tbody-diff-table").empty();
-        UI.repos(config.repos, icons, config.active, switchRepo);
+        //Empty UI
+        $("#div-repos-list, #div-branches-list, #tbody-diff-table").empty();
+        //Flush draw cache
+        drawCache.branches = "";
+        drawCache.diffs = "";
         //Lock all buttons (except Clone and Config)
         UI.buttons(true, true);
         //Hide processing screen
@@ -728,6 +752,10 @@ window.openProjectPage = () => {
 let config; //Chech the default configuration object below for more information
 let icons = {}; //Icons indicating the status of the repository
 let activeRepo; //This will be a repository object which has properties address and directory, it will be the repository object of the active repository
+let drawCache = { //Current branches and changed files list are saved here so redraw is not needed when there are no change
+    branches: "",
+    diffs: "",
+};
 try {
     //Load the configuration and copy it, hopefully we will not run into craches after this validation
     let tempConfig = JSON.parse(localStorage.getItem("config"));
@@ -769,37 +797,6 @@ try {
 }
 //Draw repositories list
 if (config.repos.length) {
-    //Validate each repository JSON, hopefully we will not run into crashes later
-    //This can be slow if there are a lot of repository, but this is only done once when loading, so it should be fine
-    for (let i = 0; i < config.repos.length; i++) {
-        try {
-            //Get the JSON
-            let repo = JSON.parse(localStorage.getItem(config.repos[i]));
-            //Validate it by calling toString() on each property
-            let tempRepo = {
-                address: repo.address.toString(),
-                directory: repo.directory.toString()
-            };
-            //Check if the key matches directory
-            if (config.repos[i] !== tempRepo.directory) {
-                throw "Repository Not Valid";
-            }
-            //Copy active one
-            if (repo.directory === config.active) {
-                //Even though switchRepo() will parse this again, we do this to confirm that config.active is valid
-                activeRepo = tempRepo;
-            }
-        } catch (err) {
-            //Remove this repository from the array
-            //If it is active, config.active will be unset later, simply removing it from the array is enough
-            localStorage.removeItem(config.repos[i]);
-            config.repos.splice(i, 1);
-            //Go back by 1 because we spliced the repository out
-            i--;
-            //Save the new configuration that has broken repository removed
-            localStorage.setItem("config", JSON.stringify(config));
-        }
-    }
     //Check if the active repository is valid, if it is not and there are other repositories, the user can click them from repositories list to set one as active
     if (config.repos.indexOf(config.active) < 0) {
         //The active repository does not exist, unset it
