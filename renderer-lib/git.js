@@ -73,31 +73,28 @@ const run = (lines, callback) => {
         //Many lines, slow mode
         //Presistent variables (until all the lines of code are processed)
         let output = "";
-        let hasError = false;
+        let index = 0;
         //Line runner
         const runner = () => {
-            //Get a line
-            let line = lines.shift();
-            //Check if we have any lines left
-            if (line) {
-                //We still have code to run, run it
-                exec(line, (err, stdout, stderr) => {
-                    //Check if there is an error
-                    if (err) {
-                        //Update flag
-                        hasError = true;
-                        //Abort other lines
-                        lines = [];
-                        //Line runner will be called again later to send information back to callback
+            exec(lines[index], (err, stdout, stderr) => {
+                //Format output, then run the next line
+                output += format(lines[index], err, stdout, stderr);
+                //Check if there is an error
+                if (err) {
+                    //Call callback with current output
+                    callback(output, true);
+                    return;
+                } else {
+                    //Increment counter
+                    index++;
+                    //Check if we are done
+                    if (index === lines.length) {
+                        callback(output, false);
+                        return;
                     }
-                    //Format output, then run the next line
-                    output += format(line, err, stdout, stderr);
-                    runner();
-                });
-            } else {
-                //No more line to run, call callback
-                callback(output, hasError);
-            }
+                }
+                runner();
+            });
         }
         //Start the line runner
         runner();
