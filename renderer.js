@@ -861,19 +861,19 @@ let isFetching = false;
 const updateIcons = (directory, status) => {
     switch (status) {
         case "up to date":
-            icons[directory].removeClass().addClass("glyphicon glyphicon-ok-sign");
+            icons[directory].removeClass().addClass("glyphicon glyphicon-ok");
             break;
         case "need pull":
-            icons[directory].removeClass().addClass("glyphicon glyphicon-circle-arrow-down");
+            icons[directory].removeClass().addClass("glyphicon glyphicon-chevron-down");
             break;
         case "need push":
-            icons[directory].removeClass().addClass("glyphicon glyphicon-circle-arrow-up");
+            icons[directory].removeClass().addClass("glyphicon glyphicon-chevron-up");
             break;
         case "diverged":
-            icons[directory].removeClass().addClass("glyphicon glyphicon-exclamation-sign");
+            icons[directory].removeClass().addClass("glyphicon glyphicon-warning-sign");
             break;
         case "error":
-            icons[directory].removeClass().addClass("glyphicon glyphicon-remove-sign");
+            icons[directory].removeClass().addClass("glyphicon glyphicon-remove");
             break;
     }
 };
