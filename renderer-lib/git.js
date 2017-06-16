@@ -2,7 +2,10 @@
 //This file should be loaded with require()
 "use strict";
 
-//=====Load Utility Modules=====
+/**
+ * Load modules.
+ * @const {Module}
+ */
 const { exec } = require("child_process");
 const fs = require("fs");
 

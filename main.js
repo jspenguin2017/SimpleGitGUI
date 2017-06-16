@@ -1,10 +1,11 @@
 //The main process
 "use strict";
 
-//=====Load Modules=====
-//Electron
-const {app, BrowserWindow: win, ipcMain: ipc, dialog, shell} = require("electron");
-//Utilities
+/**
+ * Load modules.
+ * @const {Module}
+ */
+const { app, BrowserWindow: win, ipcMain: ipc, dialog, shell } = require("electron");
 const path = require("path");
 const url = require("url");
 
@@ -41,7 +42,11 @@ ipc.on("show file in folder", (e, data) => {
 });
 
 //=====Main=====
-let main; //The main window
+/**
+ * The main window.
+ * @const {BrowserWindow}
+ */
+let main;
 app.on("ready", () => {
     //Create window
     main = new win({

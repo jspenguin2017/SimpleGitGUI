@@ -4,12 +4,52 @@
 //Show processing screen
 UI.processing(true);
 
-//=====Load Modules=====
-//Electron
+//=====Variables=====
+/**
+ * Load modules.
+ * @const {Module}
+ */
 const { ipcRenderer: ipc, clipboard, webFrame } = require("electron");
-//Utilities and libraries
 const path = require("path");
 const git = require("./renderer-lib/git.js");
+/**
+ * The configuration object.
+ * @var {Object}
+ */
+let config;
+/**
+ * The icons dictionary.
+ * @var {Dictionary}
+ */
+let icons = {};
+/**
+ * The active repository object, this can be null if configuration data is damaged.
+ * @var {Object|null}
+ */
+let activeRepo;
+/**
+ * Draw cache, contains current branches and changed files so we only draw when it has changed.
+ * @var {Object}
+ */
+let drawCache = {
+    branches: "",
+    diffs: "",
+};
+/**
+ * The spellcheck dictionary, will be loaded later.
+ * @const {Array.<string>}
+ */
+let spellcheckDict;
+/**
+ * Whether or not we are in the background.
+ * @var {boolean}
+ */
+let isFocused = true;
+/**
+ * Whether or not we are fetching remote changes. Define window.onceFetchingDone() will cause it being called as soon as the next fetching finishes.
+ * @var {boolean}
+ */
+let isFetching = false;
 
 //=====Helper Functions=====
 /**
@@ -478,13 +518,6 @@ $("#btn-menu-refresh").click(() => {
     //Simply call switchRepo() with doRefresh flag
     switchRepo(config.active, true);
 });
-//Auto-refresh when window gain focus
-$(window).focus(() => {
-    //Do not refresh if there is no repository, or if we are busy
-    if (config.active && !$(".modal").is(":visible")) {
-        switchRepo(config.active, true);
-    }
-});
 //Status button
 $("#btn-menu-repo-status").click(() => {
     //This function uses similar logic as switchRepo() refresh part, detailed comments are available there
@@ -758,9 +791,15 @@ $(window).resize(() => {
     $("#modal-dialog-pre").css("max-height", $(document.body).height() - 240);
     //Changed files list (to make it scroll)
     $("#tbody-diff-table").css("max-height", $(document.body).height() - 150);
+}).trigger("resize").focus(() => { //Trigger resize for the first time
+    //Do not refresh if there is no repository, or if we are busy
+    if (config.active && !$(".modal").is(":visible")) {
+        switchRepo(config.active, true);
+    }
+    isFocused = true;
+}).blur(() => {
+    isFocused = false;
 });
-//Update height for the first time
-$(window).trigger("resize");
 //Project page event handler, this will be called from inline code
 window.openProjectPage = () => {
     //This function uses similar logic as switchRepo() open directory part, detailed comments are available there
@@ -771,13 +810,6 @@ window.openProjectPage = () => {
     ipc.send("open project page");
 };
 //Load configuration
-let config; //Chech the default configuration object below for more information
-let icons = {}; //Icons indicating the status of the repository
-let activeRepo; //This will be a repository object which has properties address and directory, it will be the repository object of the active repository
-let drawCache = { //Current branches and changed files list are saved here so redraw is not needed when there are no change
-    branches: "",
-    diffs: "",
-};
 try {
     //Load the configuration and copy it, hopefully we will not run into craches after this validation
     let tempConfig = JSON.parse(localStorage.getItem("config"));
@@ -839,8 +871,6 @@ if (config.repos.length) {
     //There is no repository, lock both action and management buttons
     UI.buttons(true, true);
 }
-//The dictionary array, will be loaded later
-let spellcheckDict;
 //Initialize spellcheck
 webFrame.setSpellCheckProvider("en-CA", false, {
     spellCheck(word) {
@@ -882,11 +912,6 @@ git.config(config.name, config.email, config.savePW, (output, hasError) => {
 });
 
 //=====Remote Status Watcher=====
-/**
- * Whether or not we are fetching remote changes. Define window.onceFetchingDone() will cause it being called as soon as the next fetching finishes.
- * @var {boolean}
- */
-let isFetching = false;
 //Helper functions
 /**
  * Update icon for a repository.
@@ -998,13 +1023,14 @@ const scheduleIconRefresh = (() => {
         setTimeout(runTask, delay);
     };
 })();
+//Initialization
 //When processing ends, refresh the icon of current repository
 window.onProcessingEnds = () => {
     if (config.active) {
         refreshIcon(config.active);
     }
 };
-//Initialization
+//Refresh all icons for the first time
 (() => {
     //Initialize icons with what we know so far
     let tasks = [];
@@ -1019,20 +1045,22 @@ window.onProcessingEnds = () => {
 //This may be a bug in Bootstrap, or Bootstrap is not designed to handle multiple modals
 //We need to remove a backdrop that is sometimes not removed, it blocks mouse clicks
 setInterval(() => {
-    //This is pretty light, when this software is in the background, CPU usage stays at 0%
-    if (!$(".modal").is(":visible") && $(".modal-backdrop.fade").length) {
-        //We are going to check twice to make sure things are taped right
-        setTimeout(() => {
-            if (!$(".modal").is(":visible") && $(".modal-backdrop.fade").length) {
-                //Remove the extra backdrop
-                $(".modal-backdrop.fade").each(function () {
-                    if ($(this).text() === "") {
-                        $(this).remove();
-                        //Make sure all modals are hidden properly, so they can be shown again later
-                        $(".modal").modal("hide");
-                    }
-                });
-            }
-        }, 250);
+    if (isFocused) {
+        //This is pretty light, when this software is in the background, CPU usage stays at 0%
+        if (!$(".modal").is(":visible") && $(".modal-backdrop.fade").length) {
+            //We are going to check twice to make sure things are taped right
+            setTimeout(() => {
+                if (!$(".modal").is(":visible") && $(".modal-backdrop.fade").length) {
+                    //Remove the extra backdrop
+                    $(".modal-backdrop.fade").each(function () {
+                        if ($(this).text() === "") {
+                            $(this).remove();
+                            //Make sure all modals are hidden properly, so they can be shown again later
+                            $(".modal").modal("hide");
+                        }
+                    });
+                }
+            }, 250);
+        }
     }
 }, 750);
