@@ -98,33 +98,31 @@ UI.buttons = (() => {
  * @param {string} active - The directory of the active repository.
  * @param {Function} switchCallback - This function will be called when the user clicks on a repository, the directory of the repository will be supplied.
  */
-UI.repos = (() => {
-    const splitter = /\/|\\/;
-    return (directories, icons, active, switchCallback) => {
-        //Empty repositories list
-        $("#div-repos-list").empty();
-        //Add repositories to the list one by one
-        for (let i = 0; i < directories.length; i++) {
-            //The last folder name will be shown on the button, directory will be saved in jQuery data
-            let elem = $(`<button type="button" class="list-group-item repos-list-btn-switch-repo"></button>`)
-                .append(icons[directories[i]])
-                .append(document.createTextNode(" " + directories[i].split(splitter).pop()))
-                .data("directory", directories[i]);
-            //Check and set active state
-            if (directories[i] === active) {
-                elem.addClass("active");
-            }
-            //Add to list
-            $("#div-repos-list").append(elem);
+UI.repos = (directories, icons, active, switchCallback) => {
+    //Empty repositories list
+    $("#div-repos-list").empty();
+    //Add repositories to the list one by one
+    for (let i = 0; i < directories.length; i++) {
+        const index = Math.max(directories[i].lastIndexOf("/"), directories[i].lastIndexOf("\\"));
+        //The last folder name will be shown on the button, directory will be saved in jQuery data
+        let elem = $(`<button type="button" class="list-group-item repos-list-btn-switch-repo"></button>`)
+            .append(icons[directories[i]])
+            .append(document.createTextNode(" " + directories[i].substring(index + 1)))
+            .data("directory", directories[i]);
+        //Check and set active state
+        if (directories[i] === active) {
+            elem.addClass("active");
         }
-        //Bind click event handler
-        $(".repos-list-btn-switch-repo").click(function () {
-            //Update active selection
-            $(this).addClass("active").siblings().removeClass("active");
-            switchCallback($(this).data("directory"));
-        });
-    };
-})();
+        //Add to list
+        $("#div-repos-list").append(elem);
+    }
+    //Bind click event handler
+    $(".repos-list-btn-switch-repo").click(function () {
+        //Update active selection
+        $(this).addClass("active").siblings().removeClass("active");
+        switchCallback($(this).data("directory"));
+    });
+};
 /**
  * Redraw branches list.
  * @function
