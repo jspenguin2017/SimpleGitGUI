@@ -1,6 +1,6 @@
 # Simple Git GUI [![Dependencies](https://david-dm.org/jspenguin2017/SimpleGitGUI.svg)](https://david-dm.org/jspenguin2017/SimpleGitGUI)
 
-![Main Window](https://i.imgur.com/Pk7db5U.png)
+![Main Window](https://i.imgur.com/UbZ9zoz.png)
 
 This software aims at doing exactly what you want, even though the user interface looks simple, 
 you need some understanding of Git to use it. Make sure that you know what you are clicking, or bad things will happen. 
