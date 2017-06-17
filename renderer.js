@@ -931,10 +931,10 @@ const updateIcon = (directory, status) => {
             icons[directory].removeClass().addClass("glyphicon glyphicon-chevron-up");
             break;
         case "diverged":
-            icons[directory].removeClass().addClass("glyphicon glyphicon-remove-circle");
+            icons[directory].removeClass().addClass("glyphicon glyphicon-remove");
             break;
         case "error":
-            icons[directory].removeClass().addClass("glyphicon glyphicon-remove");
+            icons[directory].removeClass().addClass("glyphicon glyphicon-remove-circle");
             break;
     }
 };
