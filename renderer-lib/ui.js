@@ -219,28 +219,28 @@ UI.diffTable = (data, rollbackCallback, diffCallback, viewCallback) => {
         //Add state
         for (let j = 0; j < 2; j++) {
             switch (data[i].charAt(j)) {
-                case " ":
+                case ' ':
                     File.state.push("Unchanged");
                     break;
-                case "A":
+                case 'A':
                     File.state.push("Created");
                     break;
-                case "M":
+                case 'M':
                     File.state.push("Changed");
                     break;
-                case "D":
+                case 'D':
                     File.state.push("Deleted");
                     break;
-                case "R":
+                case 'R':
                     File.state.push("Renamed");
                     break;
-                case "C":
+                case 'C':
                     File.state.push("Copied");
                     break;
-                case "U":
+                case 'U':
                     File.state.push("Unmerged");
                     break;
-                case "?":
+                case '?':
                     File.state.push("Untracked");
                     break;
                 default:

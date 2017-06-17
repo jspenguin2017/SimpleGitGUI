@@ -104,16 +104,16 @@ const codify = (() => {
         if (!noColor) {
             let lines = code.split("\n");
             for (let i = 0; i < lines.length; i++) {
-                switch (lines[i][0]) {
-                    case "+":
+                switch (lines[i].charAt(0)) {
+                    case '+':
                         //Addition
                         lines[i] = `<span class="code-add">${lines[i]}</span>`;
                         break;
-                    case "-":
+                    case '-':
                         //Removal
                         lines[i] = `<span class="code-remove">${lines[i]}</span>`;
                         break;
-                    case "@":
+                    case '@':
                         //Section header
                         lines[i] = `<span class="code-section">${lines[i]}</span>`;
                 }
