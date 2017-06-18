@@ -565,7 +565,7 @@ $("#modal-clone-input-address").on("keyup", (() => {
     const matcher = /([^/]*)\.git$/;
     return () => {
         //The name of the directory would be the text between the last / and .git
-        const match = $("#modal-clone-input-address").val().match(matcher);
+        const match = matcher.exec($("#modal-clone-input-address").val());
         if (match) {
             $("#modal-clone-input-directory").val(path.join(config.lastPath, match[match.length - 1]));
         }
