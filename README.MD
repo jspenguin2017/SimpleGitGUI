@@ -32,15 +32,7 @@ Please open an issue if there is something you want me to know.
 3. Whitelist `.js` file type if you are using an aggressive anti-virus software. 
 4. Download all files from this repository to a folder by any convenient method then run `npm install` in it. 
 
-For Linux: 
-1. Configure your file explorer to execute scripts when double clicked. 
-2. Double click on `Launcher.sh` to start. 
-
-For Windows: 
-1. Double click on `Launcher.exe` to start. 
-
-Note: These launchers simply execute `npm start` without showing the terminal window. You can manually run that if you want 
-to see the terminal output. 
+The source code of `Launcher.exe` is available [here](https://github.com/jspenguin2017/ElectronLauncher). 
 
 ## Credits
 
