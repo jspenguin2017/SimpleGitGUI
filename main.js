@@ -47,6 +47,7 @@ ipc.on("show file in folder", (e, data) => {
  * @const {BrowserWindow}
  */
 let main;
+//Start
 app.on("ready", () => {
     //Create window
     main = new win({
@@ -67,6 +68,7 @@ app.on("ready", () => {
     main.on("closed", () => {
         app.quit();
     });
-    //This will open DevTools when the main window loads, this helps in debugging the renderer when it does not work at all, uncomment as needed
+    //This will open DevTools when the main window loads, this helps in debugging the renderer when it does not
+    //work at all, uncomment as needed
     //main.webContents.openDevTools();
 });
