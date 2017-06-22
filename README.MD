@@ -21,8 +21,7 @@ when you need to use DevTools to fix damaged configuration data. Do not start mo
 
 All the commands that will be executed in the background are in `renderer-lib/git.js`. 
 
-The launcher for Windows is built with Visual Studio 2017 and its source is available 
-[here](https://github.com/jspenguin2017/ElectronLauncher). 
+The source code for Launcher is available [here](https://github.com/jspenguin2017/ElectronLauncher). 
 
 Please open an issue if there is something you want me to know. 
 
