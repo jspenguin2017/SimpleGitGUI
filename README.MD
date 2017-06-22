@@ -21,7 +21,8 @@ when you need to use DevTools to fix damaged configuration data. Do not start mo
 
 All the commands that will be executed in the background are in `renderer-lib/git.js`. 
 
-The launcher for Windows is built with Visual Studio 2017. 
+The launcher for Windows is built with Visual Studio 2017 and its source is available 
+[here](https://github.com/jspenguin2017/ElectronLauncher). 
 
 Please open an issue if there is something you want me to know. 
 
@@ -31,8 +32,7 @@ Please open an issue if there is something you want me to know.
 2. Install [Node.js](https://nodejs.org/en/). 
 3. Whitelist `.js` file type if you are using an aggressive anti-virus software. 
 4. Download all files from this repository to a folder by any convenient method then run `npm install` in it. 
-
-The source code of `Launcher.exe` is available [here](https://github.com/jspenguin2017/ElectronLauncher). 
+5. Use Launcher to start this software. 
 
 ## Credits
 
