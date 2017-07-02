@@ -1046,7 +1046,6 @@ window.onProcessingEnds = () => {
 //We need to remove a backdrop that is sometimes not removed, it blocks mouse clicks
 setInterval(() => {
     if (isFocused) {
-        //This is pretty light, when this software is in the background, CPU usage stays at 0%
         if (!$(".modal").is(":visible") && $(".modal-backdrop.fade").length) {
             //We are going to check twice to make sure things are taped right
             setTimeout(() => {
