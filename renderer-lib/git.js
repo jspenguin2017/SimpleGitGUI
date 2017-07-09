@@ -360,7 +360,7 @@ exports.rollback = (directory, file, callback) => {
  */
 exports.fileDiff = (directory, file, callback) => {
     //Run the command
-    porcelain(`git -C "${escape(directory)}" diff "${escape(file)}"`, callback);
+    porcelain(`git -C "${escape(directory)}" diff -- "${escape(file)}"`, callback);
 };
 /**
  * Fetch the remote directory.
