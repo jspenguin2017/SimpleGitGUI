@@ -773,6 +773,7 @@ window.onbeforeunload = (e) => {
     if (UI.isProcessing) {
         //Busy screen open
         e.returnValue = false;
+        return false;
     } else if (isFetching) {
         //Fetching, close the window as soon as fetching finishes
         UI.processing(true);
@@ -781,6 +782,7 @@ window.onbeforeunload = (e) => {
             window.close();
         };
         e.returnValue = false;
+        return false;
     }
 };
 //Update height of some elements on window resize
