@@ -7,8 +7,10 @@
     <title>Simple Git GUI</title>
     <!-- Common libraries -->
     <link rel="stylesheet" href="renderer-lib/bootstrap/css/bootstrap-3.3.7.min.css" />
-    <script src="renderer-lib/jquery.factory-3.2.1.min.js" charset="utf-8"></script><!-- This is a patched version of jQuery that will not self-execute and leave a factory, jQueryFactory(), instead -->
-    <script>jQueryFactory(window);</script><!-- Electron window has module and exports, and jQuery will try to use that, which is not what we want -->
+    <!-- Electron window has module and exports, and jQuery will try to use that, which is not what we want -->
+    <!-- This is a patched version of jQuery that will not self-execute and leave a factory, jQueryFactory(), instead -->
+    <script src="renderer-lib/jquery.factory-3.2.1.min.js" charset="utf-8"></script>
+    <script>jQueryFactory(window);</script>
     <script src="renderer-lib/bootstrap/js/bootstrap-3.3.7.min.js"></script>
     <!-- Other libraries -->
     <script src="renderer-lib/ui.js" charset="utf-8"></script>
@@ -146,7 +148,10 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-success btn-lg" data-dismiss="modal" onclick="$('#modal-hard-reset-input-confirm').val(''); $('#modal-hard-reset-pre-rm-code').text('');">Cancel</button>
+                    <button type="button" class="btn btn-success btn-lg" data-dismiss="modal"
+                            onclick="$('#modal-hard-reset-input-confirm').val(''); $('#modal-hard-reset-pre-rm-code').text('');">
+                        Cancel
+                    </button>
                 </div>
             </div>
         </div>
@@ -199,7 +204,10 @@
                 <div class="modal-body">
                     <div class="input-group" style="width:100%;">
                         <p style="color:red;" id="modal-commit-spellcheck-load-state">Loading spellcheck dictionary...</p>
-                        <p>Be aware that changes you made between last refresh and now will also be committed. Refresh is done automatically each time this software gains focus while not being busy.</p>
+                        <p>
+                            Be aware that changes you made between last refresh and now will also be committed.
+                            Refresh is done automatically each time this software gains focus while not being busy.
+                        </p>
                         <p>Also be aware that commit will fail if there is no changed file.</p>
                         <div class="form-group">
                             <label>Commit message:</label>
@@ -224,6 +232,7 @@
                 </div>
                 <div class="modal-body">
                     <p>Be aware that revert can cause conflicts, be ready to handle them.</p>
+                    <p>This will not automatically push the revert to remote repository.</p>
                     <p>Enter the hash of the commit to revert:</p>
                     <div class="input-group" style="width:100%;">
                         <input type="text" class="form-control" placeholder="" id="modal-revert-input-commit" />
