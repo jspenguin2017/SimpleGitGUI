@@ -354,6 +354,10 @@ $("#btn-menu-commit").click(() => {
     $("#modal-commit").modal("show");
 });
 //Push will not have a modal
+//Revert
+$("#btn-menu-revert").click(() => {
+    $("#modal-revert").modal("show");
+});
 //Force Push
 $("#btn-menu-force-push").click(() => {
     //Similar to force pull (hard reset), clear the text box
@@ -489,6 +493,22 @@ $("#btn-menu-push").click(() => {
         ipc.send("console log", { log: output });
         if (hasError) {
             UI.dialog("Something went wrong when pushing...", codify(output, true), true);
+        } else {
+            UI.processing(false);
+        }
+    });
+});
+//Revert confirmation
+$("#modal-revert-btn-revert").click(() => {
+    //Read value from textbox and clear it
+    const commit = $("#modal-revert-input-commit").val();
+    $("#modal-revert-input-commit").val("");
+    //This function uses similar logic as switchRepo() refresh part, detailed comments are available there
+    UI.processing(true);
+    git.revert(config.active, commit, (output, hasError) => {
+        ipc.send("console log", { log: output });
+        if (hasError) {
+            UI.dialog("Something went wrong when reverting...", codify(output, true), true);
         } else {
             UI.processing(false);
         }

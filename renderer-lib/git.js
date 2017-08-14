@@ -232,6 +232,17 @@ exports.push = (directory, callback) => {
     run(`git -C "${escape(directory)}" push --verbose`, callback);
 };
 /**
+ * Revert a commit.
+ * @function
+ * @param {string} directory - The directory of the active repository.
+ * @param {string} commit - The hash of the commit to revert.
+ * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
+ */
+exports.revert = (directory, commit, callback) => {
+    //Run the command
+    run(`git -C "${escape(directory)}" revert "${escape(commit)}" --no-edit`, callback);
+};
+/**
  * Do force push.
  * @function
  * @param {string} directory - The directory of the active repository.
