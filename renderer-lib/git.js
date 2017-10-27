@@ -142,7 +142,7 @@ const porcelain = (code, callback) => {
             }
         } else {
             //Linux and Mac
-            //This is an safety check to make sure directory is not obviously bad
+            //This is an safety check to make sure the directory is not obviously bad
             if (directory.length > 1) {
                 rmCode = `rm -rf "${escape(directory)}"`;
             } else {
@@ -195,7 +195,6 @@ const porcelain = (code, callback) => {
  * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
 exports.pull = (directory, callback) => {
-    //Run the command
     run([
         `git -C "${escape(directory)}" remote --verbose prune origin`,
         `git -C "${escape(directory)}" pull --verbose`,
@@ -228,7 +227,6 @@ exports.commit = (directory, messages, callback) => {
  * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
 exports.push = (directory, callback) => {
-    //Run the command
     run(`git -C "${escape(directory)}" push --verbose`, callback);
 };
 /**
@@ -239,7 +237,6 @@ exports.push = (directory, callback) => {
  * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
 exports.revert = (directory, commit, callback) => {
-    //Run the command
     run(`git -C "${escape(directory)}" revert "${escape(commit)}" --no-edit`, callback);
 };
 /**
@@ -250,7 +247,6 @@ exports.revert = (directory, commit, callback) => {
  * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
 exports.forcePush = (directory, branch, callback) => {
-    //Run the command
     run(`git -C "${escape(directory)}" push origin "${escape(branch)}" --force --verbose`, callback);
 };
 /**
@@ -260,7 +256,6 @@ exports.forcePush = (directory, branch, callback) => {
  * @param {Function} callback - This function will be called once the execution ends, it will be supplied the formatted output and an error flag, also the standard output if there is no error.
  */
 exports.status = (directory, callback) => {
-    //Run the command
     porcelain(`git -C "${escape(directory)}" status --untracked-files=all`, callback);
 };
 /**
@@ -316,7 +311,6 @@ exports.config = (name, email, savePW, callback) => {
  * @param {Function} callback - This function will be called once the execution ends, it will be supplied the formatted output and an error flag, also the standard output if there is no error.
  */
 exports.branches = (directory, callback) => {
-    //Run the command
     porcelain(`git -C "${escape(directory)}" branch --list --all`, callback);
 };
 /**
@@ -326,7 +320,6 @@ exports.branches = (directory, callback) => {
  * @param {Function} callback - This function will be called once the execution ends, it will be supplied the formatted output and an error flag, also the standard output if there is no error.
  */
 exports.diff = (directory, callback) => {
-    //Run the command
     porcelain(`git -C "${escape(directory)}" status --porcelain --untracked-files=all`, callback);
 };
 /**
@@ -337,7 +330,6 @@ exports.diff = (directory, callback) => {
  * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
 exports.switchBranch = (directory, branch, callback) => {
-    //Run the command
     run(`git -C "${escape(directory)}" checkout "${escape(branch)}" --`, callback);
 };
 /**
@@ -348,7 +340,6 @@ exports.switchBranch = (directory, branch, callback) => {
  * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
 exports.deleteBranch = (directory, branch, callback) => {
-    //Run the command
     run(`git -C "${escape(directory)}" branch --delete "${escape(branch)}"`, callback);
 };
 /**
@@ -359,7 +350,6 @@ exports.deleteBranch = (directory, branch, callback) => {
  * @param {Function} callback - This function will be called once everything is done, formatted output and an error flag will be supplied.
  */
 exports.rollback = (directory, file, callback) => {
-    //Run the command
     run(`git -C "${escape(directory)}" checkout -- "${escape(file)}"`, callback);
 };
 /**
@@ -370,7 +360,6 @@ exports.rollback = (directory, file, callback) => {
  * @param {Function} callback - This function will be called once the execution ends, it will be supplied the formatted output and an error flag, also the standard output if there is no error.
  */
 exports.fileDiff = (directory, file, callback) => {
-    //Run the command
     porcelain(`git -C "${escape(directory)}" diff -- "${escape(file)}"`, callback);
 };
 /**
