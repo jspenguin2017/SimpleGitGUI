@@ -197,7 +197,7 @@ const porcelain = (code, callback) => {
 exports.pull = (directory, callback) => {
     run([
         `git -C "${escape(directory)}" remote --verbose prune origin`,
-        `git -C "${escape(directory)}" pull --verbose`,
+        `git -C "${escape(directory)}" pull --rebase --verbose`,
     ], callback);
 };
 /**
