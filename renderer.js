@@ -897,7 +897,7 @@ if (config.repos.length) {
 webFrame.setSpellCheckProvider("en-CA", false, {
     spellCheck(word) {
         if (spellcheckDict) {
-            return binSearch(spellcheckDict, word) > -1;
+            return binSearch(spellcheckDict, word.toLowerCase()) > -1;
         } else {
             //Dictonary is not loaded, return true so words will not all be underlined
             return true;
@@ -905,7 +905,7 @@ webFrame.setSpellCheckProvider("en-CA", false, {
     },
 });
 //Load spellcheck dictionary, fs will be required inline since it is only used once
-require("fs").readFile(path.join(__dirname, "renderer-lib/debian.dict-8.7.txt"), (err, data) => {
+require("fs").readFile(path.join(__dirname, "renderer-lib/debian.dict-8.7.txt"), "utf8", (err, data) => {
     //Check if it succeed
     if (err) {
         //There is an error, update DOM and log it
@@ -914,7 +914,7 @@ require("fs").readFile(path.join(__dirname, "renderer-lib/debian.dict-8.7.txt"),
     } else {
         //There is no error, parse the dictionary then update DOM
         //Assuming the file is formatted with Windows line break
-        spellcheckDict = data.toString().split("\r\n");
+        spellcheckDict = data.split("\r\n");
         $("#modal-commit-spellcheck-load-state").remove();
     }
 });
