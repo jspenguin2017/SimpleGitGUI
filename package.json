@@ -4,11 +4,11 @@
     "url": "https://github.com/jspenguin2017/SimpleGitGUI/issues"
   },
   "dependencies": {
-    "electron": ">=1.7.9"
+    "electron": ">=1.8.1"
   },
   "description": "A simple Git GUI, free and open.",
   "engines": {
-    "node": ">=7.4.0"
+    "node": ">=8.2.1"
   },
   "homepage": "https://github.com/jspenguin2017/SimpleGitGUI",
   "license": "GPL-3.0",
