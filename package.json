@@ -4,7 +4,7 @@
     "url": "https://github.com/jspenguin2017/SimpleGitGUI/issues"
   },
   "dependencies": {
-    "electron": ">=1.6.10"
+    "electron": ">=1.7.9"
   },
   "description": "A simple Git GUI, free and open.",
   "engines": {
