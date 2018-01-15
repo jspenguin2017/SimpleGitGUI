@@ -1,5 +1,7 @@
 # Simple Git GUI [![Dependencies](https://david-dm.org/jspenguin2017/SimpleGitGUI.svg)](https://david-dm.org/jspenguin2017/SimpleGitGUI)
 
+[![NPM](https://nodei.co/npm/simple-git-gui.png)](https://nodei.co/npm/simple-git-gui/)
+
 A simple Git GUI, free and open
 
 ![Main Window](https://i.imgur.com/xNvBA5b.png)
@@ -36,8 +38,9 @@ Please open an issue if there is something you want me to know.
 
 ## Install from NPM
 
-1. Run `npm install -g simple-git-gui`. 
-2. Run `simple-git-gui` to start this software. 
+1. Install [Git](https://git-scm.com/downloads). 
+2. Run `npm install -g simple-git-gui`. 
+3. Run `simple-git-gui` to start this software. 
 
 ## Credits
 
