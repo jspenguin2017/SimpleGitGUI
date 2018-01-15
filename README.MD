@@ -27,13 +27,17 @@ The source code for Launcher is available [here](https://github.com/jspenguin201
 
 Please open an issue if there is something you want me to know. 
 
-## Installation
+## Install from GitHub
 
 1. Install [Git](https://git-scm.com/downloads). 
 2. Install [Node.js](https://nodejs.org/en/). 
-3. Whitelist `.js` file type if you are using an aggressive anti-virus software. 
-4. Download all files from this repository to a folder by any convenient method then run `npm install` in it. 
-5. Use Launcher to start this software. 
+3. Download all files from this repository to a folder by any convenient method then run `npm install` in it. 
+4. Use Launcher to start this software. 
+
+## Install from NPM
+
+1. Run `npm install -g simple-git-gui`. 
+2. Run `simple-git-gui` to start this software. 
 
 ## Credits
 
