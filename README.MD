@@ -40,7 +40,7 @@ Please open an issue if there is something you want me to know.
 
 1. Install [Git](https://git-scm.com/downloads). 
 2. Run `npm install -g simple-git-gui`. 
-3. Run `simple-git-gui` to start this software. 
+3. Run `nohup simple-git-gui &> /dev/null &` to start this software. 
 
 ## Credits
 
