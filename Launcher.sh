@@ -1,2 +1,2 @@
 #!/bin/bash
-nohup npm start &>/dev/null &
+nohup npm start &> /dev/null &
