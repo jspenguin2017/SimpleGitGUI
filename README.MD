@@ -29,13 +29,6 @@ The source code for Launcher is available [here](https://github.com/jspenguin201
 
 Please open an issue if there is something you want me to know. 
 
-## A note on vulnerability alerts
-
-This software does not use sandbox nor does it load remote scripts, so sandbox escape or remote code execution vulnerabilities in 
-Electron do not affect this software. 
-
-I have set up a dependency watcher purely for getting notified about updates and new features. 
-
 ## Install from GitHub
 
 1. Install [Git](https://git-scm.com/downloads). 
