@@ -913,8 +913,7 @@ require("fs").readFile(path.join(__dirname, "renderer-lib/debian.dict-8.7.txt"),
         console.error(err);
     } else {
         //There is no error, parse the dictionary then update DOM
-        //Assuming the file is formatted with Windows line break
-        spellcheckDict = data.split("\r\n");
+        spellcheckDict = data.split(/\r?\n/);
         $("#modal-commit-spellcheck-load-state").remove();
     }
 });
