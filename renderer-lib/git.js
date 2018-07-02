@@ -288,7 +288,7 @@ exports.config = (name, email, savePW, callback) => {
             //There is, return error message and abort
             callback(output, hasError);
         } else {
-            //There isn not, run the command
+            //There is not, run the command
             let code = savePW ? `git config --global credential.helper store` : `git config --global --unset credential.helper`;
             exec(code, (err, stdout, stderr) => {
                 //Format the output
