@@ -1,126 +1,106 @@
-//The renderer process
+// --------------------------------------------------------------------------------------------- //
+
+// Simple Git GUI - A simple Git GUI, free and open
+// Copyright (C) 2017-2018  Hugo Xu
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+// --------------------------------------------------------------------------------------------- //
+
+// Renderer entry point
+
+// --------------------------------------------------------------------------------------------- //
+
 "use strict";
 
-//Show processing screen
+// --------------------------------------------------------------------------------------------- //
+
 UI.processing(true);
 
-//=====Variables=====
-/**
- * Load modules.
- * @const {Module}
- */
+// --------------------------------------------------------------------------------------------- //
+
 const { ipcRenderer: ipc, clipboard, webFrame } = require("electron");
 const path = require("path");
+
 const git = require("./renderer-lib/git.js");
-/**
- * The configuration object.
- * @var {Object}
- */
+
+// --------------------------------------------------------------------------------------------- //
+
 let config;
-/**
- * The icons dictionary.
- * @var {Dictionary}
- */
+
 let icons = {};
-/**
- * The active repository object, this can be null if configuration data is damaged.
- * @var {Object|null}
- */
+
 let activeRepo;
-/**
- * Draw cache, contains current branches and changed files so we only draw when it has changed.
- * @var {Object}
- */
+
 let drawCache = {
     branches: "",
     diffs: "",
 };
-/**
- * The spellcheck dictionary, will be loaded later.
- * @const {Array.<string>}
- */
+
 let spellcheckDict;
-/**
- * Whether or not we are in the background.
- * @var {boolean}
- */
+
 let isFocused = true;
-/**
- * Whether or not we are fetching remote changes. Define window.onceFetchingDone() will cause it being called as soon as the next fetching finishes.
- * @var {boolean}
- */
+
 let isFetching = false;
 
-//=====Helper Functions=====
-/**
- * Do binary search on an array.
- * This is significantly faster than Array.prototype.indexOf() for large sorted arrays.
- * @function
- * @param {Array} array - The array to search from, it needs to be sorted.
- * @param {string} key - The item we are looking for.
- * @returns {integer} The index of the element, or -1 if it is not in the array.
- */
+// --------------------------------------------------------------------------------------------- //
+
 const binSearch = (array, key) => {
-    //Initialize variables
-    let lower = 0; //Lower bound
-    let upper = array.length - 1; //Upper bound
-    let i; //Current index, this will be set later
-    let elem; //Current element
-    //Start binary search
+    let lower = 0;
+    let upper = array.length - 1;
+    let i;
+    let elem;
+
     while (lower <= upper) {
-        //Set current index to be the middle between lower and upper bound, floored
         i = (lower + upper) / 2 | 0;
-        //Get current element
         elem = array[i];
-        //Compare the element and update bound
-        if (elem < key) {
-            //Element is in the second half
+        if (elem < key)
             lower = i + 1;
-        } else if (elem > key) {
-            //Element is in the first half
+        else if (elem > key)
             upper = i - 1;
-        } else {
-            //We found it
+        else
             return i;
-        }
     }
-    //Lower bond passed upper bond, meaning the element is not in the array
+
     return -1;
 };
-/**
- * Escape and colorize code.
- * @function
- * @param {string} code - The code to show.
- * @param {bool} [noColor=false] - Set this to true to not colorize code.
- * @returns {string} The HTML string that is ready to be inserted to DOM.
- */
+
 const codify = (() => {
     const amp = /\&/g;
     const lt = /\</g;
+
     return (code, noColor) => {
-        //Escape HTML, & and < are the only ones we need to worry about since it will be wrapped in <pre>
+        // & and < are the only ones we need to worry about since it will be wrapped in <pre>
         code = code.replace(amp, "&amp;").replace(lt, "&lt;");
-        //Color each line
+
         if (!noColor) {
             let lines = code.split("\n");
             for (let i = 0; i < lines.length; i++) {
                 switch (lines[i].charAt(0)) {
-                    case '+':
-                        //Addition
+                    case '+': // Addition
                         lines[i] = `<span class="code-add">${lines[i]}</span>`;
                         break;
-                    case '-':
-                        //Removal
+                    case '-':// Removal
                         lines[i] = `<span class="code-remove">${lines[i]}</span>`;
                         break;
-                    case '@':
-                        //Section header
+                    case '@':// Section header
                         lines[i] = `<span class="code-section">${lines[i]}</span>`;
                 }
             }
             code = lines.join("\n");
         }
-        //Return the code
+
         return `<pre id="modal-dialog-pre">${code}</pre>`;
     };
 })();
