@@ -104,177 +104,184 @@ const codify = (() => {
         return `<pre id="modal-dialog-pre">${code}</pre>`;
     };
 })();
-/**
- * Get commit message.
- * @function
- * @returns {Array.<string>} Lines of commit message, a default message will be returned if the user has not enter any message.
- */
+
+// --------------------------------------------------------------------------------------------- //
+
 const getCommitMsg = () => {
-    //Read commit message
     let msg = $("#modal-commit-input-commit-message").val().split("\n");
-    //Clear the text box for next commit
     $("#modal-commit-input-commit-message").val("");
-    //Check if message empty
+
     let noMsg = true;
-    for (let i = 0; i < msg.length; i++) {
-        if (msg[i].trim().length) {
+    for (const m of msg) {
+        if (m.trim().length > 0) {
             noMsg = false;
             break;
         }
     }
-    //Set in default commit message if the user did not write one
-    if (noMsg) {
+
+    if (noMsg)
         msg = ["No commit message"];
-    }
-    //Return the message
+
     return msg;
 };
-/**
- * Switch to or refresh a repository.
- * Will open the directory of the repository if the repository is already active.
- * This function can be an event handler or can be called directly.
- * @function
- * @param {string} directory - The directory of the repository, there must be a valid JSON string stored in LocalStorage with this directory being the key.
- * @param {bool} [doRefresh=false] - Set this to true to do a refresh regardless whether or not the repository is already active, this will also prevent the directory from opening.
- * @param {bool} [forceRefetch=false] - Whether or not configuration data must be loaded.
- * @listens $(".repos-list-btn-switch-repo").click
- */
-const switchRepo = (directory, doRefresh, forceRefetch) => {
-    //Show processing screen 
+
+// --------------------------------------------------------------------------------------------- //
+
+const switchRepo = (directory, doRefresh = false, forceReload = false) => {
+
+    // ----------------------------------------------------------------------------------------- //
+
     UI.processing(true);
-    //Check what should we do
-    if (!doRefresh && directory === config.active) {
-        //Open the directory of the repository
+
+    // ----------------------------------------------------------------------------------------- //
+
+    // Case 1: Click active repository, open the repository folder
+
+    if (directory === config.active && !doRefresh) {
         ipc.once("open folder done", () => {
-            //Hide processing screen once the directory is opened
             UI.processing(false);
-        })
-        //Ask main process to open the directory
+        });
+
         ipc.send("open folder", {
             folder: config.active,
         });
-    } else {
-        if (forceRefetch || directory !== config.active) {
-            //Update configuration
-            config.active = directory;
-            //Save configuration
-            localStorage.setItem("config", JSON.stringify(config));
-            //Load configuration data
-            try {
-                const tempRepo = JSON.parse(localStorage.getItem(directory));
-                activeRepo = {
-                    address: tempRepo.address.toString(),
-                    directory: tempRepo.directory.toString(),
-                };
-                if (activeRepo.directory !== directory) {
-                    throw "Configuration Data Not Valid";
-                }
-            } catch (err) {
-                //Update UI
-                activeRepo = null;
-                UI.buttons(true, false);
-                $("#div-branches-list, #tbody-diff-table").empty();
-                //Flush draw cache
-                drawCache.branches = "";
-                drawCache.diffs = "";
-                //Show error message
-                UI.dialog("Something went wrong when loading configuration...", codify(err.message, true), true);
-                //Abort here, active repository is changed to an invalid one, but the user can always switch to another one or delete it
-                return;
-            }
-        }
-        if (activeRepo === null) {
-            //Configuration is damaged
-            UI.dialog("Configuration file damaged", "<p>Delete this repository or use DevTools to fix damaged configuration data.</p>", true);
-            //Abort here
+
+        return;
+    }
+
+    // ----------------------------------------------------------------------------------------- //
+
+    // Case 2: Click other repository
+    // Case 3: Caller wish to force reload
+
+    if (directory !== config.active || forceReload) {
+        config.active = directory;
+        localStorage.setItem("config", JSON.stringify(config));
+
+        try {
+            const tempRepo = JSON.parse(localStorage.getItem(directory));
+
+            activeRepo = {
+                address: tempRepo.address.toString(),
+                directory: tempRepo.directory.toString(),
+            };
+
+            if (activeRepo.directory !== directory)
+                throw "Configuration Data Not Valid";
+        } catch (err) {
+            activeRepo = null;
+            UI.buttons(true, false);
+            $("#div-branches-list, #tbody-diff-table").empty();
+
+            drawCache.branches = "";
+            drawCache.diffs = "";
+
+            UI.dialog(
+                "Something went wrong when loading configuration...",
+                codify(err.message, true),
+                true,
+            );
+
             return;
         }
-        //Load or refresh branches and changed files list for this repository
-        //Branches
-        git.branches(config.active, (output, hasError, data) => {
-            //Dump output to the terminal
+    }
+
+    if (activeRepo === null) {
+        UI.dialog(
+            "Configuration file damaged",
+            "<p>Delete this repository or use DevTools to fix damaged configuration data.</p>",
+            true,
+        );
+
+        return;
+    }
+
+    // Step 1: Branch
+    git.branches(config.active, (output, hasError, data) => {
+        ipc.send("console log", { log: output });
+
+        if (hasError) {
+            UI.buttons(true, false);
+
+            $("#div-branches-list, #tbody-diff-table").empty();
+            drawCache.branches = "";
+            drawCache.diffs = "";
+
+            UI.dialog(
+                "Something went wrong when loading branches...",
+                codify(output, true),
+                true,
+            );
+
+            return;
+        }
+
+        if (data !== drawCache.branches) {
+            drawCache.branches = data;
+            data = data.split("\n");
+            UI.branches(data, switchBranch);
+        }
+
+        // Step 2: Diff
+        git.diff(config.active, (output, hasError, data) => {
             ipc.send("console log", { log: output });
-            //Check if it succeeded
+
             if (hasError) {
-                //There is an error, disable action buttons and show error
                 UI.buttons(true, false);
-                //Clear branches list and changed files list
+
                 $("#div-branches-list, #tbody-diff-table").empty();
-                //Flush draw cache
                 drawCache.branches = "";
                 drawCache.diffs = "";
-                UI.dialog("Something went wrong when loading branches...", codify(output, true), true);
-            } else {
-                //Succeed, draw branches
-                if (data !== drawCache.branches) {
-                    drawCache.branches = data;
-                    data = data.split("\n");
-                    UI.branches(data, switchBranch);
-                }
-                //Load changed files
-                git.diff(config.active, (output, hasError, data) => {
-                    //Dump output to the terminal
-                    ipc.send("console log", { log: output });
-                    //Check if it succeeded
-                    if (hasError) {
-                        //There is an error, disable action buttons and show error
-                        UI.buttons(true, false);
-                        //Clear branches list and changed files list
-                        $("#div-branches-list, #tbody-diff-table").empty();
-                        //Flush draw cache
-                        drawCache.branches = "";
-                        drawCache.diffs = "";
-                        UI.dialog("Something went wrong when loading file changes...", codify(output, true), true);
-                    } else {
-                        //Succeed, enable all buttons and draw changed files list
-                        UI.buttons(false, false);
-                        if (data !== drawCache.diffs) {
-                            drawCache.diffs = data;
-                            data = data.split("\n");
-                            UI.diffTable(data, rollbackCallback, diffCallback, viewCallback);
-                        }
-                        //Hide processing screen
-                        UI.processing(false);
-                    }
-                });
+
+                UI.dialog(
+                    "Something went wrong when loading file changes...",
+                    codify(output, true),
+                    true,
+                );
+
+                return;
             }
+
+            UI.buttons(false, false);
+
+            if (data !== drawCache.diffs) {
+                drawCache.diffs = data;
+                data = data.split("\n");
+                UI.diffTable(data, rollbackCallback, diffCallback, viewCallback);
+            }
+
+            UI.processing(false);
         });
-    }
+    });
+
+    // ----------------------------------------------------------------------------------------- //
+
 };
-/**
- * Show switch branch confirm modal.
- * @function
- * @listens $(".branches-list-btn-switch-branch").click
- */
+
+// --------------------------------------------------------------------------------------------- //
+
 const switchBranch = (name) => {
-    //Fill in the branch to switch to
     let i = name.lastIndexOf("/");
+
     $("#modal-switch-branch-pre-branch").text(i > -1 ? name.substring(i + 1) : name);
-    //Set delete button visibility, only show for local branches
-    if (name.includes("/")) {
+
+    // Delete button only for local branch
+    if (name.includes("/"))
         $("#modal-switch-branch-btn-delete").hide();
-    } else {
+    else
         $("#modal-switch-branch-btn-delete").show();
-    }
-    //Show modal
+
     $("#modal-switch-branch").modal("show");
 };
-/**
- * Show file rollback confirm modal.
- * @function
- * @listens $(".diff-table-btn-file-rollback").click
- */
+
+// --------------------------------------------------------------------------------------------- //
+
 const rollbackCallback = (file) => {
-    //Fill in the file to rollback
     $("#modal-rollback-pre-file-name").text(file);
-    //Show modal
+
     $("#modal-rollback").modal("show");
 };
-/**
- * Show file difference.
- * @function
- * @listens $(".diff-table-btn-file-diff").click
- */
+
 const diffCallback = (file) => {
     //This function uses similar logic as switchRepo() refresh part, detailed comments are available there
     UI.processing(true);
@@ -288,11 +295,7 @@ const diffCallback = (file) => {
         }
     });
 };
-/**
- * Show the file in file explorer.
- * @function
- * @listens $(".diff-table-btn-file-view").click
- */
+
 const viewCallback = (file) => {
     //This function uses similar logic as switchRepo() open directory part, detailed comments are available there
     UI.processing(true);
@@ -303,6 +306,9 @@ const viewCallback = (file) => {
         file: path.join(config.active, file)
     });
 };
+
+// --------------------------------------------------------------------------------------------- //
+
 
 //=====Menu Buttons=====
 //This section will only include initializing and showing modals
