@@ -20,7 +20,7 @@ Please open an issue if there is something you want me to know.
 
 1. Install [Git](https://git-scm.com/downloads)
 2. Run `npm install -g simple-git-gui`
-3. Run `nohup simple-git-gui &> /dev/null &` to start this software
+3. Run `nohup simple-git-gui &> /dev/null &` to start
 
 ## Other details
 
@@ -41,7 +41,8 @@ The renderer is considered busy if it is showing the processing screen or
 fetching changes in the background.
 
 If you try to close the window when background fetching is in progress, the
-window will close as soon as fetching finishes.
+processing screen will show and the window will close as soon as fetching
+finishes.
 
 When there is an error, the raw error message will be shown, there could be
 times when you need to use the command line tool to correct the problem.
