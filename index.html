@@ -2,18 +2,13 @@
 <html>
 <head>
     <meta charset="utf-8" />
+
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="author" content="jspenguin2017" />
+
     <title>Simple Git GUI</title>
-    <!-- Common libraries -->
+
     <link rel="stylesheet" href="renderer-lib/bootstrap/css/bootstrap-3.3.7.min.css" />
-    <!-- Electron window has module and exports, and jQuery will try to use that, which is not what we want -->
-    <!-- This is a patched version of jQuery that will not self-execute and leave a factory, jQueryFactory(), instead -->
-    <script src="renderer-lib/jquery.factory-3.2.1.min.js" charset="utf-8"></script>
-    <script>jQueryFactory(window);</script>
-    <script src="renderer-lib/bootstrap/js/bootstrap-3.3.7.min.js"></script>
-    <!-- Other libraries -->
-    <script src="renderer-lib/ui.js" charset="utf-8"></script>
     <style>
         /* Main panel */
         html, body {
@@ -44,6 +39,11 @@
             color: blue;
         }
     </style>
+
+    <script src="renderer-lib/jquery.factory-3.2.1.min.js" charset="utf-8"></script>
+    <script>jQueryFactory(window);</script>
+    <script src="renderer-lib/bootstrap/js/bootstrap-3.3.7.min.js"></script>
+    <script src="renderer-lib/ui.js" charset="utf-8"></script>
 </head>
 <body>
     <!-- Menu -->
@@ -76,6 +76,7 @@
             </div>
         </div>
     </nav>
+
     <!-- Main panel -->
     <div class="container" id="div-main-container">
         <!-- Repositories and branches list (right side) -->
@@ -83,6 +84,7 @@
             <div class="list-group" style="height:65%; margin-bottom:0px; overflow-y:scroll;" id="div-repos-list"></div>
             <div class="list-group" style="height:35%; margin-bottom:0px; border-top:2px solid grey; overflow-y:scroll;" id="div-branches-list"></div>
         </div>
+
         <!-- Changed files list (left side) -->
         <div class="column" style="width:75%; border-left:2px solid grey;">
             <div style="height:100%; overflow-y:scroll;">
@@ -101,7 +103,8 @@
             </div>
         </div>
     </div>
-    <!-- Common purpose dialog modal -->
+
+    <!-- General purpose dialog modal -->
     <div id="modal-dialog" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:900000;">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -115,6 +118,7 @@
             </div>
         </div>
     </div>
+
     <!-- Processing screen modal -->
     <div id="modal-processing-screen" class="modal fade in" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:800000;">
         <div class="modal-dialog" role="document">
@@ -130,7 +134,8 @@
             </div>
         </div>
     </div>
-    <!-- Force pull (hard reset) confirm modal -->
+
+    <!-- Force pull confirm modal -->
     <div id="modal-hard-reset" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -156,6 +161,7 @@
             </div>
         </div>
     </div>
+
     <!-- Pull modal -->
     <div id="modal-pull" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
         <div class="modal-dialog" role="document">
@@ -176,6 +182,7 @@
             </div>
         </div>
     </div>
+
     <!-- Synchronize modal -->
     <div id="modal-sync" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
         <div class="modal-dialog" role="document">
@@ -194,6 +201,7 @@
             </div>
         </div>
     </div>
+
     <!-- Commit modal -->
     <div id="modal-commit" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
         <div class="modal-dialog" role="document">
@@ -204,10 +212,7 @@
                 <div class="modal-body">
                     <div class="input-group" style="width:100%;">
                         <p style="color:red;" id="modal-commit-spellcheck-load-state">Loading spellcheck dictionary...</p>
-                        <p>
-                            Be aware that changes you made between last refresh and now will also be committed.
-                            Refresh is done automatically each time this software gains focus while not being busy.
-                        </p>
+                        <p>Be aware that changes you made between last refresh and now will also be committed.Refresh is done automatically each time this software gains focus while not being busy.</p>
                         <p>Also be aware that commit will fail if there is no changed file.</p>
                         <div class="form-group">
                             <label>Commit message:</label>
@@ -223,6 +228,7 @@
             </div>
         </div>
     </div>
+
     <!-- Revert modal -->
     <div id="modal-revert" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
         <div class="modal-dialog" role="document">
@@ -245,6 +251,7 @@
             </div>
         </div>
     </div>
+
     <!-- Force push modal -->
     <div id="modal-force-push" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
         <div class="modal-dialog" role="document">
@@ -268,6 +275,7 @@
             </div>
         </div>
     </div>
+
     <!-- Import modal -->
     <div id="modal-import" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
         <div class="modal-dialog" role="document">
@@ -294,6 +302,7 @@
             </div>
         </div>
     </div>
+
     <!-- Clone modal -->
     <div id="modal-clone" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
         <div class="modal-dialog" role="document">
@@ -318,6 +327,7 @@
             </div>
         </div>
     </div>
+
     <!-- Delete repository modal -->
     <div id="modal-delete-repo" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
         <div class="modal-dialog" role="document">
@@ -335,6 +345,7 @@
             </div>
         </div>
     </div>
+
     <!-- Configuration modal -->
     <div id="modal-config" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
         <div class="modal-dialog" role="document">
@@ -357,7 +368,6 @@
                     </div>
                     <br />
                     <p><strong>By jspenguin2017</strong></p>
-                    <!-- We won't bind event handler later because putting JavaScript in href is a handy way to make the link show the clickable mouse icon -->
                     <p>Project page: <a href="javascript:openProjectPage();">https://github.com/jspenguin2017/SimpleGitGUI</a></p>
                 </div>
                 <div class="modal-footer">
@@ -367,6 +377,7 @@
             </div>
         </div>
     </div>
+
     <!-- Switch branch modal -->
     <div id="modal-switch-branch" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
         <div class="modal-dialog" role="document">
@@ -377,10 +388,7 @@
                 <div class="modal-body">
                     <p>Your uncommitted changes will be moved the branch you selected.</p>
                     <p>Be aware that this will fail if your uncommitted changes has conflicts with that branch.</p>
-                    <p>
-                        If you chose a remote branch that exists locally, this branch switching functionality will switch to the local copy instead.
-                        Use pull and push to interact with the remote branch.
-                    </p>
+                    <p>If you chose a remote branch that exists locally, this branch switching functionality will switch to the local copy instead.Use pull and push to interact with the remote branch.</p>
                     <p>Your current working branch will be changed to this:</p>
                     <pre id="modal-switch-branch-pre-branch"></pre>
                 </div>
@@ -392,6 +400,7 @@
             </div>
         </div>
     </div>
+
     <!-- Delete branch modal -->
     <div id="modal-delete-branch" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
         <div class="modal-dialog" role="document">
@@ -410,6 +419,7 @@
             </div>
         </div>
     </div>
+
     <!-- File rollback modal -->
     <div id="modal-rollback" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" style="z-index:100000;">
         <div class="modal-dialog" role="document">
@@ -428,7 +438,7 @@
             </div>
         </div>
     </div>
-    <!-- Load main script -->
+
     <script>
         require("./renderer.js");
     </script>
