@@ -88,13 +88,13 @@ const codify = (() => {
             let lines = code.split("\n");
             for (let i = 0; i < lines.length; i++) {
                 switch (lines[i].charAt(0)) {
-                    case '+': // Addition
+                    case "+": // Addition
                         lines[i] = '<span class="code-add">' + lines[i] + "</span>";
                         break;
-                    case '-':// Removal
+                    case "-": // Removal
                         lines[i] = '<span class="code-remove">' + lines[i] + "</span>";
                         break;
-                    case '@':// Section header
+                    case "@": // Section header
                         lines[i] = '<span class="code-section">' + lines[i] + "</span>";
                 }
             }
