@@ -937,7 +937,7 @@ webFrame.setSpellCheckProvider("en-CA", false, {
 });
 
 require("fs").readFile(
-    path.join(__dirname, "renderer-lib/debian.dict-8.7.txt"),
+    path.join(__dirname, "vendor/debian.dict-8.7.txt"),
     "utf8",
     (err, data) => {
         if (err) {
