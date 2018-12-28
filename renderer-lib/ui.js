@@ -195,8 +195,8 @@ UI.diffTable = (data, rollbackCallback, diffCallback, viewCallback) => {
             state: [], // Remote, local
         };
 
-        for (let j = 0; j < 2; j++) {
-            switch (f.charAt(j)) {
+        for (let i = 0; i < 2; i++) {
+            switch (f.charAt(i)) {
                 case ' ':
                     filedata.state.push("Unchanged");
                     break;
@@ -223,7 +223,7 @@ UI.diffTable = (data, rollbackCallback, diffCallback, viewCallback) => {
                     break;
                 default:
                     // This should not happen
-                    filedata.state.push("UNKNOWN: " + files[i].charAt(j));
+                    filedata.state.push("UNKNOWN: " + f.charAt(i));
                     break;
             }
         }
