@@ -63,8 +63,9 @@ const binSearch = (array, key) => {
     let elem;
 
     while (lower <= upper) {
-        i = (lower + upper) / 2 | 0;
+        i = Math.floor((lower + upper) / 2);
         elem = array[i];
+
         if (elem < key)
             lower = i + 1;
         else if (elem > key)
@@ -81,23 +82,25 @@ const codify = (() => {
     const lt = /\</g;
 
     return (code, noColor) => {
-        // & and < are the only ones we need to worry about since it will be wrapped in <pre>
+        // It will be wrapped in <pre>, so this is enough
         code = code.replace(amp, "&amp;").replace(lt, "&lt;");
 
         if (!noColor) {
             let lines = code.split("\n");
+
             for (let i = 0; i < lines.length; i++) {
                 switch (lines[i].charAt(0)) {
-                    case "+": // Addition
+                    case "+":
                         lines[i] = '<span class="code-add">' + lines[i] + "</span>";
                         break;
-                    case "-": // Removal
+                    case "-":
                         lines[i] = '<span class="code-remove">' + lines[i] + "</span>";
                         break;
-                    case "@": // Section header
+                    case "@":
                         lines[i] = '<span class="code-section">' + lines[i] + "</span>";
                 }
             }
+
             code = lines.join("\n");
         }
 
@@ -169,12 +172,11 @@ const switchRepo = (directory, doRefresh = false, forceReload = false) => {
             if (activeRepo.directory !== directory)
                 throw "Configuration Data Not Valid";
         } catch (err) {
-            console.log(err);
-
             activeRepo = null;
-            UI.buttons(true, false);
-            $("#div-branches-list, #tbody-diff-table").empty();
 
+            UI.buttons(true, false);
+
+            $("#div-branches-list, #tbody-diff-table").empty();
             drawCache.branches = "";
             drawCache.diffs = "";
 
@@ -201,7 +203,6 @@ const switchRepo = (directory, doRefresh = false, forceReload = false) => {
         return;
     }
 
-    // Step 1: Branch
     git.branches(config.active, (output, hasError, data) => {
         ipc.send("console log", { log: output });
 
@@ -227,7 +228,6 @@ const switchRepo = (directory, doRefresh = false, forceReload = false) => {
             UI.branches(data, switchBranch);
         }
 
-        // Step 2: Diff
         git.diff(config.active, (output, hasError, data) => {
             ipc.send("console log", { log: output });
 
@@ -270,7 +270,7 @@ const switchBranch = (name) => {
 
     $("#modal-switch-branch-pre-branch").text(i > -1 ? name.substring(i + 1) : name);
 
-    // Delete button only for local branch
+    // Delete button only available for local branch
     if (name.includes("/"))
         $("#modal-switch-branch-btn-delete").hide();
     else
@@ -283,7 +283,6 @@ const switchBranch = (name) => {
 
 const rollbackCallback = (file) => {
     $("#modal-rollback-pre-file-name").text(file);
-
     $("#modal-rollback").modal("show");
 };
 
@@ -320,8 +319,7 @@ const viewCallback = (file) => {
 
 // --------------------------------------------------------------------------------------------- //
 
-// Force pull
-$("#btn-menu-hard-reset").click(() => {
+$("#btn-menu-hard-reset").click(() => { // Force pull
     $("#modal-hard-reset-input-confirm").val("");
 
     if (activeRepo === null) {
@@ -337,29 +335,24 @@ $("#btn-menu-hard-reset").click(() => {
     $("#modal-hard-reset").modal("show");
 });
 
-// Pull
 $("#btn-menu-pull").click(() => {
     $("#modal-pull").modal("show");
 });
 
-// Synchronize
 $("#btn-menu-sync").click(() => {
     $("#modal-sync").modal("show");
 });
 
-// Commit
 $("#btn-menu-commit").click(() => {
     $("#modal-commit").modal("show");
 });
 
 // Push does not have a modal
 
-// Revert
 $("#btn-menu-revert").click(() => {
     $("#modal-revert").modal("show");
 });
 
-// Force Push
 $("#btn-menu-force-push").click(() => {
     $("#modal-force-push-input-confirm").val("");
     $("#modal-force-push").modal("show");
@@ -369,12 +362,10 @@ $("#btn-menu-force-push").click(() => {
 
 // Status does not have a modal
 
-// Import
 $("#btn-menu-import").click(() => {
     $("#modal-import").modal("show");
 });
 
-// Clone
 $("#btn-menu-clone").click(() => {
     const data = clipboard.readText("plain/text");
 
@@ -386,12 +377,10 @@ $("#btn-menu-clone").click(() => {
     $("#modal-clone").modal("show");
 });
 
-// Delete
 $("#btn-menu-delete-repo").click(() => {
     $("#modal-delete-repo").modal("show");
 });
 
-// Configuration
 $("#btn-menu-config").click(() => {
     $("#modal-config-input-name").val(config.name);
     $("#modal-config-input-email").val(config.email);
@@ -401,8 +390,7 @@ $("#btn-menu-config").click(() => {
 
 // --------------------------------------------------------------------------------------------- //
 
-// Force pull confirmation button
-$("#modal-hard-reset-input-confirm").on("keyup", () => {
+$("#modal-hard-reset-input-confirm").on("keyup", () => { // Force pull confirmation button
     if ($("#modal-hard-reset-input-confirm").val() !== "confirm")
         return;
 
@@ -427,7 +415,6 @@ $("#modal-hard-reset-input-confirm").on("keyup", () => {
     });
 });
 
-// Pull confirmation button
 $("#modal-pull-btn-pull").click(() => {
     UI.processing(true);
 
@@ -443,7 +430,6 @@ $("#modal-pull-btn-pull").click(() => {
     });
 });
 
-// Synchronize confirmation button
 $("#modal-sync-btn-sync").click(() => {
     UI.processing(true);
 
@@ -468,7 +454,6 @@ $("#modal-sync-btn-sync").click(() => {
     });
 });
 
-// Commit only confirmation button
 $("#modal-commit-btn-commit").click(() => {
     UI.processing(true);
 
@@ -484,7 +469,6 @@ $("#modal-commit-btn-commit").click(() => {
     });
 });
 
-// Commit then push confirmation button
 $("#modal-commit-btn-commit-push").click(() => {
     UI.processing(true);
 
@@ -509,12 +493,10 @@ $("#modal-commit-btn-commit-push").click(() => {
     });
 });
 
-// Commit modal text box auto-focus
 $("#modal-commit").on("shown.bs.modal", () => {
     $("#modal-commit-input-commit-message").focus();
 });
 
-// Push confirmation
 $("#btn-menu-push").click(() => {
     UI.processing(true);
 
@@ -530,7 +512,6 @@ $("#btn-menu-push").click(() => {
     });
 });
 
-// Revert confirmation
 $("#modal-revert-btn-revert").click(() => {
     const commit = $("#modal-revert-input-commit").val();
     $("#modal-revert-input-commit").val("");
@@ -549,7 +530,6 @@ $("#modal-revert-btn-revert").click(() => {
     });
 });
 
-// Force push confirmation textbox
 $("#modal-force-push-input-confirm").on("keyup", () => {
     if ($("#modal-force-push-input-confirm").val() !== "confirm")
         return;
@@ -579,12 +559,10 @@ $("#modal-force-push-input-confirm").on("keyup", () => {
     );
 });
 
-// Refresh button
 $("#btn-menu-refresh").click(() => {
     switchRepo(config.active, true);
 });
 
-// Status button
 $("#btn-menu-repo-status").click(() => {
     UI.processing(true);
 
@@ -600,7 +578,6 @@ $("#btn-menu-repo-status").click(() => {
     });
 });
 
-// Import confirmation button
 $("#modal-import-btn-import").click(() => {
     UI.processing(true);
 
@@ -640,7 +617,6 @@ $("#modal-clone-input-address").on("keyup", (() => {
     }
 })());
 
-// Clone confirmation button
 $("#modal-clone-btn-clone").click(() => {
     UI.processing(true);
 
@@ -674,7 +650,6 @@ $("#modal-clone-btn-clone").click(() => {
     });
 });
 
-// Delete repository confirmation button
 $("#modal-delete-repo-btn-confirm").click(() => {
     UI.processing(true);
 
@@ -707,7 +682,6 @@ $("#modal-delete-repo-btn-confirm").click(() => {
     }
 });
 
-// Configuration save button
 $("#modal-config-btn-save").click(() => {
     UI.processing(true);
 
@@ -740,7 +714,6 @@ $("#modal-config-btn-save").click(() => {
 
 // --------------------------------------------------------------------------------------------- //
 
-// File rollback confirmation button
 $("#modal-rollback-btn-rollback").click(() => {
     const name = $("#modal-rollback-pre-file-name").text().trim();
     $("#modal-rollback-pre-file-name").text("");
@@ -760,7 +733,6 @@ $("#modal-rollback-btn-rollback").click(() => {
     });
 });
 
-// Switch branch confirmation button
 $("#modal-switch-branch-btn-switch").click(() => {
     const name = $("#modal-switch-branch-pre-branch").text().trim();
     $("#modal-switch-branch-pre-branch").text("");
@@ -786,7 +758,6 @@ $("#modal-switch-branch-btn-switch").click(() => {
     });
 });
 
-// Delete branch button
 $("#modal-switch-branch-btn-delete").click(() => {
     const name = $("#modal-switch-branch-pre-branch").text().trim();
     $("#modal-switch-branch-pre-branch").text("");
@@ -798,7 +769,6 @@ $("#modal-switch-branch-btn-delete").click(() => {
     $("#modal-delete-branch").modal("show");
 });
 
-// Delete branch confirmation button
 $("#modal-delete-branch-btn-confirm").click(() => {
     const name = $("#modal-delete-branch-pre-branch").text().trim();
     $("#modal-delete-branch-pre-branch").text("");
@@ -827,15 +797,15 @@ $("#modal-delete-branch-btn-confirm").click(() => {
 // --------------------------------------------------------------------------------------------- //
 
 $(document).on("keyup", (e) => {
-    if (e.which === 123) {
-        // F12, DevTools
+    if (e.which === 123) { // F12
         ipc.send("dev-tools");
-    } else if (e.which === 116) {
-        // F5, Reload if not busy
+    } else if (e.which === 116) { // F5
         if (!UI.isProcessing && !isFetching)
             location.reload();
     }
-}).on("dragover", (e) => {
+});
+
+$(document).on("dragover", (e) => {
     e.preventDefault();
     e.stopPropagation();
 }).on("drop", (e) => {
@@ -857,7 +827,9 @@ window.onbeforeunload = (e) => {
     if (UI.isProcessing) {
         e.returnValue = false;
         return false;
-    } else if (isFetching) {
+    }
+
+    if (isFetching) {
         UI.processing(true);
         window.onceFetchingDone = () => {
             UI.processing(false);

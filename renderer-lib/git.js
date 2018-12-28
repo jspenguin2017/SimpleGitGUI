@@ -62,7 +62,7 @@ const format = (code, err, stdout, stderr) => {
 
 // --------------------------------------------------------------------------------------------- //
 
-// TODO: Should move to child_process.spawn
+// TODO: Should use child_process.spawn
 
 const run = (lines, callback) => {
     if (typeof lines === "string") {
@@ -277,36 +277,46 @@ exports.compare = (directory, callback) => {
                 results.push(line);
         }
 
-        // Parse status, index 0 is local branch, 1 is remote branch, 2 is common ancestor
+        // 0: local branch hash
+        // 1: remote branch hash
+        // 2: common ancestor hash
+
+        // C: commit
+        // L: local commit
+        // R: remote commit
+        // A: common ancestor
 
         if (results[0] === results[1]) {
 
             // Local is the same as remote, nothing to do
+
             callback("up to date", output);
 
         } else if (results[0] === results[2]) {
 
-            // Remote branch is ahead, looks like this:
-            // C for commit, L for last commit of local branch, R for last commit of remote branch
+            // Remote branch is ahead, should pull
             //
             // --C--C--L
             //          \
             //           R--C
+            //
+
             callback("need pull", output);
 
         } else if (results[1] === results[2]) {
 
-            // Local branch is ahread, looks like this:
+            // Local branch is ahread, should push
             //
             //           L--C
             //          /
             // --C--C--R
+            //
+
             callback("need push", output);
 
         } else {
 
-            // All three are different, looks like this:
-            // A for common ancestor
+            // Diverged, synchronize can fix it if there is no conflict
             //
             //           L--C
             //          /
@@ -314,7 +324,7 @@ exports.compare = (directory, callback) => {
             //          \
             //           R--C--C
             //
-            // This can be fixed with synchronize if there is no conflict
+
             callback("diverged", output);
 
         }
