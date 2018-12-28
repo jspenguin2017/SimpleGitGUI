@@ -935,7 +935,7 @@ try {
         email: "alpha@example.com",
         savePW: true,
         active: undefined,
-        repos: []
+        repos: [],
     };
 }
 
