@@ -174,7 +174,7 @@ UI.diffTable = (data, rollbackCallback, diffCallback, viewCallback) => {
         if (index > -1)
             file = file.substring(index + 4);
 
-        if (file.startsWith("\""))
+        if (file.startsWith('"'))
             file = file.slice(1, -1);
 
         index = file.lastIndexOf("/");
