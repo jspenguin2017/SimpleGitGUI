@@ -1,7 +1,7 @@
 {
   "author": "jspenguin2017",
   "bin": {
-    "simple-git-gui": "./Launcher.sh"
+    "simple-git-gui": "./cli.js"
   },
   "bugs": {
     "url": "https://github.com/jspenguin2017/SimpleGitGUI/issues"
@@ -15,10 +15,11 @@
   },
   "homepage": "https://github.com/jspenguin2017/SimpleGitGUI",
   "license": "GPL-3.0",
+  "main": "main.js",
   "name": "simple-git-gui",
   "repository": "https://github.com/jspenguin2017/SimpleGitGUI",
   "scripts": {
     "start": "electron ."
   },
-  "version": "2.0.0"
+  "version": "2.0.1"
 }

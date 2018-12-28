@@ -20,7 +20,7 @@ Please open an issue if there is something you want me to know.
 
 1. Install [Git](https://git-scm.com/downloads)
 2. Run `npm install -g simple-git-gui`
-3. Run `nohup simple-git-gui &> /dev/null &` to start
+3. Run `simple-git-gui` to start
 
 ## Other details
 
@@ -63,5 +63,5 @@ The source code for Launcher is available
 
 Files under `images` are created from [loading.io](https://loading.io/).
 
-Spellcheck dictionary `renderer-lib/debian.dict-8.7.txt` is extracted from
+Spellcheck dictionary `vendor/debian.dict-8.7.txt` is extracted from
 [Debian operating system](https://www.debian.org/).
