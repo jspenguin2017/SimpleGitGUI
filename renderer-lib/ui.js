@@ -139,7 +139,7 @@ UI.branches = (() => {
         $("#div-branches-list").empty();
 
         for (const branch of names) {
-            let elem = $(`<button type="button" class="list-group-item"></button>`)
+            let elem = $('<button type="button" class="list-group-item"></button>')
                 .text(branch)
                 .data("name", branch);
 
@@ -223,7 +223,7 @@ UI.diffTable = (data, rollbackCallback, diffCallback, viewCallback) => {
                     break;
                 default:
                     // This should not happen
-                    filedata.state.push(`UNKNOWN: ${files[i].charAt(j)}`);
+                    filedata.state.push("UNKNOWN: " + files[i].charAt(j));
                     break;
             }
         }

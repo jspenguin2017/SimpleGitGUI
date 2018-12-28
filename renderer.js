@@ -89,19 +89,19 @@ const codify = (() => {
             for (let i = 0; i < lines.length; i++) {
                 switch (lines[i].charAt(0)) {
                     case '+': // Addition
-                        lines[i] = `<span class="code-add">${lines[i]}</span>`;
+                        lines[i] = '<span class="code-add">' + lines[i] + "</span>";
                         break;
                     case '-':// Removal
-                        lines[i] = `<span class="code-remove">${lines[i]}</span>`;
+                        lines[i] = '<span class="code-remove">' + lines[i] + "</span>";
                         break;
                     case '@':// Section header
-                        lines[i] = `<span class="code-section">${lines[i]}</span>`;
+                        lines[i] = '<span class="code-section">' + lines[i] + "</span>";
                 }
             }
             code = lines.join("\n");
         }
 
-        return `<pre id="modal-dialog-pre">${code}</pre>`;
+        return '<pre id="modal-dialog-pre">' + code + "</pre>";
     };
 })();
 
@@ -574,8 +574,6 @@ $("#modal-force-push-input-confirm").on("keyup", () => {
     );
 });
 
-// --------------------------------------------------------------------------------------------- //
-
 // Refresh button
 $("#btn-menu-refresh").click(() => {
     switchRepo(config.active, true);
@@ -610,7 +608,7 @@ $("#modal-import-btn-import").click(() => {
     $("#modal-import-input-directory").val("");
 
     config.repos.push(tempRepo.directory);
-    icons[tempRepo.directory] = $(`<span>`).addClass("glyphicon glyphicon-refresh");
+    icons[tempRepo.directory] = $("<span>").addClass("glyphicon glyphicon-refresh");
 
     config.repos.sort();
     config.active = tempRepo.directory;
@@ -655,7 +653,7 @@ $("#modal-clone-btn-clone").click(() => {
         }
 
         config.repos.push(tempRepo.directory);
-        icons[tempRepo.directory] = $(`<span>`).addClass("glyphicon glyphicon-refresh");
+        icons[tempRepo.directory] = $("<span>").addClass("glyphicon glyphicon-refresh");
 
         config.repos.sort();
         config.lastPath = path.resolve(tempRepo.directory, "..");
@@ -942,7 +940,7 @@ if (config.repos.length) {
     }
 
     for (const repo of config.repos)
-        icons[repo] = $(`<span>`).addClass("glyphicon glyphicon-refresh");
+        icons[repo] = $("<span>").addClass("glyphicon glyphicon-refresh");
 
     UI.repos(config.repos, icons, config.active, switchRepo);
 } else {
