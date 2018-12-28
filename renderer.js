@@ -186,6 +186,9 @@ const switchRepo = (directory, doRefresh = false, forceReload = false) => {
         }
     }
 
+    // Case 2 and 3 continued
+    // Case 4: Refresh active repository
+
     if (activeRepo === null) {
         UI.dialog(
             "Configuration file damaged",
