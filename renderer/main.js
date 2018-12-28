@@ -33,7 +33,7 @@ UI.processing(true);
 const { ipcRenderer: ipc, clipboard, webFrame } = require("electron");
 const path = require("path");
 
-const git = require("./renderer-lib/git.js");
+const git = require("./git.js");
 
 // --------------------------------------------------------------------------------------------- //
 
