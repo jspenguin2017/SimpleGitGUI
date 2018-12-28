@@ -937,11 +937,11 @@ webFrame.setSpellCheckProvider("en-CA", false, {
 });
 
 require("fs").readFile(
-    path.join(__dirname, "vendor/debian.dict-8.7.txt"),
+    path.resolve(__dirname, "../vendor/debian.dict-8.7.txt"),
     "utf8",
     (err, data) => {
         if (err) {
-            console.log(err);
+            console.error(err);
 
             $("#modal-commit-spellcheck-load-state").html(
                 "Could not load spellcheck dictionary, error logged to console.",
