@@ -1058,7 +1058,9 @@ const scheduleIconRefresh = (() => {
             if (i >= config.repos.length)
                 i = 0;
 
-            let directory = config.repos[i++];
+            let directory = config.repos[i];
+            i++;
+
             if (directory === config.active && activeRepo === null) {
                 updateIcon(directory, "error");
                 process.nextTick(runTask);
@@ -1069,22 +1071,27 @@ const scheduleIconRefresh = (() => {
             git.fetch(directory, (output, hasError) => {
                 ipc.send("console log", { log: output });
 
+                const cleanup = () => {
+                    isFetching = false;
+
+                    if (window.onceFetchingDone) {
+                        const func = window.onceFetchingDone;
+                        window.onceFetchingDone = null;
+                        func();
+                    }
+                };
+
                 if (hasError) {
                     if (icons[directory])
                         updateIcon(directory, "error");
-                } else {
-                    refreshIcon(directory).then(() => {
-                        setTimeout(runTask, delay);
-                    });
+                    cleanup();
+                    return;
                 }
 
-                isFetching = false;
-
-                if (window.onceFetchingDone) {
-                    const func = window.onceFetchingDone;
-                    window.onceFetchingDone = null;
-                    func();
-                }
+                refreshIcon(directory).then(() => {
+                    setTimeout(runTask, delay);
+                });
+                cleanup();
             });
         };
 
