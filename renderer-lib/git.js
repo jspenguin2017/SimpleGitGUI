@@ -220,7 +220,7 @@ exports.config = (name, email, savePW, callback) => {
             output += format(code, err, stdout, stderr);
             callback(output, hasError);
         });
-    }
+    };
 
     run([
         `git config --global user.name "${escape(name)}"`,

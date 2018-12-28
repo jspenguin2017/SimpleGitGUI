@@ -192,7 +192,7 @@ UI.diffTable = (data, rollbackCallback, diffCallback, viewCallback) => {
             fullName: file,
             name: name,
             directory: directory,
-            state: [] // Remote, local
+            state: [], // Remote, local
         };
 
         for (let j = 0; j < 2; j++) {
