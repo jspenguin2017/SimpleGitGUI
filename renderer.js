@@ -169,6 +169,8 @@ const switchRepo = (directory, doRefresh = false, forceReload = false) => {
             if (activeRepo.directory !== directory)
                 throw "Configuration Data Not Valid";
         } catch (err) {
+            console.log(err);
+
             activeRepo = null;
             UI.buttons(true, false);
             $("#div-branches-list, #tbody-diff-table").empty();
@@ -924,6 +926,8 @@ try {
 
     config.repos.sort();
 } catch (err) {
+    console.log(err);
+
     // Default configuration
     config = {
         lastPath: ipc.sendSync("get home"),
@@ -965,10 +969,11 @@ require("fs").readFile(
     "utf8",
     (err, data) => {
         if (err) {
+            console.log(err);
+
             $("#modal-commit-spellcheck-load-state").html(
                 "Could not load spellcheck dictionary, error logged to console.",
             );
-            console.error(err);
             return;
         }
 
