@@ -298,7 +298,7 @@ const diffCallback = (file) => {
                 codify(output, true),
                 true,
             );
-            return
+            return;
         }
 
         UI.dialog("File Difference", codify(data));
@@ -614,7 +614,7 @@ $("#modal-clone-input-address").on("keyup", (() => {
                 path.join(config.lastPath, match[match.length - 1]),
             );
         }
-    }
+    };
 })());
 
 $("#modal-clone-btn-clone").click(() => {
