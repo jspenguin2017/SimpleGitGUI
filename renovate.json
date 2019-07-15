@@ -1,7 +1,5 @@
 {
-  "bumpVersion": "patch",
   "extends": [
-    "config:base",
-    ":pinVersions"
+    "hugoxu"
   ]
 }
