@@ -31,6 +31,7 @@ UI.processing(true);
 // --------------------------------------------------------------------------------------------- //
 
 const { ipcRenderer: ipc, clipboard, webFrame } = require("electron");
+const fs = require("fs");
 const path = require("path");
 
 const git = require("./git.js");
@@ -927,16 +928,22 @@ if (config.repos.length) {
     UI.buttons(true, true);
 }
 
-webFrame.setSpellCheckProvider("en-CA", false, {
-    spellCheck(word) {
-        if (spellcheckDict)
-            return binSearch(spellcheckDict, word.toLowerCase()) > -1;
-        else
-            return true;
+webFrame.setSpellCheckProvider("en", {
+    spellCheck(words, callback) {
+        const misspelled = [];
+
+        if (spellcheckDict) {
+            for (const word of words) {
+                if (binSearch(spellcheckDict, word.toLowerCase()) === -1)
+                    misspelled.push(word);
+            }
+        }
+
+        process.nextTick(callback, misspelled);
     },
 });
 
-require("fs").readFile(
+fs.readFile(
     path.resolve(__dirname, "../vendor/debian.dict-8.7.txt"),
     "utf8",
     (err, data) => {
