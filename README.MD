@@ -1,4 +1,4 @@
-# Simple Git GUI [![Dependencies](https://david-dm.org/jspenguin2017/SimpleGitGUI.svg)](https://david-dm.org/jspenguin2017/SimpleGitGUI)
+# Simple Git GUI
 
 [![NPM](https://nodei.co/npm/simple-git-gui.png)](https://nodei.co/npm/simple-git-gui/)
 
