@@ -114,7 +114,7 @@ if (app.requestSingleInstanceLock()) {
 
     app.on("second-instance", () => {
         if (main)
-            main.Focus();
+            main.focus();
     });
 
     const remoteBlocker = (e) => {
