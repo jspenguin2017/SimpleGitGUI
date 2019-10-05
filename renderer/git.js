@@ -189,7 +189,7 @@ exports.revert = (directory, commit, callback) => {
 
 exports.forcePush = (directory, branch, callback) => {
     run(
-        `git -C "${escape(directory)}" push origin "${escape(branch)}" --force --verbose`,
+        `git -C "${escape(directory)}" push origin "${escape(branch)}" --force-with-lease --verbose`,
         callback,
     );
 };
