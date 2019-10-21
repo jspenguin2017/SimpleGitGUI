@@ -30,7 +30,7 @@ const DEBUG = false;
 
 // ----------------------------------------------------------------------------------------------------------------- //
 
-const { app, BrowserWindow: win, ipcMain: ipc, shell } = require("electron");
+const { app, BrowserWindow: win, Menu, ipcMain: ipc, shell } = require("electron");
 const path = require("path");
 const url = require("url");
 
@@ -86,7 +86,8 @@ if (app.requestSingleInstanceLock()) {
             },
         });
 
-        main.removeMenu();
+        // TODO: Bug in Electron? main.removeMenu() does not work
+        Menu.setApplicationMenu(null);
 
         main.loadURL(url.format({
             pathname: path.join(__dirname, "index.html"),
