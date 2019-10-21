@@ -86,7 +86,7 @@ if (app.requestSingleInstanceLock()) {
             },
         });
 
-        main.setMenu(null);
+        main.removeMenu();
 
         main.loadURL(url.format({
             pathname: path.join(__dirname, "index.html"),
