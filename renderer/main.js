@@ -1098,8 +1098,9 @@ window.onProcessingEnds = () => {
 
 // --------------------------------------------------------------------------------------------- //
 
-// Modal backdrops are not always removed, duct tape it here
+// jQuery and Bootstrap can sometimes be buggy, duct tape with setInterval for now
 
+// Modal backdrops are not always removed
 setInterval(() => {
     if (!isFocused)
         return;
@@ -1120,5 +1121,12 @@ setInterval(() => {
         });
     }, 250);
 }, 750);
+
+// Modal can sometimes get stuck due to keyboard events
+setInterval(() => {
+    if (!UI.isProcessing && $("#modal-processing-screen").is(":visible")) {
+        $("#modal-processing-screen").modal("hide");
+    }
+}, 1000);
 
 // --------------------------------------------------------------------------------------------- //
