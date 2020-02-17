@@ -69,7 +69,7 @@ ipc.on("show file in folder", (e, data) => {
 
 let main;
 
-// TODO:  https://github.com/electron/electron/issues/18397
+// TODO: https://github.com/electron/electron/issues/18397
 app.allowRendererProcessReuse = true;
 
 if (app.requestSingleInstanceLock()) {
