@@ -121,20 +121,36 @@ UI.repos = (directories, icons, active, switchCallback) => {
 
 UI.branches = (() => {
     const isHead = /\/HEAD -> .*\//;
+    const isRemote = /^remotes\//;
 
     return (data, switchCallback) => {
         let names = [];
         let active;
 
-        for (let i = 0; i < data.length; i++) {
-            if (data[i].startsWith("*")) {
-                data[i] = data[i].substring(1);
-                active = data[i].trim();
+        for (let d of data) {
+            if (d.startsWith("*")) {
+                d = d.substring(1);
+                active = d.trim();
             }
 
-            let temp = data[i].trim();
-            temp && names.push(temp);
+            d = d.trim();
+            d && names.push(d);
         }
+
+        let locals = [];
+        let heads = [];
+        let remotes = [];
+
+        for (const n of names) {
+            if (isHead.test(n))
+                heads.push(n);
+            else if (isRemote.test(n))
+                remotes.push(n);
+            else
+                locals.push(n);
+        }
+
+        names = [...locals, ...heads, ...remotes];
 
         $("#div-branches-list").empty();
 
