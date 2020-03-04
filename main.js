@@ -107,12 +107,11 @@ if (app.requestSingleInstanceLock()) {
         main.webContents.on("new-window", (e, url) => {
             e.preventDefault();
             console.warn("WARN: New window blocked, there might be a security bug in the renderer process!");
-            console.warn("WARN: new window URL: " + url);
+            console.warn("WARN: New window URL: " + url);
         });
 
         main.webContents.on("will-navigate", (e, url) => {
             if (url !== mainHtmlUrl) {
-                console.log(mainHtmlUrl);
                 e.preventDefault();
                 console.warn("WARN: Navigation blocked, there might be a security bug in the renderer process!");
                 console.warn("WARN: Navigation target URL: " + url);
