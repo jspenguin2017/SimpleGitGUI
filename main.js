@@ -92,24 +92,31 @@ if (app.requestSingleInstanceLock()) {
         // TODO: Bug in Electron? main.removeMenu() does not work
         Menu.setApplicationMenu(null);
 
-        main.loadURL(url.format({
+        const mainHtmlUrl = url.format({
             pathname: path.join(__dirname, "index.html"),
             protocol: "file:",
             slashes: true,
-        }));
+        }).replace(/\\/g, "/");
+
+        main.loadURL(mainHtmlUrl);
 
         main.once("ready-to-show", () => {
             main.show();
         });
 
-        main.webContents.on("new-window", (e) => {
+        main.webContents.on("new-window", (e, url) => {
             e.preventDefault();
             console.warn("WARN: New window blocked, there might be a security bug in the renderer process!");
+            console.warn("WARN: new window URL: " + url);
         });
 
-        main.webContents.on("will-navigate", (e) => {
-            e.preventDefault();
-            console.warn("WARN: Navigation blocked, there might be a security bug in the renderer process!");
+        main.webContents.on("will-navigate", (e, url) => {
+            if (url !== mainHtmlUrl) {
+                console.log(mainHtmlUrl);
+                e.preventDefault();
+                console.warn("WARN: Navigation blocked, there might be a security bug in the renderer process!");
+                console.warn("WARN: Navigation target URL: " + url);
+            }
         });
 
         if (DEBUG)
