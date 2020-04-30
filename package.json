@@ -7,7 +7,8 @@
     "url": "https://github.com/jspenguin2017/SimpleGitGUI/issues"
   },
   "dependencies": {
-    "electron": "8.2.5"
+    "electron": "8.2.5",
+    "snyk": "^1.316.1"
   },
   "description": "A simple Git GUI, free and open",
   "engines": {
@@ -19,7 +20,10 @@
   "name": "simple-git-gui",
   "repository": "https://github.com/jspenguin2017/SimpleGitGUI",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
-  "version": "3.2.11"
+  "version": "3.2.11",
+  "snyk": true
 }
