@@ -69,9 +69,6 @@ ipc.on("show file in folder", (e, data) => {
 
 let main;
 
-// TODO: https://github.com/electron/electron/issues/18397
-app.allowRendererProcessReuse = true;
-
 if (app.requestSingleInstanceLock()) {
     app.on("ready", () => {
         main = new win({
@@ -136,7 +133,6 @@ if (app.requestSingleInstanceLock()) {
     app.on("remote-get-current-web-contents", remoteBlocker);
     app.on("remote-get-current-window", remoteBlocker);
     app.on("remote-get-global", remoteBlocker);
-    app.on("remote-get-guest-web-contents", remoteBlocker);
     app.on("remote-require", remoteBlocker);
 } else {
     app.quit();
