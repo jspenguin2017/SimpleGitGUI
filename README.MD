@@ -4,7 +4,7 @@
 
 A simple Git GUI, free and open
 
-![Main Window](https://i.imgur.com/xNvBA5b.png)
+![Main Window](https://i.imgur.com/4RUiOpx.png)
 
 Please open an issue if there is something you want me to know.
 
