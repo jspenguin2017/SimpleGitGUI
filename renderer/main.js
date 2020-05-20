@@ -38,6 +38,10 @@ const git = require("./git.js");
 
 // --------------------------------------------------------------------------------------------- //
 
+const reAllDigits = /^\d+$/;
+
+// --------------------------------------------------------------------------------------------- //
+
 let config;
 
 let icons = {};
@@ -934,6 +938,9 @@ webFrame.setSpellCheckProvider("en", {
 
         if (spellcheckDict) {
             for (const word of words) {
+                if (reAllDigits.test(word))
+                    continue;
+
                 if (binSearch(spellcheckDict, word.toLowerCase()) === -1)
                     misspelled.push(word);
             }
