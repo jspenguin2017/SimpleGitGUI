@@ -10,9 +10,6 @@
     "electron": "9.0.0"
   },
   "description": "A simple Git GUI, free and open",
-  "engines": {
-    "node": "10.21.0"
-  },
   "homepage": "https://github.com/jspenguin2017/SimpleGitGUI",
   "license": "GPL-3.0",
   "main": "main.js",
@@ -21,5 +18,5 @@
   "scripts": {
     "start": "electron ."
   },
-  "version": "3.2.18"
+  "version": "3.2.19"
 }
