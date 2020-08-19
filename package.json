@@ -7,7 +7,7 @@
     "url": "https://github.com/jspenguin2017/SimpleGitGUI/issues"
   },
   "dependencies": {
-    "electron": "9.2.0"
+    "electron": "9.2.1"
   },
   "description": "A simple Git GUI, free and open",
   "homepage": "https://github.com/jspenguin2017/SimpleGitGUI",
