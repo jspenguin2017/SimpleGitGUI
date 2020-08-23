@@ -113,7 +113,7 @@ const porcelain = (code, callback) => {
 (() => {
     let rmCode = "";
 
-    exports.forcePullCmd = (directory) => {
+    exports.hardResetCmd = (directory) => {
         if (process.platform === "win32") {
             if (directory.length > 3)
                 rmCode = `RMDIR /S /Q "${escape(directory)}"`;
@@ -128,7 +128,7 @@ const porcelain = (code, callback) => {
         return rmCode;
     };
 
-    exports.forcePull = (directory, address, callback) => {
+    exports.hardReset = (directory, address, callback) => {
         if (!rmCode) {
             callback("Local repository removal command is not initialized.", true);
             return;

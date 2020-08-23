@@ -336,7 +336,7 @@ $("#btn-menu-hard-reset").click(() => { // Force pull
         return;
     }
 
-    $("#modal-hard-reset-pre-rm-code").text(git.forcePullCmd(config.active));
+    $("#modal-hard-reset-pre-rm-code").text(git.hardResetCmd(config.active));
     $("#modal-hard-reset").modal("show");
 });
 
@@ -404,7 +404,7 @@ $("#modal-hard-reset-input-confirm").on("keyup", () => { // Force pull confirmat
     $("#modal-hard-reset-input-confirm").val("");
     $("#modal-hard-reset").modal("hide");
 
-    git.forcePull(activeRepo.directory, activeRepo.address, (output, hasError) => {
+    git.hardReset(activeRepo.directory, activeRepo.address, (output, hasError) => {
         ipc.send("console log", { log: output });
 
         if (hasError) {
