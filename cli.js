@@ -30,15 +30,19 @@
 
 const { spawn } = require("child_process");
 const { platform } = require("os");
+const { resolve } = require("path");
 
 // --------------------------------------------------------------------------------------------- //
 
 if (platform() === "win32") {
-    spawn("Launcher.exe", [], {
+    spawn(resolve(__dirname, "Launcher.exe"), [], {
+        cwd: __dirname,
         detached: true,
     });
 } else {
-    spawn("bash", ["Launcher.sh"], {
+    console.warn("WARN: Only the Windows platform is officially supported");
+    spawn("bash", [resolve(__dirname, "Launcher.sh")], {
+        cwd: __dirname,
         detached: true,
     });
 }
