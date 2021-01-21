@@ -171,7 +171,7 @@ exports.commit = (directory, messages, callback) => {
     let cmd = `git -C "${escape(directory)}" commit --verbose`;
 
     if (messages === null) {
-        cmd += " --allow-empty-message";
+        cmd += ` --message="" --allow-empty-message`;
     } else {
         for (const line of messages)
             cmd += ` --message="${escape(line)}"`;
