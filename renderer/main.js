@@ -128,9 +128,9 @@ const getCommitMsg = () => {
     }
 
     if (noMsg)
-        msg = ["No commit message"];
-
-    return msg;
+        return null;
+    else
+        return msg;
 };
 
 // --------------------------------------------------------------------------------------------- //

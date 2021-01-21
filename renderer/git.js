@@ -170,8 +170,12 @@ exports.pull = (directory, callback) => {
 exports.commit = (directory, messages, callback) => {
     let cmd = `git -C "${escape(directory)}" commit --verbose`;
 
-    for (const line of messages)
-        cmd += ` --message="${escape(line)}"`;
+    if (messages === null) {
+        cmd += " --allow-empty-message";
+    } else {
+        for (const line of messages)
+            cmd += ` --message="${escape(line)}"`;
+    }
 
     run([
         `git -C "${escape(directory)}" stage --verbose --all`,
