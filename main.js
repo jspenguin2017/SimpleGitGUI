@@ -101,10 +101,10 @@ if (app.requestSingleInstanceLock()) {
             main.show();
         });
 
-        main.webContents.on("new-window", (e, url) => {
-            e.preventDefault();
+        main.webContents.setWindowOpenHandler((details) => {
             console.warn("WARN: New window blocked, there might be a security bug in the renderer process!");
-            console.warn("WARN: New window URL: " + url);
+            console.warn("WARN: New window URL: " + details.url);
+            return { action: 'deny' };
         });
 
         main.webContents.on("will-navigate", (e, url) => {
@@ -123,17 +123,6 @@ if (app.requestSingleInstanceLock()) {
         if (main)
             main.focus();
     });
-
-    const remoteBlocker = (e) => {
-        e.preventDefault();
-        console.warn("WARN: Remote request blocked, there might be a security bug in the renderer process!");
-    };
-
-    app.on("remote-get-builtin", remoteBlocker);
-    app.on("remote-get-current-web-contents", remoteBlocker);
-    app.on("remote-get-current-window", remoteBlocker);
-    app.on("remote-get-global", remoteBlocker);
-    app.on("remote-require", remoteBlocker);
 } else {
     app.quit();
 }
